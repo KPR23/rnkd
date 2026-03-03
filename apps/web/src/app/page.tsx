@@ -1,3 +1,8 @@
+"use client";
+
+import { trpc } from "../trpc/client";
+
 export default function Home() {
-	return <h1>Hello World</h1>;
+	const { data } = trpc.hello.useQuery({ name: "Kacper" });
+	return <h1>{data?.greeting}</h1>;
 }
