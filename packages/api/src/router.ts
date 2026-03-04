@@ -4,7 +4,7 @@ import { z } from "zod";
 export const appRouter = router({
 	hello: publicProcedure
 		.input(z.object({ name: z.string() }))
-		.query(({ input }) => {
+		.query(({ input }: { input: { name: string } }) => {
 			return {
 				greeting: `Hello ${input.name}`,
 			};
