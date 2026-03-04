@@ -16,12 +16,22 @@ export default function App() {
 
 function MyScreen() {
 	// Testowanie type-safety
-	const hello = trpc.hello.useQuery({ name: "Test" });
+	const users = trpc.getUsers.useQuery();
 
 	return (
 		<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
 			<Text>Rnkd test</Text>
-			<Text>{hello.data?.greeting ?? "Loading..."}</Text>
+
+			<View style={{ marginTop: 20 }}>
+				<Text style={{ fontWeight: "bold", marginBottom: 10 }}>
+					Users List:
+				</Text>
+				{users.data?.map((user) => (
+					<Text key={user.id}>
+						{user.name} ({user.email})
+					</Text>
+				))}
+			</View>
 		</View>
 	);
 }
@@ -29,7 +39,7 @@ function MyScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#4F46E5",
+		backgroundColor: "#fff",
 		alignItems: "center",
 		justifyContent: "center",
 	},
