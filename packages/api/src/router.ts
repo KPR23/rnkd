@@ -1,14 +1,11 @@
-import { router, publicProcedure } from "./trpc";
-import { z } from "zod";
+import { db, usersTable } from "@repo/db";
+import { publicProcedure, router } from "./trpc";
 
 export const appRouter = router({
-	hello: publicProcedure
-		.input(z.object({ name: z.string() }))
-		.query(({ input }: { input: { name: string } }) => {
-			return {
-				greeting: `Hello ${input.name}`,
-			};
-		}),
+	getUsers: publicProcedure.query(async () => {
+		const users = await db.select().from(usersTable);
+		return users;
+	}),
 });
 
 export type AppRouter = typeof appRouter;

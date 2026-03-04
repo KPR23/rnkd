@@ -19,7 +19,6 @@
 	},
 	"devDependencies": {
 		"@repo/api": "workspace:*",
-		"@repo/db": "workspace:*",
 		"@repo/typescript-config": "workspace:*",
 		"@types/react": "19.1.17",
 		"eslint-config-expo": "~10.0.0",
