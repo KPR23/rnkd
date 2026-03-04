@@ -8,11 +8,15 @@
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"lint": "eslint . --max-warnings 0",
+		"check-types": "tsc --noEmit"
 	},
 	"devDependencies": {
+		"@repo/eslint-config": "workspace:*",
 		"@repo/typescript-config": "workspace:*",
 		"drizzle-kit": "^0.31.9",
+		"eslint": "^9.39.1",
 		"tsx": "^4.21.0",
 		"typescript": "5.9.2"
 	},
