@@ -9,7 +9,7 @@ export const env = createEnv({
 		DATABASE_URL: z
 			.string()
 			.url(
-				"DATABASE_URL musi byc poprawnym URL (np. zaczynac sie od postgresql:// lub neon://)",
+				"DATABASE_URL must be a valid URL (e.g., starting with postgresql:// or neon://)",
 			),
 	},
 

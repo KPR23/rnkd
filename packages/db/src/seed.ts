@@ -1,6 +1,5 @@
-import * as schema from "./schema";
-
 import "dotenv/config";
+import * as schema from "./schema";
 import { db } from ".";
 
 async function main() {
@@ -30,6 +29,9 @@ async function main() {
 		console.log("Database seeded successfully!");
 	} catch (error) {
 		console.error("Error seeding database:", error);
+		process.exit(1);
+	} finally {
+		process.exit(0);
 	}
 }
 
