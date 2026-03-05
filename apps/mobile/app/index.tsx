@@ -30,14 +30,11 @@ export default function Index() {
 
 	if (!session) {
 		const handleLogin = async () => {
-			const { error } = await authClient.signIn.social({
+			const result = await authClient.signIn.social({
 				provider: "github",
 				callbackURL: "/",
 			});
-			if (error) {
-				// handle error if needed
-				return;
-			}
+			console.log("LOGIN RESULT", result);
 		};
 
 		return (
