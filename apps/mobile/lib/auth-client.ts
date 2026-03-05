@@ -3,7 +3,7 @@ import { expoClient } from "@better-auth/expo/client";
 import * as SecureStore from "expo-secure-store";
 
 export const authClient = createAuthClient({
-	baseURL: `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000`,
+	baseURL: "https://rnkd-web.vercel.app",
 	plugins: [
 		expoClient({
 			scheme: "mobile",
