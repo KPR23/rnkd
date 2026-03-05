@@ -7,4 +7,9 @@ export const authClient = createAuthClient({
 			: "https://rnkd-web.vercel.app",
 });
 
+export const signInWithGithub = async () => {
+	await authClient.signIn.social({
+		provider: "github",
+	});
+};
 export const { signIn, signUp, useSession } = authClient;
