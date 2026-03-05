@@ -11,6 +11,10 @@ export const env = createEnv({
 			.url(
 				"DATABASE_URL must be a valid URL (e.g., starting with postgresql:// or neon://)",
 			),
+		BETTER_AUTH_SECRET: z.string(),
+		BETTER_AUTH_URL: z.string().url(),
+		GITHUB_CLIENT_ID: z.string(),
+		GITHUB_CLIENT_SECRET: z.string(),
 	},
 
 	clientPrefix: "EXPO_PUBLIC_",

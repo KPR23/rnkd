@@ -15,7 +15,6 @@ export default function App() {
 }
 
 function MyScreen() {
-	// Testowanie type-safety
 	const users = trpc.getUsers.useQuery();
 
 	return (
