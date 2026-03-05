@@ -21,5 +21,9 @@
     "overrides": {
       "typescript": "5.9.2"
     }
+  },
+  "dependencies": {
+    "@better-auth/expo": "^1.5.3",
+    "better-auth": "^1.5.3"
   }
 }

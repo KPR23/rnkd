@@ -11,14 +11,12 @@
 		"check-types": "next typegen && tsc --noEmit"
 	},
 	"dependencies": {
-		"@better-auth/expo": "^1.5.3",
 		"@better-auth/drizzle-adapter": "^1.5.3",
 		"@repo/ui": "workspace:*",
 		"@tanstack/react-query": "^5.90.21",
 		"@trpc/client": "^11.11.0",
 		"@trpc/react-query": "^11.11.0",
 		"@trpc/server": "^11.11.0",
-		"better-auth": "^1.5.3",
 		"next": "16.1.6",
 		"react": "19.1.0",
 		"react-dom": "19.1.0",

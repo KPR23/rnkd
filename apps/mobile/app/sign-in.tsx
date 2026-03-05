@@ -7,7 +7,7 @@ export default function SocialSignIn() {
 		try {
 			const result = await authClient.signIn.social({
 				provider: "github",
-				callbackURL: "/",
+				callbackURL: "mobile://",
 			});
 			if (result.error) {
 				Alert.alert(

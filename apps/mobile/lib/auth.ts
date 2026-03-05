@@ -3,13 +3,12 @@ import { expo } from "@better-auth/expo";
 import { env } from "../../../packages/env/src";
 
 export const auth = betterAuth({
+	baseURL: env.BETTER_AUTH_URL,
 	trustedOrigins: [
 		"mobile://",
-
-		// Development mode - Expo's exp:// scheme with local IP ranges
-		...(env.NODE_ENV === "development"
-			? ["exp://", "exp://**", "exp://192.168.*.*:*/**"]
-			: []),
+		"mobile://*",
+		"https://rnkd-web.vercel.app",
+		"http://localhost:3000",
 	],
 	plugins: [expo()],
 	socialProviders: {
