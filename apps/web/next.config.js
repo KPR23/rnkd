@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
-	transpilePackages: ["better-auth", "@better-auth/expo"],
+	serverExternalPackages: [
+		"better-auth",
+		"@better-auth/expo",
+		"@better-auth/core",
+	],
 };
 
 export default nextConfig;
