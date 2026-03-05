@@ -1,8 +1,10 @@
 import { createAuthClient } from "better-auth/react";
-import { env } from "../../../../packages/env/src";
 
 export const authClient = createAuthClient({
-	baseURL: env.BETTER_AUTH_URL,
+	baseURL:
+		process.env.NODE_ENV === "development"
+			? "http://localhost:3000"
+			: "https://rnkd-web.vercel.app",
 });
 
 export const signInWithGithub = async () => {

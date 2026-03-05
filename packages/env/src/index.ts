@@ -1,9 +1,6 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
-console.log("OAUTH vars on Vercel:", {
-	id: process.env.OAUTH_GITHUB_CLIENT_ID,
-	secret: process.env.OAUTH_GITHUB_CLIENT_SECRET,
-});
+
 export const env = createEnv({
 	server: {
 		NODE_ENV: z

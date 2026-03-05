@@ -11,7 +11,7 @@ const socialProviders =
 					clientId: env.OAUTH_GITHUB_CLIENT_ID,
 					clientSecret: env.OAUTH_GITHUB_CLIENT_SECRET,
 				},
-		  }
+			}
 		: {};
 
 export const auth = betterAuth({
@@ -24,7 +24,7 @@ export const auth = betterAuth({
 			? [
 					"*", // allow all origins in dev to avoid CORS issues
 				]
-			: ["mobile://", "https://rnkd-web.vercel.app"],
+			: ["mobile://", "https://rnkd-web.vercel.app", "http://localhost:8081"],
 	plugins: [expo()],
 	socialProviders,
 });
