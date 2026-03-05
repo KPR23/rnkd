@@ -4,6 +4,16 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "../../../../packages/db/src";
 import { env } from "../../../../packages/env/src";
 
+const socialProviders =
+	env.OAUTH_GITHUB_CLIENT_ID && env.OAUTH_GITHUB_CLIENT_SECRET
+		? {
+				github: {
+					clientId: env.OAUTH_GITHUB_CLIENT_ID,
+					clientSecret: env.OAUTH_GITHUB_CLIENT_SECRET,
+				},
+		  }
+		: {};
+
 export const auth = betterAuth({
 	baseURL: env.BETTER_AUTH_URL,
 	database: drizzleAdapter(db, {
@@ -16,10 +26,5 @@ export const auth = betterAuth({
 				]
 			: ["mobile://", "https://rnkd-web.vercel.app"],
 	plugins: [expo()],
-	socialProviders: {
-		github: {
-			clientId: env.OAUTH_GITHUB_CLIENT_ID,
-			clientSecret: env.OAUTH_GITHUB_CLIENT_SECRET,
-		},
-	},
+	socialProviders,
 });
