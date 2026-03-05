@@ -22,7 +22,11 @@ export const env = createEnv({
 		// EXPO_PUBLIC_API_URL: z.string().url()
 	},
 
-	runtimeEnv: process.env,
+	runtimeEnv: {
+		...process.env,
+		// Vercel Postgres often exposes POSTGRES_URL instead of DATABASE_URL.
+		DATABASE_URL: process.env.DATABASE_URL ?? process.env.POSTGRES_URL,
+	},
 
 	emptyStringAsUndefined: true,
 
