@@ -8,7 +8,7 @@ export const authClient = createAuthClient({
 		expoClient({
 			scheme: "mobile",
 			storagePrefix: "mobile",
-			storage: SecureStore,
+			storage: SecureStore as any,
 			disableCache: true,
 		}),
 	],
