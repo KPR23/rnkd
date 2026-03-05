@@ -24,7 +24,16 @@ export const auth = betterAuth({
 			? [
 					"*", // allow all origins in dev to avoid CORS issues
 				]
-			: ["mobile://", "https://rnkd-web.vercel.app", "http://localhost:8081"],
+			: [
+					"mobile://",
+					"mobile://*",
+					"https://rnkd-web.vercel.app",
+					"http://localhost:8081",
+					// Expo Go uses exp:// deep links during development.
+					"exp://",
+					"exp://**",
+					"exp://192.168.*.*:*/**",
+				],
 	plugins: [expo()],
 	socialProviders,
 });

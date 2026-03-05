@@ -9,6 +9,7 @@ export const authClient = createAuthClient({
 			scheme: "mobile",
 			storagePrefix: "mobile",
 			storage: SecureStore,
+			disableCache: true,
 		}),
 	],
 });

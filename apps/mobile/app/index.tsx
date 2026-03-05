@@ -1,4 +1,4 @@
-import { ActivityIndicator, Button, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Button, Linking, Text, View } from "react-native";
 import { trpc } from "../utils/trpc";
 import { authClient } from "../lib/auth-client";
 
@@ -35,6 +35,19 @@ export default function Index() {
 				callbackURL: "/",
 			});
 			console.log("LOGIN RESULT", result);
+
+			if (result.error) {
+				Alert.alert(
+					"Sign in failed",
+					result.error.message || `HTTP ${result.error.status ?? "unknown"}`,
+				);
+				return;
+			}
+
+			// Fallback for environments where the plugin does not auto-open the auth URL.
+			if (result.data?.redirect && result.data.url) {
+				await Linking.openURL(result.data.url);
+			}
 		};
 
 		return (
