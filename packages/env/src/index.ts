@@ -25,4 +25,9 @@ export const env = createEnv({
 	runtimeEnv: process.env,
 
 	emptyStringAsUndefined: true,
+
+	onValidationError: (error) => {
+		console.error("ENV VALIDATION ERROR:", error);
+		throw error;
+	},
 });
