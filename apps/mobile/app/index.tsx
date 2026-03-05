@@ -43,7 +43,7 @@ export default function Index() {
 		return (
 			<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
 				<Text style={{ marginBottom: 16 }}>
-					You must be signed in to view this page.
+					You must be signed in to view this page
 				</Text>
 				<Button title="Login with Github" onPress={handleLogin} />
 			</View>
