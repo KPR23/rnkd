@@ -85,7 +85,6 @@ export const verification = pgTable(
 export const game = pgTable("game", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
-	key: text("key").notNull(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()
