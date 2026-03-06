@@ -6,13 +6,11 @@ export const env = createEnv({
 		NODE_ENV: z
 			.enum(["development", "test", "production"])
 			.default("development"),
-		DATABASE_URL: z
-			.string()
-			.url(
-				"DATABASE_URL must be a valid URL (e.g., starting with postgresql:// or neon://)",
-			),
+		DATABASE_URL: z.url(
+			"DATABASE_URL must be a valid URL (e.g., starting with postgresql:// or neon://)",
+		),
 		BETTER_AUTH_SECRET: z.string(),
-		BETTER_AUTH_URL: z.string().url(),
+		BETTER_AUTH_URL: z.url(),
 		OAUTH_GITHUB_CLIENT_ID: z.string(),
 		OAUTH_GITHUB_CLIENT_SECRET: z.string(),
 	},
