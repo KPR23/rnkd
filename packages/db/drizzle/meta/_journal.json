@@ -15,6 +15,13 @@
       "when": 1772830063636,
       "tag": "0001_dapper_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772833616853,
+      "tag": "0002_pretty_timeslip",
+      "breakpoints": true
     }
   ]
 }
