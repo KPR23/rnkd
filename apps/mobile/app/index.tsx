@@ -10,16 +10,14 @@ import { trpc } from "../utils/trpc";
 import { authClient } from "../lib/auth-client";
 
 function UsersList() {
-	const users = trpc.getUsers.useQuery();
+	const user = trpc.getCurrentUser.useQuery();
 
 	return (
 		<View style={styles.usersList}>
-			<Text style={styles.sectionTitle}>Users List:</Text>
-			{users.data?.map((user) => (
-				<Text key={user.id} style={styles.userText}>
-					{user.name} ({user.email})
-				</Text>
-			))}
+			<Text style={styles.sectionTitle}>User:</Text>
+			<Text style={styles.userText}>
+				{user.data?.name} ({user.data?.email})
+			</Text>
 		</View>
 	);
 }
