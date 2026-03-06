@@ -1,13 +1,13 @@
+import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
-import { TRPCProvider } from "./utils/provider";
-import Index from "./app/index";
+import { TRPCProvider } from "../utils/provider";
 
-export default function App() {
+export default function RootLayout() {
 	return (
 		<TRPCProvider>
 			<View style={styles.container}>
-				<Index />
+				<Slot />
 				<StatusBar style="auto" />
 			</View>
 		</TRPCProvider>
@@ -17,8 +17,6 @@ export default function App() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#f0f999",
-		alignItems: "center",
-		justifyContent: "center",
+		backgroundColor: "#f7f7f2",
 	},
 });
