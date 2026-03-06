@@ -82,6 +82,14 @@ export const verification = pgTable(
 	(table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+export const GAME_IDS = ["lol", "cs2_faceit"] as const;
+export type GameId = (typeof GAME_IDS)[number];
+
+export const GAMES = {
+	LOL: "lol",
+	CS2_FACEIT: "cs2_faceit",
+} as const satisfies Record<string, GameId>;
+
 export const game = pgTable("game", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),

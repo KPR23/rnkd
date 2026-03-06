@@ -1,4 +1,4 @@
-import { db, gameAccounts } from "@repo/db";
+import { db, gameAccounts, GAMES } from "@repo/db";
 import z from "zod";
 import { protectedProcedure, router } from "../trpc";
 import { getAccountByRiotId } from "../services/riot";
@@ -18,7 +18,7 @@ export const gameAccountRouter = router({
 				.insert(gameAccounts)
 				.values({
 					id: crypto.randomUUID(),
-					gameId: "lol",
+					gameId: GAMES.LOL,
 					externalId: puuid,
 					region: input.region,
 					userId: ctx.session.user.id,
@@ -39,7 +39,7 @@ export const gameAccountRouter = router({
 				.insert(gameAccounts)
 				.values({
 					id: crypto.randomUUID(),
-					gameId: "cs2_faceit",
+					gameId: GAMES.CS2_FACEIT,
 					externalId: input.externalId,
 					region: null,
 					userId: ctx.session.user.id,
