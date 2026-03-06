@@ -1,5 +1,14 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import {
+	pgTable,
+	text,
+	timestamp,
+	boolean,
+	index,
+	integer,
+	uniqueIndex,
+	real,
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -73,9 +82,296 @@ export const verification = pgTable(
 	(table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+export const game = pgTable("game", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	key: text("key").notNull(),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at")
+		.defaultNow()
+		.$onUpdate(() => /* @__PURE__ */ new Date())
+		.notNull(),
+});
+
+export const gameAccounts = pgTable(
+	"game_accounts",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id"),
+		gameId: text("game_id")
+			.notNull()
+			.references(() => game.id, { onDelete: "cascade" }),
+		externalId: text("external_id").notNull(),
+		nickname: text("nickname"),
+		region: text("region"),
+		lastSyncedAt: timestamp("last_synced_at"),
+		lastMatchId: text("last_match_id"),
+		isTracked: boolean("is_tracked").default(false).notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => new Date())
+			.notNull(),
+	},
+	(table) => [
+		uniqueIndex("game_accounts_game_external_unique").on(
+			table.gameId,
+			table.externalId,
+		),
+		index("game_accounts_user_idx").on(table.userId),
+		index("game_accounts_last_synced_idx").on(table.lastSyncedAt),
+	],
+);
+
+export const follows = pgTable(
+	"follows",
+	{
+		followerUserId: text("follower_user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		gameAccountId: text("game_account_id")
+			.notNull()
+			.references(() => gameAccounts.id, { onDelete: "cascade" }),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+	},
+	(table) => [
+		index("follows_follower_idx").on(table.followerUserId),
+		index("follows_game_account_idx").on(table.gameAccountId),
+	],
+);
+
+export const matches = pgTable(
+	"matches",
+	{
+		id: text("id").primaryKey(),
+		gameId: text("game_id")
+			.notNull()
+			.references(() => game.id, { onDelete: "cascade" }),
+		externalMatchId: text("external_match_id").notNull().unique(),
+		team1Score: integer("team1_score").notNull(),
+		team2Score: integer("team2_score").notNull(),
+		playedAt: timestamp("played_at").notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		index("matches_game_idx").on(table.gameId),
+		index("matches_played_at_idx").on(table.playedAt),
+	],
+);
+
+export const matchParticipants = pgTable(
+	"match_participants",
+	{
+		matchId: text("match_id")
+			.notNull()
+			.references(() => matches.id, { onDelete: "cascade" }),
+		gameAccountId: text("game_account_id")
+			.notNull()
+			.references(() => gameAccounts.id, { onDelete: "cascade" }),
+		team: integer("team").notNull(),
+		partyId: text("party_id"),
+		win: boolean("win").notNull(),
+		kills: integer("kills").notNull(),
+		deaths: integer("deaths").notNull(),
+		assists: integer("assists").notNull(),
+		eloBefore: integer("elo_before").notNull(),
+		eloAfter: integer("elo_after").notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+	},
+	(table) => [
+		uniqueIndex("match_participants_match_account_unique").on(
+			table.matchId,
+			table.gameAccountId,
+		),
+		index("participants_match_idx").on(table.matchId),
+		index("participants_account_idx").on(table.gameAccountId),
+	],
+);
+
+export const playersStats = pgTable(
+	"players_stats",
+	{
+		gameAccountId: text("game_account_id")
+			.notNull()
+			.unique()
+			.references(() => gameAccounts.id, { onDelete: "cascade" }),
+		totalMatches: integer("total_matches").notNull(),
+		totalWins: integer("total_wins").notNull(),
+		winRate: real("win_rate").notNull(),
+		currentElo: integer("current_elo").notNull(),
+		avg_kills: real("avg_kills").notNull(),
+		avg_deaths: real("avg_deaths").notNull(),
+		avg_assists: real("avg_assists").notNull(),
+		lastCalculatedAt: timestamp("last_calculated_at").notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+	},
+	(table) => [index("players_stats_account_idx").on(table.gameAccountId)],
+);
+
+export const eloHistory = pgTable(
+	"elo_history",
+	{
+		id: text("id").primaryKey(),
+		matchId: text("match_id").references(() => matches.id, {
+			onDelete: "cascade",
+		}),
+		gameAccountId: text("game_account_id")
+			.notNull()
+			.references(() => gameAccounts.id, { onDelete: "cascade" }),
+		elo: integer("elo").notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		index("elo_history_account_time_idx").on(
+			table.gameAccountId,
+			table.createdAt,
+		),
+	],
+);
+
+export const league = pgTable("league", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	ownerId: text("owner_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at")
+		.defaultNow()
+		.$onUpdate(() => /* @__PURE__ */ new Date())
+		.notNull(),
+});
+
+export const leagueMembers = pgTable(
+	"league_members",
+	{
+		leagueId: text("league_id")
+			.notNull()
+			.references(() => league.id, { onDelete: "cascade" }),
+		gameAccountId: text("game_account_id")
+			.notNull()
+			.references(() => gameAccounts.id, { onDelete: "cascade" }),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		index("league_members_league_idx").on(table.leagueId),
+		index("league_members_account_idx").on(table.gameAccountId),
+	],
+);
+
+export const leagueRankings = pgTable(
+	"league_rankings",
+	{
+		leagueId: text("league_id")
+			.notNull()
+			.references(() => league.id, { onDelete: "cascade" }),
+		gameAccountId: text("game_account_id")
+			.notNull()
+			.references(() => gameAccounts.id, { onDelete: "cascade" }),
+		score: integer("score").notNull(),
+		position: integer("position").notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		index("league_rankings_league_idx").on(table.leagueId),
+		index("league_rankings_position_idx").on(table.leagueId, table.position),
+	],
+);
+
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
 	accounts: many(account),
+	gameAccounts: many(gameAccounts),
+}));
+
+export const gameAccountRelations = relations(
+	gameAccounts,
+	({ one, many }) => ({
+		user: one(user, {
+			fields: [gameAccounts.userId],
+			references: [user.id],
+		}),
+		game: one(game, {
+			fields: [gameAccounts.gameId],
+			references: [game.id],
+		}),
+		matchParticipants: many(matchParticipants),
+		eloHistory: many(eloHistory),
+	}),
+);
+
+export const matchRelations = relations(matches, ({ one, many }) => ({
+	game: one(game, {
+		fields: [matches.gameId],
+		references: [game.id],
+	}),
+	participants: many(matchParticipants),
+}));
+
+export const matchParticipantRelations = relations(
+	matchParticipants,
+	({ one }) => ({
+		match: one(matches, {
+			fields: [matchParticipants.matchId],
+			references: [matches.id],
+		}),
+		account: one(gameAccounts, {
+			fields: [matchParticipants.gameAccountId],
+			references: [gameAccounts.id],
+		}),
+	}),
+);
+
+export const leagueRelations = relations(league, ({ one, many }) => ({
+	owner: one(user, {
+		fields: [league.ownerId],
+		references: [user.id],
+	}),
+	members: many(leagueMembers),
+	rankings: many(leagueRankings),
+}));
+
+export const leagueMembersRelations = relations(leagueMembers, ({ one }) => ({
+	league: one(league, {
+		fields: [leagueMembers.leagueId],
+		references: [league.id],
+	}),
+	account: one(gameAccounts, {
+		fields: [leagueMembers.gameAccountId],
+		references: [gameAccounts.id],
+	}),
+}));
+
+export const leagueRankingsRelations = relations(leagueRankings, ({ one }) => ({
+	league: one(league, {
+		fields: [leagueRankings.leagueId],
+		references: [league.id],
+	}),
+	account: one(gameAccounts, {
+		fields: [leagueRankings.gameAccountId],
+		references: [gameAccounts.id],
+	}),
+}));
+
+export const gameRelations = relations(game, ({ many }) => ({
+	accounts: many(gameAccounts),
+	matches: many(matches),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
