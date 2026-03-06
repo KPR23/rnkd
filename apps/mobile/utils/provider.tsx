@@ -3,6 +3,7 @@ import { httpBatchLink } from "@trpc/client";
 import React, { useState } from "react";
 import superjson from "superjson";
 import { mobileTrpcUrl } from "../lib/server-url";
+import { authClient } from "../lib/auth-client";
 import { trpc } from "./trpc";
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
@@ -15,11 +16,18 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 					url: mobileTrpcUrl,
 					transformer: superjson,
 					async headers() {
-						// Tutaj w przyszłości dodasz logiczne pobieranie tokena
-						// z SecureStore dla Better Auth
-						return {
-							// authorization: token ? `Bearer ${token}` : undefined,
-						};
+						try {
+							const { data: session } = await authClient.getSession();
+							const token = session?.session.token;
+
+							return token
+								? {
+										authorization: `Bearer ${token}`,
+									}
+								: {};
+						} catch {
+							return {};
+						}
 					},
 				}),
 			],
