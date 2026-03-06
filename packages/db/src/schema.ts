@@ -97,7 +97,7 @@ export const gameAccounts = pgTable(
 	"game_accounts",
 	{
 		id: text("id").primaryKey(),
-		userId: text("user_id"),
+		userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
 		gameId: text("game_id")
 			.notNull()
 			.references(() => game.id, { onDelete: "cascade" }),
@@ -135,6 +135,10 @@ export const follows = pgTable(
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 	},
 	(table) => [
+		uniqueIndex("follows_follower_account_unique").on(
+			table.followerUserId,
+			table.gameAccountId,
+		),
 		index("follows_follower_idx").on(table.followerUserId),
 		index("follows_game_account_idx").on(table.gameAccountId),
 	],
@@ -147,7 +151,7 @@ export const matches = pgTable(
 		gameId: text("game_id")
 			.notNull()
 			.references(() => game.id, { onDelete: "cascade" }),
-		externalMatchId: text("external_match_id").notNull().unique(),
+		externalMatchId: text("external_match_id").notNull(),
 		team1Score: integer("team1_score").notNull(),
 		team2Score: integer("team2_score").notNull(),
 		playedAt: timestamp("played_at").notNull(),
@@ -160,6 +164,10 @@ export const matches = pgTable(
 	(table) => [
 		index("matches_game_idx").on(table.gameId),
 		index("matches_played_at_idx").on(table.playedAt),
+		uniqueIndex("matches_game_external_unique").on(
+			table.gameId,
+			table.externalMatchId,
+		),
 	],
 );
 
@@ -266,6 +274,10 @@ export const leagueMembers = pgTable(
 			.notNull(),
 	},
 	(table) => [
+		uniqueIndex("league_members_league_account_unique").on(
+			table.leagueId,
+			table.gameAccountId,
+		),
 		index("league_members_league_idx").on(table.leagueId),
 		index("league_members_account_idx").on(table.gameAccountId),
 	],
@@ -290,7 +302,14 @@ export const leagueRankings = pgTable(
 	},
 	(table) => [
 		index("league_rankings_league_idx").on(table.leagueId),
-		index("league_rankings_position_idx").on(table.leagueId, table.position),
+		uniqueIndex("league_rankings_league_account_unique").on(
+			table.leagueId,
+			table.gameAccountId,
+		),
+		uniqueIndex("league_rankings_league_position_unique").on(
+			table.leagueId,
+			table.position,
+		),
 	],
 );
 
