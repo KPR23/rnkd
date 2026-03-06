@@ -3,31 +3,9 @@
 import { signInWithGithub, useSession } from "../lib/auth-client";
 import { trpc } from "../trpc/client";
 
-function UsersList() {
-	const { data: users } = trpc.getUsers.useQuery();
-
-	return (
-		<>
-			<h2>Users List:</h2>
-			{users?.map((user) => (
-				<div
-					key={user.id}
-					style={{
-						padding: "8px",
-						border: "1px solid #ccc",
-						marginBottom: "8px",
-						borderRadius: "4px",
-					}}
-				>
-					<strong>{user.name}</strong> - {user.email}
-				</div>
-			))}
-		</>
-	);
-}
-
 export default function HomeClient() {
 	const { data: session, isPending } = useSession();
+	const user = trpc.getCurrentUser.useQuery();
 
 	if (isPending) {
 		return <div>Loading...</div>;
@@ -46,7 +24,7 @@ export default function HomeClient() {
 		<div style={{ padding: "20px" }}>
 			<div style={{ marginTop: "20px" }}>
 				<p>Signed in as {session.user.email}</p>
-				<UsersList />
+				<p>Signed in as {user.data?.name}</p>
 			</div>
 		</div>
 	);
