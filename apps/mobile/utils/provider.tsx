@@ -15,19 +15,15 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 				httpBatchLink({
 					url: mobileTrpcUrl,
 					transformer: superjson,
-					async headers() {
-						try {
-							const { data: session } = await authClient.getSession();
-							const token = session?.session.token;
+					headers() {
+						const headers = new Map<string, string>();
+						const cookies = authClient.getCookie();
 
-							return token
-								? {
-										authorization: `Bearer ${token}`,
-									}
-								: {};
-						} catch {
-							return {};
+						if (cookies) {
+							headers.set("Cookie", cookies);
 						}
+
+						return Object.fromEntries(headers);
 					},
 				}),
 			],
