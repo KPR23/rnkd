@@ -2,18 +2,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import React, { useState } from "react";
 import superjson from "superjson";
+import { mobileTrpcUrl } from "../lib/server-url";
 import { trpc } from "./trpc";
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
 	const [queryClient] = useState(() => new QueryClient());
 
-	const trpcUrl = `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api/trpc`;
-
 	const [trpcClient] = useState(() =>
 		trpc.createClient({
 			links: [
 				httpBatchLink({
-					url: trpcUrl,
+					url: mobileTrpcUrl,
 					transformer: superjson,
 					async headers() {
 						// Tutaj w przyszłości dodasz logiczne pobieranie tokena
