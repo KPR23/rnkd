@@ -1,15 +1,37 @@
 import { db, gameAccounts } from "@repo/db";
 import z from "zod";
 import { protectedProcedure, router } from "../trpc";
+import { getAccountByRiotId } from "../services/riot";
 
 export const gameAccountRouter = router({
-	addGameAccount: protectedProcedure
+	addLolAccount: protectedProcedure
 		.input(
 			z.object({
-				gameId: z.string(),
-				externalId: z.string(),
-				nickname: z.string(),
+				gameName: z.string(),
+				tagLine: z.string(),
 				region: z.string(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const puuid = await getAccountByRiotId(input.gameName, input.tagLine);
+			const gameAccountRecord = await db
+				.insert(gameAccounts)
+				.values({
+					id: crypto.randomUUID(),
+					gameId: "lol",
+					externalId: puuid,
+					region: input.region,
+					userId: ctx.session.user.id,
+				})
+				.returning();
+
+			return gameAccountRecord;
+		}),
+
+	addFaceitAccount: protectedProcedure
+		.input(
+			z.object({
+				externalId: z.string(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -17,10 +39,9 @@ export const gameAccountRouter = router({
 				.insert(gameAccounts)
 				.values({
 					id: crypto.randomUUID(),
-					gameId: input.gameId,
+					gameId: "cs2_faceit",
 					externalId: input.externalId,
-					nickname: input.nickname,
-					region: input.region,
+					region: null,
 					userId: ctx.session.user.id,
 				})
 				.returning();
