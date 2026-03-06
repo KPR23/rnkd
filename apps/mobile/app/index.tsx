@@ -70,7 +70,7 @@ export default function Index() {
 
 	return (
 		<View style={styles.centeredScreen}>
-			<Text style={styles.title}>Rnkd test</Text>
+			<Text style={styles.title}>Rnkd</Text>
 			<UsersList />
 		</View>
 	);

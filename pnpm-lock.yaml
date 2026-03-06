@@ -173,6 +173,9 @@ importers:
 
   packages/api:
     dependencies:
+      '@repo/auth-types':
+        specifier: workspace:*
+        version: link:../auth-types
       '@repo/db':
         specifier: workspace:*
         version: link:../db
@@ -195,6 +198,15 @@ importers:
       eslint:
         specifier: ^9.39.1
         version: 9.39.3(jiti@2.6.1)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/auth-types:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       typescript:
         specifier: 5.9.3
         version: 5.9.3

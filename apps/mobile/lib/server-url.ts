@@ -1,7 +1,11 @@
-const fallbackServerUrl = "https://rnkd-web.vercel.app";
+const configuredServerUrl = process.env.EXPO_PUBLIC_SERVER_URL?.replace(
+	/\/+$/,
+	"",
+);
 
-export const mobileServerUrl = (
-	process.env.EXPO_PUBLIC_SERVER_URL ?? fallbackServerUrl
-).replace(/\/$/, "");
+if (!configuredServerUrl) {
+	throw new Error("EXPO_PUBLIC_SERVER_URL must be set for the mobile app");
+}
 
+export const mobileServerUrl = configuredServerUrl;
 export const mobileTrpcUrl = `${mobileServerUrl}/api/trpc`;
