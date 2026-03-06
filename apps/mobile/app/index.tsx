@@ -2,13 +2,19 @@ import {
 	ActivityIndicator,
 	Alert,
 	Button,
+	ScrollView,
 	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { ADD_GAME_ACCOUNT_FIELDS, useAddGameAccountForm } from "@repo/forms";
+import {
+	useAddLolAccountForm,
+	useAddFaceitAccountForm,
+	RIOT_REGIONS,
+	RIOT_REGION_LABELS,
+} from "@repo/forms";
 import { trpc } from "../utils/trpc";
 import { authClient } from "../lib/auth-client";
 
@@ -25,21 +31,19 @@ function UsersList() {
 	);
 }
 
-function AddGameAccountForm() {
-	const addAccount = trpc.gameAccount.addGameAccount.useMutation({
-		onSuccess: () => Alert.alert("Sukces", "Konto dodane."),
-		onError: (err) => Alert.alert("Błąd", err.message),
+function AddLolAccountForm() {
+	const addLol = trpc.gameAccount.addLolAccount.useMutation({
+		onSuccess: () => Alert.alert("Success", "LoL account added."),
+		onError: (err) => Alert.alert("Error", err.message),
 	});
-	const form = useAddGameAccountForm(addAccount);
+	const form = useAddLolAccountForm(addLol);
 
 	const handleSubmit = () => {
-		if (
-			!form.gameId.trim() ||
-			!form.externalId.trim() ||
-			!form.nickname.trim() ||
-			!form.region.trim()
-		) {
-			Alert.alert("Błąd", "Wypełnij wszystkie pola.");
+		if (!form.isValid) {
+			Alert.alert(
+				"Error",
+				"Game name: 3-16 characters, Tag line: 3-5 characters (e.g. EUW1).",
+			);
 			return;
 		}
 		form.handleSubmit();
@@ -47,36 +51,95 @@ function AddGameAccountForm() {
 
 	return (
 		<View style={styles.form}>
-			<Text style={styles.formTitle}>Dodaj konto gry</Text>
-			{(
-				ADD_GAME_ACCOUNT_FIELDS as readonly {
-					key: string;
-					placeholder: string;
-				}[]
-			).map((field) => (
-				<TextInput
-					key={field.key}
-					placeholder={field.placeholder}
-					value={form[field.key as keyof typeof form] as string}
-					onChangeText={(v) => {
-						const setter =
-							form[
-								`set${field.key.charAt(0).toUpperCase()}${field.key.slice(1)}` as keyof typeof form
-							];
-						if (typeof setter === "function")
-							(setter as (v: string) => void)(v);
-					}}
-					style={styles.input}
-					placeholderTextColor="#6b7280"
-				/>
-			))}
+			<Text style={styles.formTitle}>Add League of Legends account</Text>
+			<TextInput
+				placeholder="Game name (e.g. PlayerName)"
+				value={form.gameName}
+				onChangeText={form.setGameName}
+				style={styles.input}
+				placeholderTextColor="#6b7280"
+				autoCapitalize="none"
+			/>
+			<TextInput
+				placeholder="Tag line (e.g. EUW1)"
+				value={form.tagLine}
+				onChangeText={form.setTagLine}
+				style={styles.input}
+				placeholderTextColor="#6b7280"
+				autoCapitalize="characters"
+			/>
+			<Text style={styles.label}>Region</Text>
+			<ScrollView
+				horizontal
+				showsHorizontalScrollIndicator={false}
+				style={styles.regionRow}
+			>
+				{RIOT_REGIONS.map((r) => (
+					<TouchableOpacity
+						key={r}
+						style={[
+							styles.regionChip,
+							form.region === r && styles.regionChipActive,
+						]}
+						onPress={() => form.setRegion(r)}
+					>
+						<Text
+							style={[
+								styles.regionChipText,
+								form.region === r && styles.regionChipTextActive,
+							]}
+						>
+							{RIOT_REGION_LABELS[r]}
+						</Text>
+					</TouchableOpacity>
+				))}
+			</ScrollView>
 			<TouchableOpacity
 				style={[styles.submitBtn, form.isPending && styles.submitBtnDisabled]}
 				onPress={handleSubmit}
 				disabled={form.isPending}
 			>
 				<Text style={styles.submitBtnText}>
-					{form.isPending ? "Zapisywanie…" : "Dodaj konto"}
+					{form.isPending ? "Saving…" : "Add LoL account"}
+				</Text>
+			</TouchableOpacity>
+		</View>
+	);
+}
+
+function AddFaceitAccountForm() {
+	const addFaceit = trpc.gameAccount.addFaceitAccount.useMutation({
+		onSuccess: () => Alert.alert("Success", "Faceit account added."),
+		onError: (err) => Alert.alert("Error", err.message),
+	});
+	const form = useAddFaceitAccountForm(addFaceit);
+
+	const handleSubmit = () => {
+		if (!form.isValid) {
+			Alert.alert("Error", "Enter Faceit ID.");
+			return;
+		}
+		form.handleSubmit();
+	};
+
+	return (
+		<View style={styles.form}>
+			<Text style={styles.formTitle}>Add CS2 Faceit account</Text>
+			<TextInput
+				placeholder="Faceit ID (e.g. from faceit.com)"
+				value={form.externalId}
+				onChangeText={form.setExternalId}
+				style={styles.input}
+				placeholderTextColor="#6b7280"
+				autoCapitalize="none"
+			/>
+			<TouchableOpacity
+				style={[styles.submitBtn, form.isPending && styles.submitBtnDisabled]}
+				onPress={handleSubmit}
+				disabled={form.isPending}
+			>
+				<Text style={styles.submitBtnText}>
+					{form.isPending ? "Saving…" : "Add Faceit account"}
 				</Text>
 			</TouchableOpacity>
 		</View>
@@ -131,7 +194,8 @@ export default function Index() {
 		<View style={styles.centeredScreen}>
 			<Text style={styles.title}>Rnkd</Text>
 			<UsersList />
-			<AddGameAccountForm />
+			<AddLolAccountForm />
+			<AddFaceitAccountForm />
 		</View>
 	);
 }
@@ -182,6 +246,31 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 		color: "#111827",
 		marginBottom: 12,
+	},
+	label: {
+		fontSize: 14,
+		color: "#374151",
+		marginBottom: 6,
+	},
+	regionRow: {
+		marginBottom: 10,
+	},
+	regionChip: {
+		paddingHorizontal: 12,
+		paddingVertical: 8,
+		borderRadius: 8,
+		backgroundColor: "#e5e7eb",
+		marginRight: 8,
+	},
+	regionChipActive: {
+		backgroundColor: "#2563eb",
+	},
+	regionChipText: {
+		fontSize: 14,
+		color: "#374151",
+	},
+	regionChipTextActive: {
+		color: "#fff",
 	},
 	input: {
 		backgroundColor: "#fff",
