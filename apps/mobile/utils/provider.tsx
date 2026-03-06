@@ -16,14 +16,8 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 					url: mobileTrpcUrl,
 					transformer: superjson,
 					headers() {
-						const headers = new Map<string, string>();
 						const cookies = authClient.getCookie();
-
-						if (cookies) {
-							headers.set("Cookie", cookies);
-						}
-
-						return Object.fromEntries(headers);
+						return cookies ? { Cookie: cookies } : {};
 					},
 				}),
 			],

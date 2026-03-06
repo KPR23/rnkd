@@ -1,26 +1,11 @@
-export interface BetterAuthUser {
-	id: string;
-	createdAt: Date;
-	updatedAt: Date;
-	email: string;
-	emailVerified: boolean;
-	name: string;
-	image?: string | null;
-}
+import type { auth } from "../../../apps/web/src/lib/auth";
 
-export interface BetterAuthSessionMeta {
-	id: string;
-	createdAt: Date;
-	updatedAt: Date;
-	userId: string;
-	expiresAt: Date;
-	token: string;
-	ipAddress?: string | null;
-	userAgent?: string | null;
-}
+export type AuthSession = typeof auth.$Infer.Session;
 
-export interface BetterAuthSession {
-	user: BetterAuthUser;
-	session: BetterAuthSessionMeta;
-}
+export type User = AuthSession["user"];
+export type Session = AuthSession["session"];
+
+export type BetterAuthUser = User;
+export type BetterAuthSessionMeta = Session;
+export type BetterAuthSession = AuthSession;
 

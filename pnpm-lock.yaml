@@ -173,6 +173,9 @@ importers:
 
   packages/api:
     dependencies:
+      '@repo/auth-types':
+        specifier: workspace:*
+        version: link:../auth-types
       '@repo/db':
         specifier: workspace:*
         version: link:../db
@@ -186,9 +189,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@repo/auth-types':
-        specifier: workspace:*
-        version: link:../auth-types
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config

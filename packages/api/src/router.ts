@@ -7,7 +7,7 @@ export const appRouter = router({
 		return users;
 	}),
 	getCurrentUser: protectedProcedure.query(({ ctx }) => {
-		return ctx.session?.user ?? null;
+		return ctx.session.user;
 	}),
 });
 
