@@ -2,7 +2,7 @@ import { db, gameAccounts, GAMES } from "@repo/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { protectedProcedure, router } from "../trpc";
-import { getAccountByRiotId, RIOT_REGIONS } from "../services/riot";
+import { getAccountByRiotId, RIOT_REGIONS } from "../services/riot/riot";
 
 const riotRegionSchema = z.enum(RIOT_REGIONS);
 
