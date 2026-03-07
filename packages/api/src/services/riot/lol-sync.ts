@@ -1,10 +1,6 @@
 import { db, GAMES, matches, matchParticipants } from "@repo/db";
 import { eq } from "drizzle-orm";
-import {
-	MatchParticipant,
-	MatchParticipantInsert,
-	MatchResponse,
-} from "./types";
+import type { MatchParticipantInsert, MatchResponse } from "./types";
 
 export async function mapRiotMatchToDb(
 	riotMatch: MatchResponse,

@@ -1,9 +1,15 @@
 import { db, gameAccounts, GAMES } from "@repo/db";
 import { TRPCError } from "@trpc/server";
+import { and, eq } from "drizzle-orm";
 import z from "zod";
 import { protectedProcedure, router } from "../trpc";
-import { getAccountByRiotId } from "../services/riot/riot";
-import { RIOT_REGIONS } from "../services/riot/types";
+import {
+	getAccountByRiotId,
+	getMatchById,
+	getMatchIdsByPuuid,
+} from "../services/riot/riot";
+import { mapRiotMatchToDb } from "../services/riot/lol-sync";
+import { RIOT_REGIONS, RiotRegion } from "../services/riot/types";
 
 const riotRegionSchema = z.enum(RIOT_REGIONS);
 
@@ -19,6 +25,61 @@ const isGameAccountUniqueViolation = (error: unknown) => {
 };
 
 export const gameAccountRouter = router({
+	getLolDetailsDemo: protectedProcedure.query(async ({ ctx }) => {
+		const puuid =
+			"j_2VSrA8IU5etm5IDRHYrqe8OgVbVUhNnDQFI2hZBw7xcoRTBb2E4kwQZbcSKXVTRYm9e44a4KjVTg";
+		const region: RiotRegion = "europe";
+
+		const existingAccount = await db.query.gameAccounts.findFirst({
+			where: and(
+				eq(gameAccounts.gameId, GAMES.LOL),
+				eq(gameAccounts.externalId, puuid),
+			),
+		});
+
+		let gameAccountId: string;
+
+		if (existingAccount) {
+			gameAccountId = existingAccount.id;
+		} else {
+			const [created] = await db
+				.insert(gameAccounts)
+				.values({
+					id: crypto.randomUUID(),
+					gameId: GAMES.LOL,
+					externalId: puuid,
+					region,
+					userId: ctx.session.user.id,
+				})
+				.returning();
+
+			if (!created) {
+				throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+			}
+
+			gameAccountId = created.id;
+		}
+
+		const matchIds = await getMatchIdsByPuuid(puuid, region, 10);
+		const riotMatches = await Promise.all(
+			matchIds.map((id) => getMatchById(id, region)),
+		);
+
+		const knownAccountsByPuuid: Record<string, string> = {
+			[puuid]: gameAccountId,
+		};
+
+		const savedMatches = await Promise.all(
+			riotMatches.map((match) => mapRiotMatchToDb(match, knownAccountsByPuuid)),
+		);
+
+		return {
+			puuid,
+			region,
+			matchIds,
+			syncedMatchesCount: savedMatches.length,
+		};
+	}),
 	addLolAccount: protectedProcedure
 		.input(
 			z.object({
