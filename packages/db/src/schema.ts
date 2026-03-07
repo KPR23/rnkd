@@ -82,6 +82,14 @@ export const verification = pgTable(
 	(table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+export const GAME_IDS = ["lol", "cs2_faceit"] as const;
+export type GameId = (typeof GAME_IDS)[number];
+
+export const GAMES = {
+	LOL: "lol",
+	CS2_FACEIT: "cs2_faceit",
+} as const satisfies Record<string, GameId>;
+
 export const game = pgTable("game", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
@@ -101,7 +109,6 @@ export const gameAccounts = pgTable(
 			.notNull()
 			.references(() => game.id, { onDelete: "cascade" }),
 		externalId: text("external_id").notNull(),
-		nickname: text("nickname"),
 		region: text("region"),
 		lastSyncedAt: timestamp("last_synced_at"),
 		lastMatchId: text("last_match_id"),

@@ -15,6 +15,7 @@
 		"@better-auth/expo": "^1.5.4",
 		"@repo/api": "workspace:*",
 		"@repo/db": "workspace:*",
+		"@repo/forms": "workspace:*",
 		"@repo/env": "workspace:*",
 		"@repo/ui": "workspace:*",
 		"@tanstack/react-query": "^5.90.21",
