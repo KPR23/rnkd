@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
+import type { AddFaceitAccountInput } from "./add-game-account-fields";
 
-export type AddFaceitAccountInput = {
-	externalId: string;
-};
+export type { AddFaceitAccountInput };
 
 export type AddFaceitAccountMutation = {
 	mutate: (input: AddFaceitAccountInput) => void;

@@ -1,18 +1,15 @@
-export const ADD_GAME_ACCOUNT_FIELDS = [
+import type { RiotRegion } from "./riot-regions";
+
+export const ADD_LOL_ACCOUNT_FIELDS = [
 	{
-		key: "gameId" as const,
-		placeholder: "Game ID (np. UUID z tabeli game)",
-		label: "Game ID",
+		key: "gameName" as const,
+		placeholder: "Game name",
+		label: "Game name",
 	},
 	{
-		key: "externalId" as const,
-		placeholder: "External ID",
-		label: "External ID",
-	},
-	{
-		key: "nickname" as const,
-		placeholder: "Nickname",
-		label: "Nickname",
+		key: "tagLine" as const,
+		placeholder: "Tag line",
+		label: "Tag line",
 	},
 	{
 		key: "region" as const,
@@ -21,11 +18,26 @@ export const ADD_GAME_ACCOUNT_FIELDS = [
 	},
 ] as const;
 
-export type AddGameAccountInput = {
-	gameId: string;
-	externalId: string;
-	nickname: string;
-	region: string;
+export type AddLolAccountInput = {
+	gameName: string;
+	tagLine: string;
+	region: RiotRegion;
 };
 
-export type AddGameAccountFieldKey = keyof AddGameAccountInput;
+export type AddLolAccountFieldKey =
+	(typeof ADD_LOL_ACCOUNT_FIELDS)[number]["key"];
+
+export const ADD_FACEIT_ACCOUNT_FIELDS = [
+	{
+		key: "externalId" as const,
+		placeholder: "Faceit nickname",
+		label: "Faceit nickname",
+	},
+] as const;
+
+export type AddFaceitAccountInput = {
+	externalId: string;
+};
+
+export type AddFaceitAccountFieldKey =
+	(typeof ADD_FACEIT_ACCOUNT_FIELDS)[number]["key"];

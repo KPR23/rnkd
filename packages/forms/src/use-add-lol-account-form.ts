@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
+import type { AddLolAccountInput } from "./add-game-account-fields";
 import type { RiotRegion } from "./riot-regions";
 
-export type AddLolAccountInput = {
-	gameName: string;
-	tagLine: string;
-	region: RiotRegion;
-};
+export type { AddLolAccountInput };
 
 export type AddLolAccountMutation = {
 	mutate: (input: AddLolAccountInput) => void;

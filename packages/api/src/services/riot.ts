@@ -17,6 +17,7 @@ export async function getAccountByRiotId(
 		const response = await fetch(
 			`${baseUrl}/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`,
 			{
+				signal: AbortSignal.timeout(5000),
 				headers: {
 					"X-Riot-Token": env.RIOT_API_KEY,
 				},
@@ -24,7 +25,9 @@ export async function getAccountByRiotId(
 		);
 		if (!response.ok) {
 			const err = await response.json().catch(() => ({}));
-			throw new Error(err.status?.message ?? `Riot API error: ${response.status}`);
+			throw new Error(
+				err.status?.message ?? `Riot API error: ${response.status}`,
+			);
 		}
 		const data = (await response.json()) as { puuid: string };
 		return data.puuid;
