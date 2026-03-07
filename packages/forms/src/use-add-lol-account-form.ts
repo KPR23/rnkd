@@ -30,7 +30,11 @@ export function useAddLolAccountForm(mutation: AddLolAccountMutation) {
 	}, [mutation.isSuccess]);
 
 	const handleSubmit = () => {
-		mutation.mutate({ gameName, tagLine, region });
+		mutation.mutate({
+			gameName: gameName.trim(),
+			tagLine: tagLine.trim(),
+			region,
+		});
 	};
 
 	const isValid =
