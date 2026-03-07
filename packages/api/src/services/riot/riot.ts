@@ -1,5 +1,5 @@
 import { getRiotApiKey, getRiotApiUrl } from "./helper";
-import { QueueType, RiotRegion } from "./types";
+import { MatchResponse, QueueType, RiotRegion } from "./types";
 
 export async function getAccountByRiotId(
 	gameName: string,
@@ -42,6 +42,7 @@ export async function getMatchIdsByPuuid(
 	if (queue !== undefined) params.set("queue", String(queue));
 
 	const url = `${baseUrl}/lol/match/v5/matches/by-puuid/${encodeURIComponent(puuid)}/ids?${params}`;
+
 	const response = await fetch(url, {
 		signal: AbortSignal.timeout(10000),
 		headers: {
@@ -57,5 +58,26 @@ export async function getMatchIdsByPuuid(
 	}
 
 	const data = (await response.json()) as string[];
+	return data;
+}
+
+export async function getMatchById(matchId: string, region: RiotRegion) {
+	const baseUrl = getRiotApiUrl(region);
+	const url = `${baseUrl}/lol/match/v5/matches/${matchId}`;
+	const response = await fetch(url, {
+		signal: AbortSignal.timeout(10000),
+		headers: {
+			"X-Riot-Token": getRiotApiKey(),
+		},
+	});
+
+	if (!response.ok) {
+		const err = await response.json().catch(() => ({}));
+		throw new Error(
+			err.status?.message ?? `Riot API error: ${response.status}`,
+		);
+	}
+
+	const data = (await response.json()) as MatchResponse;
 	return data;
 }
