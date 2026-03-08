@@ -27,7 +27,7 @@ export const gameAccountRouter = router({
 				puuid: z.string(),
 			}),
 		)
-		.query(async ({ ctx, input }) => {
+		.query(async ({ input }) => {
 			const { puuid } = input;
 
 			const existingAccount = await db.query.gameAccounts.findFirst({

@@ -1,9 +1,9 @@
-import { db, follows, gameAccounts, GAMES } from "@repo/db";
+import { db, gameAccounts, GAMES } from "@repo/db";
 import { and, eq, inArray } from "drizzle-orm";
+import { getFollowedAccounts } from "../helper";
 import { mapRiotMatchToDb } from "./lol-sync";
 import { getMatchById, getMatchIdsByPuuid } from "./riot";
 import { RiotRegion } from "./types";
-import { getFollowedAccounts } from "../helper";
 
 const MAX_MATCHES_TO_SYNC = 100;
 const RIOT_API_DELAY_MS = 150;
