@@ -5,7 +5,8 @@ import { getMatchById, getMatchIdsByPuuid } from "./riot";
 import { RiotRegion } from "./types";
 import { getFollowedAccounts } from "../helper";
 
-const MAX_MATCHES_TO_SYNC = 5;
+const MAX_MATCHES_TO_SYNC = 100;
+const RIOT_API_DELAY_MS = 150;
 
 export async function syncLolForAccount(gameAccountId: string) {
 	const [account] = await db
@@ -44,9 +45,11 @@ export async function syncLolForAccount(gameAccountId: string) {
 		MAX_MATCHES_TO_SYNC,
 	);
 
-	const riotMatches = await Promise.all(
-		matchIds.map((id) => getMatchById(id, account.region as RiotRegion)),
-	);
+	const riotMatches: Awaited<ReturnType<typeof getMatchById>>[] = [];
+	for (const id of matchIds) {
+		riotMatches.push(await getMatchById(id, account.region as RiotRegion));
+		await new Promise((r) => setTimeout(r, RIOT_API_DELAY_MS));
+	}
 
 	const knownAccountsByPuuid: Record<string, string> = {
 		[account.externalId]: gameAccountId,

@@ -2,15 +2,10 @@ import { db, gameAccounts, GAMES } from "@repo/db";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
-import { protectedProcedure, router } from "../trpc";
-import {
-	getAccountByRiotId,
-	getMatchById,
-	getMatchIdsByPuuid,
-} from "../services/riot/riot";
-import { mapRiotMatchToDb } from "../services/riot/lol-sync";
-import { RIOT_REGIONS, RiotRegion } from "../services/riot/types";
 import { syncLolForAccount } from "../services/riot/lol-sync-runner";
+import { getAccountByRiotId } from "../services/riot/riot";
+import { RIOT_REGIONS } from "../services/riot/types";
+import { protectedProcedure, router } from "../trpc";
 
 const riotRegionSchema = z.enum(RIOT_REGIONS);
 

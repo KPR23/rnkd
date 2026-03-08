@@ -61,10 +61,27 @@ export async function getMatchIdsByPuuid(
 	return data;
 }
 
+async function fetchWithRetry(
+	url: string,
+	options: RequestInit,
+	retries = 3,
+): Promise<Response> {
+	for (let attempt = 0; attempt <= retries; attempt++) {
+		const response = await fetch(url, options);
+		if (response.status !== 429 || attempt === retries) return response;
+		const retryAfter = response.headers.get("Retry-After");
+		const delayMs = retryAfter
+			? parseInt(retryAfter, 10) * 1000
+			: Math.pow(2, attempt) * 1000;
+		await new Promise((r) => setTimeout(r, delayMs));
+	}
+	throw new Error("Rate limit retries exhausted");
+}
+
 export async function getMatchById(matchId: string, region: RiotRegion) {
 	const baseUrl = getRiotApiUrl(region);
 	const url = `${baseUrl}/lol/match/v5/matches/${matchId}`;
-	const response = await fetch(url, {
+	const response = await fetchWithRetry(url, {
 		signal: AbortSignal.timeout(10000),
 		headers: {
 			"X-Riot-Token": getRiotApiKey(),
