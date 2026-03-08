@@ -8,6 +8,7 @@ import {
 	integer,
 	uniqueIndex,
 	real,
+	uuid,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -132,6 +133,7 @@ export const gameAccounts = pgTable(
 export const follows = pgTable(
 	"follows",
 	{
+		id: uuid("id").primaryKey().defaultRandom(),
 		followerUserId: text("follower_user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
@@ -180,6 +182,7 @@ export const matches = pgTable(
 export const matchParticipants = pgTable(
 	"match_participants",
 	{
+		id: uuid("id").primaryKey().defaultRandom(),
 		matchId: text("match_id")
 			.notNull()
 			.references(() => matches.id, { onDelete: "cascade" }),
@@ -267,6 +270,7 @@ export const leagues = pgTable("leagues", {
 export const leagueMembers = pgTable(
 	"league_members",
 	{
+		id: uuid("id").primaryKey().defaultRandom(),
 		leagueId: text("league_id")
 			.notNull()
 			.references(() => leagues.id, { onDelete: "cascade" }),
@@ -292,6 +296,7 @@ export const leagueMembers = pgTable(
 export const leagueRankings = pgTable(
 	"league_rankings",
 	{
+		id: uuid("id").primaryKey().defaultRandom(),
 		leagueId: text("league_id")
 			.notNull()
 			.references(() => leagues.id, { onDelete: "cascade" }),

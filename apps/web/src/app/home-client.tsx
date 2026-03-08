@@ -157,11 +157,11 @@ function AddFaceitAccountForm() {
 }
 
 function RiotDetailsDemoSection() {
-	const demoQuery = trpc.gameAccount.getLolDetailsDemo.useQuery(undefined, {
-		enabled: false,
-	});
-	const fetchRiotDetails = async () => {
-		const { data } = await demoQuery.refetch();
+	const utils = trpc.useUtils();
+	const fetchRiotDetails = async (puuid: string) => {
+		const data = await utils.gameAccount.getLolDetailsDemo.fetch({
+			puuid,
+		});
 		return data;
 	};
 	return <RiotDetailsTester fetchRiotDetails={fetchRiotDetails} />;
