@@ -206,8 +206,8 @@ export const matchParticipants = pgTable(
 	],
 );
 
-export const playersStats = pgTable(
-	"players_stats",
+export const playerStats = pgTable(
+	"player_stats",
 	{
 		gameAccountId: text("game_account_id")
 			.notNull()
