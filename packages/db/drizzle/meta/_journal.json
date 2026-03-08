@@ -36,6 +36,20 @@
       "when": 1772873100511,
       "tag": "0004_solid_bug",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772952496708,
+      "tag": "0005_magenta_pyro",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772952524921,
+      "tag": "0006_sturdy_gauntlet",
+      "breakpoints": true
     }
   ]
 }
