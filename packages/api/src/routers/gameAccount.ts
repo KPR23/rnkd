@@ -12,10 +12,17 @@ const riotRegionSchema = z.enum(RIOT_REGIONS);
 const isGameAccountUniqueViolation = (error: unknown) => {
 	if (!error || typeof error !== "object") return false;
 
-	const err = error as { code?: string; constraint?: string };
+	const err = error as {
+		code?: string;
+		constraint?: string;
+		cause?: { code?: string; constraint?: string };
+	};
 
-	if (err.constraint === "game_accounts_game_external_unique") return true;
-	if (err.code === "23505") return true;
+	const code = err.code ?? err.cause?.code;
+	const constraint = err.constraint ?? err.cause?.constraint;
+
+	if (constraint === "game_accounts_game_external_unique") return true;
+	if (code === "23505") return true;
 
 	return false;
 };

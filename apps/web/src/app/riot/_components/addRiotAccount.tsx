@@ -28,22 +28,22 @@ const isRiotRegion = (value: string): value is RiotRegion =>
 export function AddRiotAccount() {
 	const addLol = trpc.gameAccount.addLolAccount.useMutation({
 		onSuccess: () => {
-			toast.success("Dodano konto League of Legends.");
+			toast.success("League of Legends account added.");
 		},
 		onError: (error) => {
 			const code = error.data?.code;
 
 			if (code === "CONFLICT") {
-				toast.error("Takie konto League of Legends jest już dodane.");
+				toast.error("Account already exists.");
 				return;
 			}
 
 			if (code === "BAD_REQUEST" || code === "NOT_FOUND") {
-				toast.error("Nie udało się znaleźć konta Riot. Sprawdź nazwę i tag.");
+				toast.error("Failed to find Riot account. Check name and tag.");
 				return;
 			}
 
-			toast.error("Nie udało się dodać konta League of Legends.");
+			toast.error("Failed to add League of Legends account.");
 		},
 	});
 	const legacyForm = useAddLolAccountForm(addLol);
