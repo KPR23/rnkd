@@ -8,7 +8,10 @@ import { RiotRegion } from "./types";
 const MAX_MATCHES_TO_SYNC = 100;
 const RIOT_API_DELAY_MS = 150;
 
-export async function syncLolForAccount(gameAccountId: string) {
+export async function syncLolForAccount(
+	gameAccountId: string,
+	maxMatchesToSync: number = MAX_MATCHES_TO_SYNC,
+) {
 	const [account] = await db
 		.select()
 		.from(gameAccounts)
@@ -42,11 +45,11 @@ export async function syncLolForAccount(gameAccountId: string) {
 	const matchIds = await getMatchIdsByPuuid(
 		account.externalId,
 		account.region as RiotRegion,
-		MAX_MATCHES_TO_SYNC,
+		maxMatchesToSync,
 	);
 
 	const riotMatches: Awaited<ReturnType<typeof getMatchById>>[] = [];
-	for (const id of matchIds) {
+	for (const id of matchIds.slice(0, maxMatchesToSync)) {
 		riotMatches.push(await getMatchById(id, account.region as RiotRegion));
 		await new Promise((r) => setTimeout(r, RIOT_API_DELAY_MS));
 	}

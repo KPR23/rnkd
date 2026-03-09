@@ -80,7 +80,7 @@ export async function getMatchById(matchId: string, region: RiotRegion) {
 	const baseUrl = getRiotApiUrl(region);
 	const url = `${baseUrl}/lol/match/v5/matches/${encodeURIComponent(matchId)}`;
 	const response = await fetchWithRetry(url, {
-		signal: AbortSignal.timeout(10000),
+		signal: AbortSignal.timeout(3000),
 		headers: {
 			"X-Riot-Token": RIOT_API_KEY,
 		},

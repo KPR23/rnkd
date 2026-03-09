@@ -41,7 +41,7 @@ export const gameAccountRouter = router({
 				throw new TRPCError({ code: "NOT_FOUND" });
 			}
 
-			const matchesSynced = await syncLolForAccount(existingAccount.id);
+			const matchesSynced = await syncLolForAccount(existingAccount.id, 5);
 
 			return { success: true, matchesSynced };
 		}),
