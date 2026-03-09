@@ -1,13 +1,14 @@
 "use client";
 
-import { signInWithGithub, useSession } from "../lib/auth-client";
-import { trpc } from "../trpc/client";
 import {
 	useAddLolAccountForm,
 	useAddFaceitAccountForm,
 	RIOT_REGIONS,
 	RIOT_REGION_LABELS,
+	RiotDetailsTester,
 } from "@repo/forms";
+import { signInWithGithub, useSession } from "../lib/auth-client";
+import { trpc } from "../trpc/client";
 
 const formStyle = {
 	display: "flex",
@@ -155,6 +156,17 @@ function AddFaceitAccountForm() {
 	);
 }
 
+function RiotDetailsDemoSection() {
+	const utils = trpc.useUtils();
+	const fetchRiotDetails = async (puuid: string) => {
+		const data = await utils.gameAccount.getLolDetailsDemo.fetch({
+			puuid,
+		});
+		return data;
+	};
+	return <RiotDetailsTester fetchRiotDetails={fetchRiotDetails} />;
+}
+
 export default function HomeClient() {
 	const { data: session, isPending } = useSession();
 	const user = trpc.user.getCurrentUser.useQuery();
@@ -178,6 +190,7 @@ export default function HomeClient() {
 				<p>Signed in as {session.user.email}</p>
 				<p>Signed in as {user.data?.name}</p>
 			</div>
+			<RiotDetailsDemoSection />
 			<AddLolAccountForm />
 			<AddFaceitAccountForm />
 		</div>

@@ -8,6 +8,7 @@ import {
 	integer,
 	uniqueIndex,
 	real,
+	uuid,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -90,7 +91,7 @@ export const GAMES = {
 	CS2_FACEIT: "cs2_faceit",
 } as const satisfies Record<string, GameId>;
 
-export const game = pgTable("game", {
+export const games = pgTable("games", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -107,7 +108,7 @@ export const gameAccounts = pgTable(
 		userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
 		gameId: text("game_id")
 			.notNull()
-			.references(() => game.id, { onDelete: "cascade" }),
+			.references(() => games.id, { onDelete: "cascade" }),
 		externalId: text("external_id").notNull(),
 		region: text("region"),
 		lastSyncedAt: timestamp("last_synced_at"),
@@ -132,6 +133,7 @@ export const gameAccounts = pgTable(
 export const follows = pgTable(
 	"follows",
 	{
+		id: uuid("id").primaryKey().defaultRandom(),
 		followerUserId: text("follower_user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
@@ -156,7 +158,7 @@ export const matches = pgTable(
 		id: text("id").primaryKey(),
 		gameId: text("game_id")
 			.notNull()
-			.references(() => game.id, { onDelete: "cascade" }),
+			.references(() => games.id, { onDelete: "cascade" }),
 		externalMatchId: text("external_match_id").notNull(),
 		team1Score: integer("team1_score").notNull(),
 		team2Score: integer("team2_score").notNull(),
@@ -180,6 +182,7 @@ export const matches = pgTable(
 export const matchParticipants = pgTable(
 	"match_participants",
 	{
+		id: uuid("id").primaryKey().defaultRandom(),
 		matchId: text("match_id")
 			.notNull()
 			.references(() => matches.id, { onDelete: "cascade" }),
@@ -206,8 +209,8 @@ export const matchParticipants = pgTable(
 	],
 );
 
-export const playersStats = pgTable(
-	"players_stats",
+export const playerStats = pgTable(
+	"player_stats",
 	{
 		gameAccountId: text("game_account_id")
 			.notNull()
@@ -251,7 +254,7 @@ export const eloHistory = pgTable(
 	],
 );
 
-export const league = pgTable("league", {
+export const leagues = pgTable("leagues", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	ownerId: text("owner_id")
@@ -267,9 +270,10 @@ export const league = pgTable("league", {
 export const leagueMembers = pgTable(
 	"league_members",
 	{
+		id: uuid("id").primaryKey().defaultRandom(),
 		leagueId: text("league_id")
 			.notNull()
-			.references(() => league.id, { onDelete: "cascade" }),
+			.references(() => leagues.id, { onDelete: "cascade" }),
 		gameAccountId: text("game_account_id")
 			.notNull()
 			.references(() => gameAccounts.id, { onDelete: "cascade" }),
@@ -292,9 +296,10 @@ export const leagueMembers = pgTable(
 export const leagueRankings = pgTable(
 	"league_rankings",
 	{
+		id: uuid("id").primaryKey().defaultRandom(),
 		leagueId: text("league_id")
 			.notNull()
-			.references(() => league.id, { onDelete: "cascade" }),
+			.references(() => leagues.id, { onDelete: "cascade" }),
 		gameAccountId: text("game_account_id")
 			.notNull()
 			.references(() => gameAccounts.id, { onDelete: "cascade" }),
@@ -332,9 +337,9 @@ export const gameAccountRelations = relations(
 			fields: [gameAccounts.userId],
 			references: [user.id],
 		}),
-		game: one(game, {
+		game: one(games, {
 			fields: [gameAccounts.gameId],
-			references: [game.id],
+			references: [games.id],
 		}),
 		matchParticipants: many(matchParticipants),
 		eloHistory: many(eloHistory),
@@ -342,9 +347,9 @@ export const gameAccountRelations = relations(
 );
 
 export const matchRelations = relations(matches, ({ one, many }) => ({
-	game: one(game, {
+	game: one(games, {
 		fields: [matches.gameId],
-		references: [game.id],
+		references: [games.id],
 	}),
 	participants: many(matchParticipants),
 }));
@@ -363,9 +368,9 @@ export const matchParticipantRelations = relations(
 	}),
 );
 
-export const leagueRelations = relations(league, ({ one, many }) => ({
+export const leagueRelations = relations(leagues, ({ one, many }) => ({
 	owner: one(user, {
-		fields: [league.ownerId],
+		fields: [leagues.ownerId],
 		references: [user.id],
 	}),
 	members: many(leagueMembers),
@@ -373,9 +378,9 @@ export const leagueRelations = relations(league, ({ one, many }) => ({
 }));
 
 export const leagueMembersRelations = relations(leagueMembers, ({ one }) => ({
-	league: one(league, {
+	league: one(leagues, {
 		fields: [leagueMembers.leagueId],
-		references: [league.id],
+		references: [leagues.id],
 	}),
 	account: one(gameAccounts, {
 		fields: [leagueMembers.gameAccountId],
@@ -384,9 +389,9 @@ export const leagueMembersRelations = relations(leagueMembers, ({ one }) => ({
 }));
 
 export const leagueRankingsRelations = relations(leagueRankings, ({ one }) => ({
-	league: one(league, {
+	league: one(leagues, {
 		fields: [leagueRankings.leagueId],
-		references: [league.id],
+		references: [leagues.id],
 	}),
 	account: one(gameAccounts, {
 		fields: [leagueRankings.gameAccountId],
@@ -394,7 +399,7 @@ export const leagueRankingsRelations = relations(leagueRankings, ({ one }) => ({
 	}),
 }));
 
-export const gameRelations = relations(game, ({ many }) => ({
+export const gameRelations = relations(games, ({ many }) => ({
 	accounts: many(gameAccounts),
 	matches: many(matches),
 }));

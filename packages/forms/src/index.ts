@@ -19,3 +19,4 @@ export {
 	useAddFaceitAccountForm,
 	type AddFaceitAccountMutation,
 } from "./use-add-faceit-account-form";
+export { RiotDetailsTester } from "./fetch-riot-details";

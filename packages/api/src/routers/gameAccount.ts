@@ -1,8 +1,11 @@
 import { db, gameAccounts, GAMES } from "@repo/db";
 import { TRPCError } from "@trpc/server";
+import { and, eq } from "drizzle-orm";
 import z from "zod";
+import { syncLolForAccount } from "../services/riot/lol-sync-runner";
+import { getAccountByRiotId } from "../services/riot/riot";
+import { RIOT_REGIONS } from "../services/riot/types";
 import { protectedProcedure, router } from "../trpc";
-import { getAccountByRiotId, RIOT_REGIONS } from "../services/riot";
 
 const riotRegionSchema = z.enum(RIOT_REGIONS);
 
@@ -18,6 +21,30 @@ const isGameAccountUniqueViolation = (error: unknown) => {
 };
 
 export const gameAccountRouter = router({
+	getLolDetailsDemo: protectedProcedure
+		.input(
+			z.object({
+				puuid: z.string(),
+			}),
+		)
+		.query(async ({ input }) => {
+			const { puuid } = input;
+
+			const existingAccount = await db.query.gameAccounts.findFirst({
+				where: and(
+					eq(gameAccounts.gameId, GAMES.LOL),
+					eq(gameAccounts.externalId, puuid),
+				),
+			});
+
+			if (!existingAccount) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			const matchesSynced = await syncLolForAccount(existingAccount.id, 5);
+
+			return { success: true, matchesSynced };
+		}),
 	addLolAccount: protectedProcedure
 		.input(
 			z.object({
