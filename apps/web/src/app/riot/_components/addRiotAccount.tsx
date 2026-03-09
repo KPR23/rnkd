@@ -138,7 +138,7 @@ export function AddRiotAccount() {
 									<Select
 										name={field.name}
 										value={field.state.value}
-										onValueChange={(value: RiotRegion | null) =>
+										onValueChange={(value: string) =>
 											field.handleChange(() => value as never)
 										}
 									>
@@ -172,7 +172,6 @@ export function AddRiotAccount() {
 							type="submit"
 							disabled={addLol.isPending}
 							className="w-full"
-							variant={"destructive"}
 						>
 							{addLol.isPending ? "Saving…" : "Add LoL account"}
 						</Button>
