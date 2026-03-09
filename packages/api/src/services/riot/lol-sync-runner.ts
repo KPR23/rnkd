@@ -4,6 +4,7 @@ import { getFollowedAccounts } from "../helper";
 import { mapRiotMatchToDb } from "./lol-sync";
 import { getMatchById, getMatchIdsByPuuid } from "./riot";
 import { RiotRegion } from "./types";
+import { assertRiotRegion } from "./helper";
 
 const MAX_MATCHES_TO_SYNC = 100;
 const RIOT_API_DELAY_MS = 150;
@@ -42,9 +43,11 @@ export async function syncLolForAccount(
 			),
 		);
 
+	assertRiotRegion(account.region);
+
 	const matchIds = await getMatchIdsByPuuid(
 		account.externalId,
-		account.region as RiotRegion,
+		account.region,
 		maxMatchesToSync,
 	);
 

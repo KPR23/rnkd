@@ -1,5 +1,5 @@
 import { db, GAMES, matches, matchParticipants } from "@repo/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { MatchParticipantInsert, MatchResponse } from "./types";
 
 export async function mapRiotMatchToDb(
@@ -8,7 +8,10 @@ export async function mapRiotMatchToDb(
 ) {
 	return db.transaction(async (tx) => {
 		const existingMatch = await tx.query.matches.findFirst({
-			where: eq(matches.externalMatchId, riotMatch.metadata.matchId),
+			where: and(
+				eq(matches.externalMatchId, riotMatch.metadata.matchId),
+				eq(matches.gameId, GAMES.LOL),
+			),
 		});
 
 		if (existingMatch) return existingMatch;

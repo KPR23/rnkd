@@ -41,7 +41,7 @@ export async function getMatchIdsByPuuid(
 
 	const url = `${baseUrl}/lol/match/v5/matches/by-puuid/${encodeURIComponent(puuid)}/ids?${params}`;
 
-	const response = await fetch(url, {
+	const response = await fetchWithRetry(url, {
 		signal: AbortSignal.timeout(10000),
 		headers: {
 			"X-Riot-Token": RIOT_API_KEY,
@@ -68,9 +68,11 @@ async function fetchWithRetry(
 		const response = await fetch(url, options);
 		if (response.status !== 429 || attempt === retries) return response;
 		const retryAfter = response.headers.get("Retry-After");
-		const delayMs = retryAfter
-			? parseInt(retryAfter, 10) * 1000
-			: Math.pow(2, attempt) * 1000;
+		const parsedRetryAfter = retryAfter ? parseInt(retryAfter, 10) : NaN;
+		const delayMs =
+			Number.isFinite(parsedRetryAfter) && parsedRetryAfter > 0
+				? parsedRetryAfter * 1000
+				: Math.pow(2, attempt) * 1000;
 		await new Promise((r) => setTimeout(r, delayMs));
 	}
 	throw new Error("Rate limit retries exhausted");
