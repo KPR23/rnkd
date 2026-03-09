@@ -8,6 +8,7 @@ import { trpc } from "@/src/trpc/client";
 import {
 	RIOT_REGION_LABELS,
 	RIOT_REGIONS,
+	RiotRegion,
 	useAddLolAccountForm,
 } from "@repo/forms";
 import { Button } from "@repo/ui/button";
@@ -20,6 +21,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@repo/ui/select";
+
+const isRiotRegion = (value: string): value is RiotRegion =>
+	RIOT_REGIONS.includes(value as RiotRegion);
 
 export function AddRiotAccount() {
 	const addLol = trpc.gameAccount.addLolAccount.useMutation({
@@ -35,9 +39,7 @@ export function AddRiotAccount() {
 			}
 
 			if (code === "BAD_REQUEST" || code === "NOT_FOUND") {
-				toast.error(
-					"Nie udało się znaleźć konta Riot. Sprawdź nazwę i tag.",
-				);
+				toast.error("Nie udało się znaleźć konta Riot. Sprawdź nazwę i tag.");
 				return;
 			}
 
@@ -51,6 +53,18 @@ export function AddRiotAccount() {
 			gameName: legacyForm.gameName,
 			tagLine: legacyForm.tagLine,
 			region: RIOT_REGIONS[0],
+		},
+		validators: {
+			onChange: ({ value }) => {
+				const errors: Record<string, string> = {};
+				if (value.gameName.length < 3 || value.gameName.length > 16) {
+					errors.gameName = "Game name must be 3-16 characters";
+				}
+				if (value.tagLine.length < 3 || value.tagLine.length > 5) {
+					errors.tagLine = "Tag line must be 3-5 characters";
+				}
+				return Object.keys(errors).length ? errors : undefined;
+			},
 		},
 		onSubmit: async ({ value }) => {
 			legacyForm.handleSubmit({
@@ -157,9 +171,11 @@ export function AddRiotAccount() {
 									<Select
 										name={field.name}
 										value={field.state.value}
-										onValueChange={(value: string) =>
-											field.handleChange(() => value as never)
-										}
+										onValueChange={(value: string) => {
+											if (isRiotRegion(value)) {
+												field.handleChange(value as any);
+											}
+										}}
 									>
 										<SelectTrigger
 											id="riot-region"
