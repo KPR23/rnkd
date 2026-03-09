@@ -4,6 +4,7 @@ import { Geist, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { TRPCProvider } from "../trpc/provider";
 import "./globals.css";
+import { Toaster } from "@repo/ui/sonner";
 
 const jetbrainsMono = JetBrains_Mono({
 	subsets: ["latin"],
@@ -46,7 +47,10 @@ export default function RootLayout({
 				className={`${geistSans.variable} ${geistMono.variable}`}
 				suppressHydrationWarning
 			>
-				<TRPCProvider>{children}</TRPCProvider>
+				<TRPCProvider>
+					{children}
+					<Toaster />
+				</TRPCProvider>
 			</body>
 		</html>
 	);

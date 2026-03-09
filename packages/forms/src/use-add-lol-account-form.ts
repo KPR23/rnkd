@@ -29,11 +29,18 @@ export function useAddLolAccountForm(mutation: AddLolAccountMutation) {
 		}
 	}, [mutation.isSuccess]);
 
-	const handleSubmit = () => {
+	const handleSubmit = (override?: AddLolAccountInput) => {
+		const payload: AddLolAccountInput =
+			override ?? {
+				gameName: gameName.trim(),
+				tagLine: tagLine.trim(),
+				region,
+			};
+
 		mutation.mutate({
-			gameName: gameName.trim(),
-			tagLine: tagLine.trim(),
-			region,
+			gameName: payload.gameName.trim(),
+			tagLine: payload.tagLine.trim(),
+			region: payload.region,
 		});
 	};
 

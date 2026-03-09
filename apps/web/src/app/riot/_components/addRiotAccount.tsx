@@ -2,6 +2,7 @@
 
 import { useForm } from "@tanstack/react-form";
 import * as React from "react";
+import { toast } from "sonner";
 
 import { trpc } from "@/src/trpc/client";
 import {
@@ -21,20 +22,42 @@ import {
 } from "@repo/ui/select";
 
 export function AddRiotAccount() {
-	const addLol = trpc.gameAccount.addLolAccount.useMutation();
+	const addLol = trpc.gameAccount.addLolAccount.useMutation({
+		onSuccess: () => {
+			toast.success("Dodano konto League of Legends.");
+		},
+		onError: (error) => {
+			const code = error.data?.code;
+
+			if (code === "CONFLICT") {
+				toast.error("Takie konto League of Legends jest już dodane.");
+				return;
+			}
+
+			if (code === "BAD_REQUEST" || code === "NOT_FOUND") {
+				toast.error(
+					"Nie udało się znaleźć konta Riot. Sprawdź nazwę i tag.",
+				);
+				return;
+			}
+
+			toast.error("Nie udało się dodać konta League of Legends.");
+		},
+	});
 	const legacyForm = useAddLolAccountForm(addLol);
 
 	const form = useForm({
 		defaultValues: {
-			gameName: "",
-			tagLine: "",
+			gameName: legacyForm.gameName,
+			tagLine: legacyForm.tagLine,
 			region: RIOT_REGIONS[0],
 		},
 		onSubmit: async ({ value }) => {
-			legacyForm.setGameName(value.gameName);
-			legacyForm.setTagLine(value.tagLine);
-			legacyForm.setRegion(value.region);
-			legacyForm.handleSubmit();
+			legacyForm.handleSubmit({
+				gameName: value.gameName,
+				tagLine: value.tagLine,
+				region: value.region,
+			});
 		},
 	});
 
