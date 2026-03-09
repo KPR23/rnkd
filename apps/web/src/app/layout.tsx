@@ -1,13 +1,16 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
-import { TRPCProvider } from "../trpc/provider";
-import { Inter, JetBrains_Mono, Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
+import { Geist, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
+import { TRPCProvider } from "../trpc/provider";
+import "./globals.css";
 
-const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
+const jetbrainsMono = JetBrains_Mono({
+	subsets: ["latin"],
+	variable: "--font-mono",
+});
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = localFont({
 	src: "./fonts/GeistVF.woff",
@@ -32,7 +35,12 @@ export default function RootLayout({
 		<html
 			lang="en"
 			suppressHydrationWarning
-			className={cn("font-sans dark", jetbrainsMono.variable, "font-sans", geist.variable)}
+			className={cn(
+				"font-sans dark",
+				jetbrainsMono.variable,
+				"font-sans",
+				geist.variable,
+			)}
 		>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable}`}

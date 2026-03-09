@@ -1,10 +1,17 @@
 "use client";
 
-import * as React from "react";
 import { useForm } from "@tanstack/react-form";
+import * as React from "react";
 
-import { Input } from "@repo/ui/input";
+import { trpc } from "@/src/trpc/client";
+import {
+	RIOT_REGION_LABELS,
+	RIOT_REGIONS,
+	useAddLolAccountForm,
+} from "@repo/forms";
 import { Button } from "@repo/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
+import { Input } from "@repo/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -12,14 +19,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@repo/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
-import {
-	RIOT_REGION_LABELS,
-	RIOT_REGIONS,
-	RiotRegion,
-	useAddLolAccountForm,
-} from "@repo/forms";
-import { trpc } from "@/src/trpc/client";
 
 export function AddRiotAccount() {
 	const addLol = trpc.gameAccount.addLolAccount.useMutation();
@@ -52,9 +51,8 @@ export function AddRiotAccount() {
 					}}
 					className="space-y-6"
 				>
-					<form.Field
-						name="gameName"
-						children={(field) => {
+					<form.Field name="gameName">
+						{(field) => {
 							const isInvalid =
 								field.state.meta.isTouched && !field.state.meta.isValid;
 							return (
@@ -85,11 +83,10 @@ export function AddRiotAccount() {
 								</div>
 							);
 						}}
-					/>
+					</form.Field>
 
-					<form.Field
-						name="tagLine"
-						children={(field) => {
+					<form.Field name="tagLine">
+						{(field) => {
 							const isInvalid =
 								field.state.meta.isTouched && !field.state.meta.isValid;
 							return (
@@ -120,11 +117,10 @@ export function AddRiotAccount() {
 								</div>
 							);
 						}}
-					/>
+					</form.Field>
 
-					<form.Field
-						name="region"
-						children={(field) => {
+					<form.Field name="region">
+						{(field) => {
 							const isInvalid =
 								field.state.meta.isTouched && !field.state.meta.isValid;
 							return (
@@ -165,7 +161,7 @@ export function AddRiotAccount() {
 								</div>
 							);
 						}}
-					/>
+					</form.Field>
 
 					<div className="pt-2">
 						<Button
