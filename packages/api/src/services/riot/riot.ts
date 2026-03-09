@@ -1,5 +1,8 @@
-import { getRiotApiKey, getRiotApiUrl } from "./helper";
+import { env } from "@repo/env";
+import { getRiotApiUrl } from "./helper";
 import { MatchResponse, QueueType, RiotRegion } from "./types";
+
+const RIOT_API_KEY = env.RIOT_API_KEY;
 
 export async function getAccountByRiotId(
 	gameName: string,
@@ -13,7 +16,7 @@ export async function getAccountByRiotId(
 			{
 				signal: AbortSignal.timeout(5000),
 				headers: {
-					"X-Riot-Token": getRiotApiKey(),
+					"X-Riot-Token": RIOT_API_KEY,
 				},
 			},
 		);
@@ -46,7 +49,7 @@ export async function getMatchIdsByPuuid(
 	const response = await fetch(url, {
 		signal: AbortSignal.timeout(10000),
 		headers: {
-			"X-Riot-Token": getRiotApiKey(),
+			"X-Riot-Token": RIOT_API_KEY,
 		},
 	});
 
@@ -84,7 +87,7 @@ export async function getMatchById(matchId: string, region: RiotRegion) {
 	const response = await fetchWithRetry(url, {
 		signal: AbortSignal.timeout(10000),
 		headers: {
-			"X-Riot-Token": getRiotApiKey(),
+			"X-Riot-Token": RIOT_API_KEY,
 		},
 	});
 
