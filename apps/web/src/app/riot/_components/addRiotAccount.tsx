@@ -138,7 +138,7 @@ export function AddRiotAccount() {
 									<Select
 										name={field.name}
 										value={field.state.value}
-										onValueChange={(value: RiotRegion) =>
+										onValueChange={(value: RiotRegion | null) =>
 											field.handleChange(() => value as never)
 										}
 									>
@@ -149,7 +149,7 @@ export function AddRiotAccount() {
 										>
 											<SelectValue placeholder="Select region" />
 										</SelectTrigger>
-										<SelectContent position="item-aligned">
+										<SelectContent>
 											{RIOT_REGIONS.map((r) => (
 												<SelectItem key={r} value={r}>
 													{RIOT_REGION_LABELS[r]}
