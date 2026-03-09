@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/src/lib/utils";
 import type { Metadata } from "next";
 import { Geist, JetBrains_Mono } from "next/font/google";
 import { TRPCProvider } from "../trpc/provider";
