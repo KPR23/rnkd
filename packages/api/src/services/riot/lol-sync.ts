@@ -13,11 +13,11 @@ export async function mapRiotMatchToDb(
 
 		if (existingMatch) return existingMatch;
 
-		const team1Id = riotMatch.info.teams.find((team) => team.teamId === 100);
-		const team2Id = riotMatch.info.teams.find((team) => team.teamId === 200);
+		const team1 = riotMatch.info.teams.find((team) => team.teamId === 100);
+		const team2 = riotMatch.info.teams.find((team) => team.teamId === 200);
 
-		const team1Score = team1Id?.objectives.champion?.kills ?? 0;
-		const team2Score = team2Id?.objectives.champion?.kills ?? 0;
+		const team1Score = team1?.objectives.champion?.kills ?? 0;
+		const team2Score = team2?.objectives.champion?.kills ?? 0;
 
 		const [match] = await tx
 			.insert(matches)
@@ -36,7 +36,7 @@ export async function mapRiotMatchToDb(
 		}
 
 		const participantsToInsert: (MatchParticipantInsert & {
-			matchId: string | undefined;
+			matchId: string;
 		})[] = riotMatch.info.participants.flatMap((participant) => {
 			const gameAccountId = knownAccountsByPuuid[participant.puuid];
 

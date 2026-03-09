@@ -9,29 +9,24 @@ export async function getAccountByRiotId(
 	tagLine: string,
 	region: RiotRegion,
 ) {
-	try {
-		const baseUrl = getRiotApiUrl(region);
-		const response = await fetch(
-			`${baseUrl}/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`,
-			{
-				signal: AbortSignal.timeout(5000),
-				headers: {
-					"X-Riot-Token": RIOT_API_KEY,
-				},
+	const baseUrl = getRiotApiUrl(region);
+	const response = await fetch(
+		`${baseUrl}/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`,
+		{
+			signal: AbortSignal.timeout(5000),
+			headers: {
+				"X-Riot-Token": RIOT_API_KEY,
 			},
+		},
+	);
+	if (!response.ok) {
+		const err = await response.json().catch(() => ({}));
+		throw new Error(
+			err.status?.message ?? `Riot API error: ${response.status}`,
 		);
-		if (!response.ok) {
-			const err = await response.json().catch(() => ({}));
-			throw new Error(
-				err.status?.message ?? `Riot API error: ${response.status}`,
-			);
-		}
-		const data = (await response.json()) as { puuid: string };
-		return data.puuid;
-	} catch (error) {
-		console.error(error);
-		throw error;
 	}
+	const data = (await response.json()) as { puuid: string };
+	return data.puuid;
 }
 
 export async function getMatchIdsByPuuid(
@@ -83,7 +78,7 @@ async function fetchWithRetry(
 
 export async function getMatchById(matchId: string, region: RiotRegion) {
 	const baseUrl = getRiotApiUrl(region);
-	const url = `${baseUrl}/lol/match/v5/matches/${matchId}`;
+	const url = `${baseUrl}/lol/match/v5/matches/${encodeURIComponent(matchId)}`;
 	const response = await fetchWithRetry(url, {
 		signal: AbortSignal.timeout(10000),
 		headers: {
