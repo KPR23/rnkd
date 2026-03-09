@@ -173,7 +173,9 @@ export function AddRiotAccount() {
 										value={field.state.value}
 										onValueChange={(value: string) => {
 											if (isRiotRegion(value)) {
-												field.handleChange(value as any);
+												field.handleChange(
+													value as typeof field.state.value,
+												);
 											}
 										}}
 									>
