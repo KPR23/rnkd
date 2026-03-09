@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { TRPCProvider } from "../trpc/provider";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
+
+const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -27,7 +29,11 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" suppressHydrationWarning className={cn("font-sans", inter.variable)}>
+		<html
+			lang="en"
+			suppressHydrationWarning
+			className={cn("font-sans dark", inter.variable, "font-mono", jetbrainsMono.variable)}
+		>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable}`}
 				suppressHydrationWarning
