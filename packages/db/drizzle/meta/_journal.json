@@ -71,6 +71,20 @@
       "when": 1772955831332,
       "tag": "0009_tearful_titania",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1773177415432,
+      "tag": "0010_petite_galactus",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1773177887046,
+      "tag": "0011_real_ricochet",
+      "breakpoints": true
     }
   ]
 }

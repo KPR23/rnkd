@@ -1,16 +1,16 @@
 import { env } from "@repo/env";
 import { getRiotApiUrl } from "./helper";
-import { MatchResponse, QueueType, RiotRegion } from "./types";
+import { MatchResponse, QueueType, RiotRegionalRoute } from "./types";
 
 const RIOT_API_KEY = env.RIOT_API_KEY;
 
 export async function getAccountByRiotId(
 	gameName: string,
 	tagLine: string,
-	region: RiotRegion,
+	region: RiotRegionalRoute,
 ) {
 	const baseUrl = getRiotApiUrl(region);
-	const response = await fetch(
+	const response: Response = await fetchWithRetry(
 		`${baseUrl}/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`,
 		{
 			signal: AbortSignal.timeout(5000),
@@ -19,19 +19,58 @@ export async function getAccountByRiotId(
 			},
 		},
 	);
+
 	if (!response.ok) {
 		const err = await response.json().catch(() => ({}));
 		throw new Error(
 			err.status?.message ?? `Riot API error: ${response.status}`,
 		);
 	}
-	const data = (await response.json()) as { puuid: string };
-	return data.puuid;
+
+	const data = (await response.json()) as {
+		puuid: string;
+		gameName: string;
+		tagLine: string;
+	};
+	return {
+		puuid: data.puuid,
+		gameName: data.gameName,
+		tagLine: data.tagLine,
+	};
+}
+
+export async function getLolAccountDetails(
+	puuid: string,
+	region: RiotRegionalRoute,
+) {
+	const baseUrl = getRiotApiUrl(region);
+	const url = `${baseUrl}/lol/summoner/v4/summoners/by-puuid/${encodeURIComponent(puuid)}`;
+
+	const response = await fetchWithRetry(url, {
+		signal: AbortSignal.timeout(3000),
+		headers: {
+			"X-Riot-Token": RIOT_API_KEY,
+		},
+	});
+
+	if (!response.ok) {
+		const err = (await response.json().catch(() => ({}))) as {
+			status?: { message?: string };
+		};
+		throw new Error(
+			err.status?.message ?? `Riot API error: ${response.status}`,
+		);
+	}
+
+	return (await response.json()) as {
+		summonerLevel: number;
+		profileIconId: number;
+	};
 }
 
 export async function getMatchIdsByPuuid(
 	puuid: string,
-	region: RiotRegion,
+	region: RiotRegionalRoute,
 	count = 100,
 	queue?: QueueType,
 ): Promise<string[]> {
@@ -78,7 +117,7 @@ async function fetchWithRetry(
 	throw new Error("Rate limit retries exhausted");
 }
 
-export async function getMatchById(matchId: string, region: RiotRegion) {
+export async function getMatchById(matchId: string, region: RiotRegionalRoute) {
 	const baseUrl = getRiotApiUrl(region);
 	const url = `${baseUrl}/lol/match/v5/matches/${encodeURIComponent(matchId)}`;
 	const response = await fetchWithRetry(url, {

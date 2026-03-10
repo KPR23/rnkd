@@ -1,7 +1,31 @@
 import { matches, matchParticipants } from "@repo/db";
 
-export const RIOT_REGIONS = ["americas", "europe", "asia", "sea"] as const;
-export type RiotRegion = (typeof RIOT_REGIONS)[number];
+export const RIOT_REGIONAL_ROUTE = [
+	"americas",
+	"europe",
+	"asia",
+	"sea",
+] as const;
+export type RiotRegionalRoute = (typeof RIOT_REGIONAL_ROUTE)[number];
+
+export const RIOT_PLATFORM_ROUTE = [
+	"BR1",
+	"EUN1",
+	"EUW1",
+	"JP1",
+	"KR",
+	"LA1",
+	"LA2",
+	"ME1",
+	"NA1",
+	"OC1",
+	"RU",
+	"SG2",
+	"TR1",
+	"TW2",
+	"VN2",
+] as const;
+export type RiotPlatformRoute = (typeof RIOT_PLATFORM_ROUTE)[number];
 
 export const RIOT_QUEUE_IDS = [
 	400, 420, 430, 440, 450, 700, 720, 900, 1400, 1700, 1900, 2000, 2010, 2020,

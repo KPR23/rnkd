@@ -1,9 +1,30 @@
 import { View, Text, StyleSheet } from "react-native";
+import { trpc } from "../../utils/trpc";
+import { authClient } from "../../lib/auth-client";
 
 export default function ProfileTab() {
+	const { data: session } = authClient.useSession();
+	const { data: gameAccountsData } = trpc.user.getGameAccounts.useQuery(
+		undefined,
+		{
+			enabled: !!session,
+		},
+	);
+
+	if (!session) {
+		return (
+			<View style={styles.container}>
+				<Text>Zaloguj się, aby zobaczyć profil</Text>
+			</View>
+		);
+	}
+
 	return (
 		<View style={styles.container}>
-			<Text>Profile</Text>
+			<Text>
+				LOL:
+				{gameAccountsData?.lol.map((lol) => lol.account.displayName).join(", ")}
+			</Text>
 		</View>
 	);
 }

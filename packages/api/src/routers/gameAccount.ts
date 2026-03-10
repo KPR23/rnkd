@@ -3,11 +3,14 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
 import { syncLolForAccount } from "../services/riot/lol-sync-runner";
-import { getAccountByRiotId } from "../services/riot/riot";
-import { RIOT_REGIONS } from "../services/riot/types";
+import {
+	getAccountByRiotId,
+	getLolAccountDetails,
+} from "../services/riot/riot";
 import { protectedProcedure, router } from "../trpc";
+import { RIOT_REGIONAL_ROUTE } from "../services/riot/types";
 
-const riotRegionSchema = z.enum(RIOT_REGIONS);
+const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 
 const isGameAccountUniqueViolation = (error: unknown) => {
 	if (!error || typeof error !== "object") return false;
@@ -57,13 +60,18 @@ export const gameAccountRouter = router({
 			z.object({
 				gameName: z.string().min(3, "Game name min. 3 characters").max(16),
 				tagLine: z.string().min(3, "Tag line min. 3 characters").max(5),
-				region: riotRegionSchema,
+				region: riotRegionalRouteSchema,
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const puuid = await getAccountByRiotId(
+			const riotAccount = await getAccountByRiotId(
 				input.gameName,
 				input.tagLine,
+				input.region,
+			);
+
+			const details = await getLolAccountDetails(
+				riotAccount.puuid,
 				input.region,
 			);
 
@@ -73,7 +81,11 @@ export const gameAccountRouter = router({
 					.values({
 						id: crypto.randomUUID(),
 						gameId: GAMES.LOL,
-						externalId: puuid,
+						externalId: riotAccount.puuid,
+						gameName: riotAccount.gameName,
+						tagLine: riotAccount.tagLine,
+						profileIconId: details.profileIconId,
+						summonerLevel: details.summonerLevel,
 						region: input.region,
 						userId: ctx.session.user.id,
 					})

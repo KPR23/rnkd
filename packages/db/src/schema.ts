@@ -110,6 +110,10 @@ export const gameAccounts = pgTable(
 			.notNull()
 			.references(() => games.id, { onDelete: "cascade" }),
 		externalId: text("external_id").notNull(),
+		gameName: text("game_name"),
+		tagLine: text("tag_line"),
+		profileIconId: integer("profile_icon_id"),
+		summonerLevel: integer("summoner_level"),
 		region: text("region"),
 		lastSyncedAt: timestamp("last_synced_at"),
 		lastMatchId: text("last_match_id"),
