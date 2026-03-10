@@ -2,7 +2,10 @@ import { db, gameAccounts, GAMES, matches, matchParticipants } from "@repo/db";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { protectedProcedure, router } from "../trpc";
-import { getLolAccountDetails } from "../services/riot/riot";
+import {
+	getLolAccountDetails,
+	getLolActiveRegionByPuuid,
+} from "../services/riot/riot";
 import z from "zod";
 import { RIOT_REGIONAL_ROUTE } from "../services/riot/types";
 
@@ -44,7 +47,10 @@ export const riotRouter = router({
 			}),
 		)
 		.query(async ({ input }) => {
-			const profile = await getLolAccountDetails(input.puuid, input.region);
-			return profile;
+			const platform = await getLolActiveRegionByPuuid(
+				input.puuid,
+				input.region,
+			);
+			return getLolAccountDetails(input.puuid, platform);
 		}),
 });

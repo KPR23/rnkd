@@ -3,7 +3,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { getFollowedAccounts } from "../helper";
 import { mapRiotMatchToDb } from "./lol-sync";
 import { getMatchById, getMatchIdsByPuuid } from "./riot";
-import { RiotRegion } from "./types";
+import type { RiotRegionalRoute } from "./types";
 import { assertRiotRegion } from "./helper";
 
 const MAX_MATCHES_TO_SYNC = 100;
@@ -23,7 +23,7 @@ export async function syncLolForAccount(
 			),
 		);
 
-	if (!account || !account.userId || !account.region) {
+	if (!account || !account.userId || !account.regionalRoute) {
 		throw new Error("Account not found");
 	}
 
@@ -43,17 +43,19 @@ export async function syncLolForAccount(
 			),
 		);
 
-	assertRiotRegion(account.region);
+	assertRiotRegion(account.regionalRoute);
 
 	const matchIds = await getMatchIdsByPuuid(
 		account.externalId,
-		account.region,
+		account.regionalRoute,
 		maxMatchesToSync,
 	);
 
 	const riotMatches: Awaited<ReturnType<typeof getMatchById>>[] = [];
 	for (const id of matchIds.slice(0, maxMatchesToSync)) {
-		riotMatches.push(await getMatchById(id, account.region as RiotRegion));
+		riotMatches.push(
+			await getMatchById(id, account.regionalRoute as RiotRegionalRoute),
+		);
 		await new Promise((r) => setTimeout(r, RIOT_API_DELAY_MS));
 	}
 

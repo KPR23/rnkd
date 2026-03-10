@@ -1,6 +1,11 @@
 import { env } from "@repo/env";
-import { getRiotApiUrl } from "./helper";
-import { MatchResponse, QueueType, RiotRegionalRoute } from "./types";
+import { getPlatformApiUrl, getRiotApiUrl } from "./helper";
+import {
+	MatchResponse,
+	QueueType,
+	RiotPlatformRoute,
+	RiotRegionalRoute,
+} from "./types";
 
 const RIOT_API_KEY = env.RIOT_API_KEY;
 
@@ -39,11 +44,36 @@ export async function getAccountByRiotId(
 	};
 }
 
-export async function getLolAccountDetails(
+export async function getLolActiveRegionByPuuid(
 	puuid: string,
 	region: RiotRegionalRoute,
 ) {
 	const baseUrl = getRiotApiUrl(region);
+	const url = `${baseUrl}/riot/account/v1/region/by-game/lol/by-puuid/${encodeURIComponent(puuid)}`;
+
+	const response = await fetchWithRetry(url, {
+		signal: AbortSignal.timeout(3000),
+		headers: {
+			"X-Riot-Token": RIOT_API_KEY,
+		},
+	});
+
+	if (!response.ok) {
+		const err = await response.json().catch(() => ({}));
+		throw new Error(
+			err.status?.message ?? `Riot API error: ${response.status}`,
+		);
+	}
+
+	const data = (await response.json()) as { region: string };
+	return data.region as RiotPlatformRoute;
+}
+
+export async function getLolAccountDetails(
+	puuid: string,
+	platform: RiotPlatformRoute,
+) {
+	const baseUrl = getPlatformApiUrl(platform);
 	const url = `${baseUrl}/lol/summoner/v4/summoners/by-puuid/${encodeURIComponent(puuid)}`;
 
 	const response = await fetchWithRetry(url, {

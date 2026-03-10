@@ -23,7 +23,7 @@ export default function ProfileTab() {
 		<View style={styles.container}>
 			<Text>
 				LOL:
-				{gameAccountsData?.lol.map((lol) => lol.account.displayName).join(", ")}
+				{gameAccountsData?.lol.map((lol) => lol.account.gameName).join(", ")}
 			</Text>
 		</View>
 	);

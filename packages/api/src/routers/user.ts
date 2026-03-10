@@ -1,8 +1,8 @@
 import { db, gameAccounts, GAMES } from "@repo/db";
-import { protectedProcedure, router } from "../trpc";
 import { eq } from "drizzle-orm";
 import { getLolAccountDetails } from "../services/riot/riot";
-import type { RiotRegionalRoute } from "../services/riot/types";
+import type { RiotPlatformRoute } from "../services/riot/types";
+import { protectedProcedure, router } from "../trpc";
 
 export const userRouter = router({
 	getCurrentUser: protectedProcedure.query(({ ctx }) => {
@@ -14,7 +14,7 @@ export const userRouter = router({
 		});
 
 		const lolAccounts = accounts.filter(
-			(a) => a.gameId === GAMES.LOL && a.region,
+			(a) => a.gameId === GAMES.LOL && a.regionalRoute && a.platformRoute,
 		);
 		const faceitAccounts = accounts.filter(
 			(a) => a.gameId === GAMES.CS2_FACEIT,
@@ -24,7 +24,7 @@ export const userRouter = router({
 			lolAccounts.map(async (account) => {
 				const details = await getLolAccountDetails(
 					account.externalId,
-					account.region as RiotRegionalRoute,
+					account.platformRoute as RiotPlatformRoute,
 				);
 				return { account, details };
 			}),

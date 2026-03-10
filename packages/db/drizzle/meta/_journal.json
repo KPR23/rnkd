@@ -85,6 +85,13 @@
       "when": 1773177887046,
       "tag": "0011_real_ricochet",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1773179071899,
+      "tag": "0012_previous_masque",
+      "breakpoints": true
     }
   ]
 }

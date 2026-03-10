@@ -6,6 +6,7 @@ import { syncLolForAccount } from "../services/riot/lol-sync-runner";
 import {
 	getAccountByRiotId,
 	getLolAccountDetails,
+	getLolActiveRegionByPuuid,
 } from "../services/riot/riot";
 import { protectedProcedure, router } from "../trpc";
 import { RIOT_REGIONAL_ROUTE } from "../services/riot/types";
@@ -70,9 +71,14 @@ export const gameAccountRouter = router({
 				input.region,
 			);
 
-			const details = await getLolAccountDetails(
+			const activeRegion = await getLolActiveRegionByPuuid(
 				riotAccount.puuid,
 				input.region,
+			);
+
+			const details = await getLolAccountDetails(
+				riotAccount.puuid,
+				activeRegion,
 			);
 
 			try {
@@ -86,7 +92,8 @@ export const gameAccountRouter = router({
 						tagLine: riotAccount.tagLine,
 						profileIconId: details.profileIconId,
 						summonerLevel: details.summonerLevel,
-						region: input.region,
+						regionalRoute: input.region,
+						platformRoute: activeRegion,
 						userId: ctx.session.user.id,
 					})
 					.returning();
@@ -115,7 +122,8 @@ export const gameAccountRouter = router({
 						id: crypto.randomUUID(),
 						gameId: GAMES.CS2_FACEIT,
 						externalId: input.externalId,
-						region: null,
+						regionalRoute: null,
+						platformRoute: null,
 						userId: ctx.session.user.id,
 					})
 					.returning();
