@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import type { AddLolAccountInput } from "./add-game-account-fields";
 import type { RiotRegion } from "./riot-regions";
