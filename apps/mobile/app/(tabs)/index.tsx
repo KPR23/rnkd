@@ -3,9 +3,8 @@ import { trpc } from "../../utils/trpc";
 import { authClient } from "../../lib/auth-client";
 
 export default function HomeTab() {
+	const { data: session } = authClient.useSession();
 	const user = trpc.user.getCurrentUser.useQuery();
-
-	const { data: session, isPending } = authClient.useSession();
 
 	if (!session) {
 		const handleLogin = async () => {

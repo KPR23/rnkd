@@ -1,6 +1,6 @@
 import { db, gameAccounts, GAMES, matches, matchParticipants } from "@repo/db";
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { protectedProcedure, router } from "../trpc";
 
 export const riotRouter = router({
@@ -26,7 +26,9 @@ export const riotRouter = router({
 					eq(matches.gameId, GAMES.LOL),
 					eq(matchParticipants.gameAccountId, gameAccount.id),
 				),
-			);
+			)
+			.orderBy(desc(matches.playedAt));
+
 		return matchHistory;
 	}),
 });
