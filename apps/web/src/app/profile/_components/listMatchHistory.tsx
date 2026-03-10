@@ -1,4 +1,5 @@
-import { useSession } from "@/src/lib/auth-client";
+"use client";
+
 import { trpc } from "@/src/trpc/client";
 
 export function ListMatchHistory() {

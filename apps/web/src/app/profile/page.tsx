@@ -1,14 +1,14 @@
-"use client";
-
-import dynamic from "next/dynamic";
+import { auth } from "@/src/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { ListMatchHistory } from "./_components/listMatchHistory";
-import { useSession } from "@/src/lib/auth-client";
 
-function ProfilePageImpl() {
-	const { data: session } = useSession();
-
+export default async function ProfilePage() {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
 	if (!session) {
-		return <div>You must be signed in to view this page.</div>;
+		redirect("/");
 	}
 
 	return (
@@ -19,9 +19,3 @@ function ProfilePageImpl() {
 		</div>
 	);
 }
-
-const ProfilePage = dynamic(() => Promise.resolve(ProfilePageImpl), {
-	ssr: false,
-});
-
-export default ProfilePage;
