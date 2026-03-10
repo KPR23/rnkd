@@ -1,8 +1,8 @@
 "use client";
 
 import { RiotDetailsTester, useAddFaceitAccountForm } from "@repo/forms";
-import { signInWithGithub, useSession } from "../lib/auth-client";
-import { trpc } from "../trpc/client";
+import { authClient, signInWithGithub } from "../../lib/auth-client";
+import { trpc } from "../../trpc/client";
 
 function AddFaceitAccountForm() {
 	const addFaceit = trpc.gameAccount.addFaceitAccount.useMutation();
@@ -61,8 +61,8 @@ function RiotDetailsDemoSection() {
 	return <RiotDetailsTester fetchRiotDetails={fetchRiotDetails} />;
 }
 
-export default function HomeClient() {
-	const { data: session, isPending } = useSession();
+export function HomeAuthed() {
+	const { data: session, isPending } = authClient.useSession();
 	const user = trpc.user.getCurrentUser.useQuery();
 
 	if (isPending) {
@@ -108,3 +108,4 @@ export default function HomeClient() {
 		</div>
 	);
 }
+

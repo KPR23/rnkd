@@ -1,22 +1,12 @@
-import { Slot } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View } from "react-native";
+import { Stack } from "expo-router";
 import { TRPCProvider } from "../utils/provider";
 
-export default function RootLayout() {
+export default function Layout() {
 	return (
 		<TRPCProvider>
-			<View style={styles.container}>
-				<Slot />
-				<StatusBar style="auto" />
-			</View>
+			<Stack>
+				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+			</Stack>
 		</TRPCProvider>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#f7f7f2",
-	},
-});
