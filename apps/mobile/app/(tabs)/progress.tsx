@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet } from "react-native";
 
-export default function ProfileTab() {
+export default function ProgressTab() {
 	return (
 		<View style={styles.container}>
-			<Text>Profile</Text>
+			<Text>Progress</Text>
 		</View>
 	);
 }
