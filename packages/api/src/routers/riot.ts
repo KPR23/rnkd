@@ -1,7 +1,21 @@
-import { db, gameAccounts, GAMES, matches, matchParticipants } from "@repo/db";
+import {
+	db,
+	gameAccounts,
+	GAMES,
+	matches,
+	matchParticipants,
+	RIOT_REGIONAL_ROUTE,
+} from "@repo/db";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { protectedProcedure, router } from "../trpc";
+import {
+	getLolAccountDetails,
+	getLolActiveRegionByPuuid,
+} from "../services/riot/riot";
+import z from "zod";
+
+const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 
 export const riotRouter = router({
 	getMatchHistory: protectedProcedure.query(async ({ ctx }) => {
@@ -31,4 +45,18 @@ export const riotRouter = router({
 
 		return matchHistory;
 	}),
+	getLolAccountDetails: protectedProcedure
+		.input(
+			z.object({
+				puuid: z.string(),
+				region: riotRegionalRouteSchema,
+			}),
+		)
+		.query(async ({ input }) => {
+			const platform = await getLolActiveRegionByPuuid(
+				input.puuid,
+				input.region,
+			);
+			return getLolAccountDetails(input.puuid, platform);
+		}),
 });

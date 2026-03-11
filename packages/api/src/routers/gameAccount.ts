@@ -1,13 +1,23 @@
-import { db, gameAccounts, GAMES } from "@repo/db";
+import {
+	db,
+	gameAccounts,
+	GAMES,
+	RIOT_REGIONAL_ROUTE,
+	RiotPlatformRoute,
+	RiotRegionalRoute,
+} from "@repo/db";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
 import { syncLolForAccount } from "../services/riot/lol-sync-runner";
-import { getAccountByRiotId } from "../services/riot/riot";
-import { RIOT_REGIONS } from "../services/riot/types";
+import {
+	getAccountByRiotId,
+	getLolAccountDetails,
+	getLolActiveRegionByPuuid,
+} from "../services/riot/riot";
 import { protectedProcedure, router } from "../trpc";
-
-const riotRegionSchema = z.enum(RIOT_REGIONS);
+import { isValidPlatformRoute } from "../services/riot/helper";
+const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 
 const isGameAccountUniqueViolation = (error: unknown) => {
 	if (!error || typeof error !== "object") return false;
@@ -57,14 +67,42 @@ export const gameAccountRouter = router({
 			z.object({
 				gameName: z.string().min(3, "Game name min. 3 characters").max(16),
 				tagLine: z.string().min(3, "Tag line min. 3 characters").max(5),
-				region: riotRegionSchema,
+				region: riotRegionalRouteSchema,
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const puuid = await getAccountByRiotId(
+			const riotAccount = await getAccountByRiotId(
 				input.gameName,
 				input.tagLine,
 				input.region,
+			);
+
+			const existingAccount = await db.query.gameAccounts.findFirst({
+				where: and(
+					eq(gameAccounts.gameId, GAMES.LOL),
+					eq(gameAccounts.externalId, riotAccount.puuid),
+				),
+			});
+
+			if (existingAccount) {
+				throw new TRPCError({ code: "CONFLICT" });
+			}
+
+			const activeRegion = await getLolActiveRegionByPuuid(
+				riotAccount.puuid,
+				input.region,
+			);
+
+			if (!isValidPlatformRoute(activeRegion)) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: `Unsupported platform region: ${activeRegion}`,
+				});
+			}
+
+			const details = await getLolAccountDetails(
+				riotAccount.puuid,
+				activeRegion,
 			);
 
 			try {
@@ -72,10 +110,16 @@ export const gameAccountRouter = router({
 					.insert(gameAccounts)
 					.values({
 						id: crypto.randomUUID(),
-						gameId: GAMES.LOL,
-						externalId: puuid,
-						region: input.region,
 						userId: ctx.session.user.id,
+						gameId: GAMES.LOL,
+						externalId: riotAccount.puuid,
+						gameName: riotAccount.gameName,
+						tagLine: riotAccount.tagLine,
+						profileIconId: details.profileIconId,
+						summonerLevel: details.summonerLevel,
+						regionalRoute: input.region as RiotRegionalRoute,
+						platformRoute: activeRegion as RiotPlatformRoute,
+						lastSyncedAt: new Date(),
 					})
 					.returning();
 
@@ -103,7 +147,8 @@ export const gameAccountRouter = router({
 						id: crypto.randomUUID(),
 						gameId: GAMES.CS2_FACEIT,
 						externalId: input.externalId,
-						region: null,
+						regionalRoute: null,
+						platformRoute: null,
 						userId: ctx.session.user.id,
 					})
 					.returning();
