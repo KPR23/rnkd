@@ -16,6 +16,7 @@ import {
 	getLolActiveRegionByPuuid,
 } from "../services/riot/riot";
 import { protectedProcedure, router } from "../trpc";
+import { isValidPlatformRoute } from "../services/riot/helper";
 const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 
 const isGameAccountUniqueViolation = (error: unknown) => {
@@ -91,6 +92,13 @@ export const gameAccountRouter = router({
 				riotAccount.puuid,
 				input.region,
 			);
+
+			if (!isValidPlatformRoute(activeRegion)) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: `Unsupported platform region: ${activeRegion}`,
+				});
+			}
 
 			const details = await getLolAccountDetails(
 				riotAccount.puuid,
