@@ -5,6 +5,7 @@ import {
 	RIOT_PLATFORM_ROUTE,
 	RIOT_REGIONAL_ROUTE,
 	RiotPlatformRoute,
+	RiotRegionalRoute,
 } from "@repo/db";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
@@ -108,7 +109,7 @@ export const gameAccountRouter = router({
 						tagLine: riotAccount.tagLine,
 						profileIconId: details.profileIconId,
 						summonerLevel: details.summonerLevel,
-						regionalRoute: input.region,
+						regionalRoute: input.region as RiotRegionalRoute,
 						platformRoute: activeRegion as RiotPlatformRoute,
 						userId: ctx.session.user.id,
 					})
