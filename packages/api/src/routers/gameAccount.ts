@@ -2,7 +2,6 @@ import {
 	db,
 	gameAccounts,
 	GAMES,
-	RIOT_PLATFORM_ROUTE,
 	RIOT_REGIONAL_ROUTE,
 	RiotPlatformRoute,
 	RiotRegionalRoute,
@@ -103,6 +102,7 @@ export const gameAccountRouter = router({
 					.insert(gameAccounts)
 					.values({
 						id: crypto.randomUUID(),
+						userId: ctx.session.user.id,
 						gameId: GAMES.LOL,
 						externalId: riotAccount.puuid,
 						gameName: riotAccount.gameName,
@@ -111,7 +111,7 @@ export const gameAccountRouter = router({
 						summonerLevel: details.summonerLevel,
 						regionalRoute: input.region as RiotRegionalRoute,
 						platformRoute: activeRegion as RiotPlatformRoute,
-						userId: ctx.session.user.id,
+						lastSyncedAt: new Date(),
 					})
 					.returning();
 
