@@ -23,7 +23,8 @@
       "esbuild": "0.25.12",
       "hono": "4.12.5",
       "lodash": "4.17.23",
-      "typescript": "5.9.3"
+      "typescript": "5.9.3",
+      "lightningcss": "1.30.1"
     }
   }
 }
