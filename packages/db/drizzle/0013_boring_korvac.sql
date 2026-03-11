@@ -1,0 +1,4 @@
+CREATE TYPE "public"."platform_route" AS ENUM('BR1', 'EUN1', 'EUW1', 'JP1', 'KR', 'LA1', 'LA2', 'ME1', 'NA1', 'OC1', 'RU', 'SG2', 'TR1', 'TW2', 'VN2');--> statement-breakpoint
+CREATE TYPE "public"."regional_route" AS ENUM('americas', 'europe', 'asia', 'sea');--> statement-breakpoint
+ALTER TABLE "game_accounts" ALTER COLUMN "regional_route" SET DATA TYPE "public"."regional_route" USING "regional_route"::"public"."regional_route";--> statement-breakpoint
+ALTER TABLE "game_accounts" ALTER COLUMN "platform_route" SET DATA TYPE "public"."platform_route" USING "platform_route"::"public"."platform_route";

@@ -1,4 +1,11 @@
-import { db, gameAccounts, GAMES } from "@repo/db";
+import {
+	db,
+	gameAccounts,
+	GAMES,
+	RIOT_PLATFORM_ROUTE,
+	RIOT_REGIONAL_ROUTE,
+	RiotPlatformRoute,
+} from "@repo/db";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
@@ -9,8 +16,6 @@ import {
 	getLolActiveRegionByPuuid,
 } from "../services/riot/riot";
 import { protectedProcedure, router } from "../trpc";
-import { RIOT_REGIONAL_ROUTE } from "../services/riot/types";
-
 const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 
 const isGameAccountUniqueViolation = (error: unknown) => {
@@ -104,7 +109,7 @@ export const gameAccountRouter = router({
 						profileIconId: details.profileIconId,
 						summonerLevel: details.summonerLevel,
 						regionalRoute: input.region,
-						platformRoute: activeRegion,
+						platformRoute: activeRegion as RiotPlatformRoute,
 						userId: ctx.session.user.id,
 					})
 					.returning();

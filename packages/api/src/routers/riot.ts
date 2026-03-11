@@ -1,4 +1,11 @@
-import { db, gameAccounts, GAMES, matches, matchParticipants } from "@repo/db";
+import {
+	db,
+	gameAccounts,
+	GAMES,
+	matches,
+	matchParticipants,
+	RIOT_REGIONAL_ROUTE,
+} from "@repo/db";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { protectedProcedure, router } from "../trpc";
@@ -7,7 +14,6 @@ import {
 	getLolActiveRegionByPuuid,
 } from "../services/riot/riot";
 import z from "zod";
-import { RIOT_REGIONAL_ROUTE } from "../services/riot/types";
 
 const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 

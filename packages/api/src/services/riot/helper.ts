@@ -2,7 +2,7 @@ import {
 	RIOT_REGIONAL_ROUTE,
 	RiotPlatformRoute,
 	RiotRegionalRoute,
-} from "./types";
+} from "@repo/db";
 
 export function getRiotApiUrl(region: RiotRegionalRoute) {
 	return `https://${region}.api.riotgames.com`;

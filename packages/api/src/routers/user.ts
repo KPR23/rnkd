@@ -4,6 +4,24 @@ import { getLolAccountDetails } from "../services/riot/riot";
 import type { RiotPlatformRoute } from "../services/riot/types";
 import { protectedProcedure, router } from "../trpc";
 
+function refreshLolProfileInBackground(
+	accountId: string,
+	externalId: string,
+	platformRoute: RiotPlatformRoute,
+) {
+	getLolAccountDetails(externalId, platformRoute)
+		.then((details) =>
+			db
+				.update(gameAccounts)
+				.set({
+					profileIconId: details.profileIconId,
+					summonerLevel: details.summonerLevel,
+				})
+				.where(eq(gameAccounts.id, accountId)),
+		)
+		.catch(() => {});
+}
+
 export const userRouter = router({
 	getCurrentUser: protectedProcedure.query(({ ctx }) => {
 		return ctx.session.user;
@@ -20,22 +38,18 @@ export const userRouter = router({
 			(a) => a.gameId === GAMES.CS2_FACEIT,
 		);
 
-		const lolWithDetails = await Promise.all(
-			lolAccounts.map(async (account) => {
-				const details = await getLolAccountDetails(
-					account.externalId,
-					account.platformRoute as RiotPlatformRoute,
-				);
-				return {
-					...account,
-					profileIconId: details.profileIconId,
-					summonerLevel: details.summonerLevel,
-				};
-			}),
-		);
+		const lol = lolAccounts;
+
+		for (const a of lolAccounts) {
+			refreshLolProfileInBackground(
+				a.id,
+				a.externalId,
+				a.platformRoute as RiotPlatformRoute,
+			);
+		}
 
 		return {
-			lol: lolWithDetails,
+			lol,
 			faceit: faceitAccounts.map((account) => ({ account })),
 		};
 	}),
