@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { trpc } from "../../utils/trpc";
 import { authClient } from "../../lib/auth-client";
 
@@ -13,15 +13,15 @@ export default function ProfileTab() {
 
 	if (!session) {
 		return (
-			<View style={styles.container}>
+			<View className="flex-1 items-center justify-center bg-background">
 				<Text>Zaloguj się, aby zobaczyć profil</Text>
 			</View>
 		);
 	}
 
 	return (
-		<View style={styles.container}>
-			<Text>
+		<View className="flex-1 items-center justify-center bg-background">
+			<Text className="text-2xl font-semibold text-text">
 				LOL:{" "}
 				{gameAccountsData?.lol
 					.map(
@@ -32,11 +32,3 @@ export default function ProfileTab() {
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-});
