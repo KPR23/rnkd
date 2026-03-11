@@ -26,7 +26,11 @@ export const userRouter = router({
 					account.externalId,
 					account.platformRoute as RiotPlatformRoute,
 				);
-				return { account, details };
+				return {
+					...account,
+					profileIconId: details.profileIconId,
+					summonerLevel: details.summonerLevel,
+				};
 			}),
 		);
 

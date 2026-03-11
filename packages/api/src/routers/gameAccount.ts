@@ -71,6 +71,17 @@ export const gameAccountRouter = router({
 				input.region,
 			);
 
+			const existingAccount = await db.query.gameAccounts.findFirst({
+				where: and(
+					eq(gameAccounts.gameId, GAMES.LOL),
+					eq(gameAccounts.externalId, riotAccount.puuid),
+				),
+			});
+
+			if (existingAccount) {
+				throw new TRPCError({ code: "CONFLICT" });
+			}
+
 			const activeRegion = await getLolActiveRegionByPuuid(
 				riotAccount.puuid,
 				input.region,

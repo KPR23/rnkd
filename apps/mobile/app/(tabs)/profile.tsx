@@ -22,8 +22,12 @@ export default function ProfileTab() {
 	return (
 		<View style={styles.container}>
 			<Text>
-				LOL:
-				{gameAccountsData?.lol.map((lol) => lol.account.gameName).join(", ")}
+				LOL:{" "}
+				{gameAccountsData?.lol
+					.map(
+						(lol) => `${lol.gameName} #${lol.tagLine} (${lol.platformRoute})`,
+					)
+					.join(", ")}
 			</Text>
 		</View>
 	);
