@@ -3,6 +3,7 @@ import { fetchWithRetry, getPlatformApiUrl, getRiotApiUrl } from "./helper";
 import {
 	MatchResponse,
 	QueueType,
+	RIOT_PLATFORM_ROUTE,
 	RiotPlatformRoute,
 	RiotRegionalRoute,
 } from "./types";
@@ -47,7 +48,7 @@ export async function getAccountByRiotId(
 export async function getLolActiveRegionByPuuid(
 	puuid: string,
 	region: RiotRegionalRoute,
-) {
+): Promise<RiotPlatformRoute> {
 	const baseUrl = getRiotApiUrl(region);
 	const url = `${baseUrl}/riot/account/v1/region/by-game/lol/by-puuid/${encodeURIComponent(puuid)}`;
 
@@ -69,6 +70,11 @@ export async function getLolActiveRegionByPuuid(
 	}
 
 	const data = (await response.json()) as { region: string };
+
+	if (!(RIOT_PLATFORM_ROUTE as readonly string[]).includes(data.region)) {
+		throw new Error(`Unknown platform route from Riot API: ${data.region}`);
+	}
+
 	return data.region as RiotPlatformRoute;
 }
 
