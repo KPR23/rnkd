@@ -4,6 +4,8 @@ import { getLolAccountDetails } from "../services/riot/riot";
 import type { RiotPlatformRoute } from "../services/riot/types";
 import { protectedProcedure, router } from "../trpc";
 
+const LOL_PROFILE_REFRESH_TTL_MS = 1000 * 60 * 30;
+
 function refreshLolProfileInBackground(
 	accountId: string,
 	externalId: string,
@@ -16,6 +18,7 @@ function refreshLolProfileInBackground(
 				.set({
 					profileIconId: details.profileIconId,
 					summonerLevel: details.summonerLevel,
+					lastSyncedAt: new Date(),
 				})
 				.where(eq(gameAccounts.id, accountId));
 		})
@@ -42,6 +45,11 @@ export const userRouter = router({
 		// );
 
 		for (const a of lolAccounts) {
+			const shouldRefresh =
+				!a.lastSyncedAt ||
+				Date.now() - a.lastSyncedAt.getTime() > LOL_PROFILE_REFRESH_TTL_MS;
+			if (!shouldRefresh) continue;
+
 			refreshLolProfileInBackground(
 				a.id,
 				a.externalId,
