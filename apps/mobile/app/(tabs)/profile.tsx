@@ -13,15 +13,15 @@ export default function ProfileTab() {
 
 	if (!session) {
 		return (
-			<View className="flex-1 items-center justify-center bg-[#131013]">
+			<View className="flex-1 items-center justify-center bg-background">
 				<Text>Zaloguj się, aby zobaczyć profil</Text>
 			</View>
 		);
 	}
 
 	return (
-		<View className="flex-1 items-center justify-center bg-[#131013]">
-			<Text className="text-2xl font-semibold text-white">
+		<View className="flex-1 items-center justify-center bg-background">
+			<Text className="text-2xl font-semibold text-text">
 				LOL:{" "}
 				{gameAccountsData?.lol
 					.map(
