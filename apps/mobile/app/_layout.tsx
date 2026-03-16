@@ -10,7 +10,10 @@ import {
 	Inter_600SemiBold,
 	Inter_700Bold,
 } from "@expo-google-fonts/inter";
-import { JetBrainsMono_400Regular } from "@expo-google-fonts/jetbrains-mono";
+import {
+	JetBrainsMono_400Regular,
+	JetBrainsMono_700Bold,
+} from "@expo-google-fonts/jetbrains-mono";
 import "../globals.css";
 
 SplashScreen.preventAutoHideAsync();
@@ -22,6 +25,7 @@ export default function Layout() {
 		Inter_600SemiBold,
 		Inter_700Bold,
 		JetBrainsMono_400Regular,
+		JetBrainsMono_700Bold,
 	});
 
 	const onLayoutRootView = useCallback(async () => {
