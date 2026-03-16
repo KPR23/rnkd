@@ -1,11 +1,11 @@
 import { cn } from "@/src/lib/utils";
 import type { Metadata } from "next";
-import { Geist, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { TRPCProvider } from "../trpc/provider";
 import "./globals.css";
 import { Toaster } from "@repo/ui/sonner";
 
-const jetbrainsMono = JetBrains_Mono({
+const geistMono = Geist_Mono({
 	subsets: ["latin"],
 	variable: "--font-mono",
 });
@@ -28,7 +28,7 @@ export default function RootLayout({
 			suppressHydrationWarning
 			className={cn(
 				"font-sans dark",
-				jetbrainsMono.variable,
+				geistMono.variable,
 				"font-sans",
 				geist.variable,
 			)}

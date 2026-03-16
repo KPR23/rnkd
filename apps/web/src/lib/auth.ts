@@ -26,6 +26,13 @@ export const auth = betterAuth({
 				: [env.BETTER_AUTH_URL, "mobile://"],
 		),
 	),
+	user: {
+		additionalFields: {
+			tag: {
+				type: "string",
+			},
+		},
+	},
 	plugins: [expo()],
 	socialProviders,
 });

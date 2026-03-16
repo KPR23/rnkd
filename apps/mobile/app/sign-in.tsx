@@ -16,7 +16,7 @@ export default function SocialSignIn() {
 				);
 				return;
 			}
-			router.replace("/");
+			router.replace("mobile://");
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Unknown error";
 			console.error("LOGIN EXCEPTION", error);

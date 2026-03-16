@@ -4,16 +4,17 @@ import { authClient } from "../../lib/auth-client";
 
 export default function HomeTab() {
 	const { data: session } = authClient.useSession();
-	const user = trpc.user.getCurrentUser.useQuery();
+	const user = trpc.user.getCurrentUser.useQuery(undefined, {
+		enabled: !!session,
+	});
 
 	if (!session) {
 		const handleLogin = async () => {
 			try {
 				const result = await authClient.signIn.social({
 					provider: "github",
-					callbackURL: "mobile://",
+					callbackURL: "/",
 				});
-				console.log("LOGIN RESULT", JSON.stringify(result));
 
 				if (result.error) {
 					Alert.alert(
@@ -48,5 +49,3 @@ export default function HomeTab() {
 		</View>
 	);
 }
-
-const styles = {};

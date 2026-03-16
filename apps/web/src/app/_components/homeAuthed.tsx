@@ -63,7 +63,9 @@ function RiotDetailsDemoSection() {
 
 export function HomeAuthed() {
 	const { data: session, isPending } = authClient.useSession();
-	const user = trpc.user.getCurrentUser.useQuery();
+	const user = trpc.user.getCurrentUser.useQuery(undefined, {
+		enabled: !!session,
+	});
 
 	if (isPending) {
 		return (
@@ -108,4 +110,3 @@ export function HomeAuthed() {
 		</div>
 	);
 }
-
