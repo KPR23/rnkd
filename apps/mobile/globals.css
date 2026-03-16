@@ -5,3 +5,29 @@
 @import "nativewind/theme";
 
 @import "../../packages/ui/colors.css";
+
+@theme inline {
+	--font-sans: "Inter_400Regular";
+	--font-mono: "JetBrainsMono_400Regular";
+	--font-sans-medium: "Inter_500Medium";
+	--font-sans-semibold: "Inter_600SemiBold";
+	--font-sans-bold: "Inter_700Bold";
+}
+
+@layer utilities {
+	.font-medium {
+		font-family: var(--font-sans-medium);
+	}
+	.font-semibold {
+		font-family: var(--font-sans-semibold);
+	}
+	.font-bold {
+		font-family: var(--font-sans-bold);
+	}
+}
+
+@layer base {
+	* {
+		font-family: var(--font-sans);
+	}
+}

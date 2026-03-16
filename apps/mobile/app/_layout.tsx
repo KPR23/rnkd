@@ -1,9 +1,43 @@
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useCallback, useEffect } from "react";
+import { StatusBar } from "react-native";
 import { TRPCProvider } from "../utils/provider";
+import {
+	Inter_400Regular,
+	Inter_500Medium,
+	Inter_600SemiBold,
+	Inter_700Bold,
+} from "@expo-google-fonts/inter";
+import { JetBrainsMono_400Regular } from "@expo-google-fonts/jetbrains-mono";
 import "../globals.css";
-import { Platform, StatusBar } from "react-native";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
+	const [fontsLoaded, fontError] = useFonts({
+		Inter_400Regular,
+		Inter_500Medium,
+		Inter_600SemiBold,
+		Inter_700Bold,
+		JetBrainsMono_400Regular,
+	});
+
+	const onLayoutRootView = useCallback(async () => {
+		if (fontsLoaded || fontError) {
+			await SplashScreen.hideAsync();
+		}
+	}, [fontsLoaded, fontError]);
+
+	useEffect(() => {
+		onLayoutRootView();
+	}, [onLayoutRootView]);
+
+	if (!fontsLoaded && !fontError) {
+		return null;
+	}
+
 	return (
 		<TRPCProvider>
 			<StatusBar backgroundColor="#131013" />

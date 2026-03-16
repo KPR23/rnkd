@@ -1,4 +1,5 @@
-import { Text, Touchable, TouchableHighlight, View } from "react-native";
+import { Touchable, TouchableHighlight, View } from "react-native";
+import Text from "../components/Text";
 import { authClient } from "../../lib/auth-client";
 import Screen from "../components/Screen";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -23,8 +24,8 @@ export default function ProfileTab() {
 	return (
 		<Screen>
 			<View className="flex-row items-start mt-4 justify-between">
-				<Text className="will-change-variable text-4xl font-medium text-text">
-					{session.user.tag}
+				<Text className="will-change-variable text-[24px] font-bold text-text">
+					Profile
 				</Text>
 				<TouchableHighlight onPress={() => router.push("/settings")}>
 					<MaterialCommunityIcons name="cog" size={28} color={"#f5f2f5"} />

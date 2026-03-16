@@ -1,4 +1,5 @@
-import { View, Text, Alert, Button } from "react-native";
+import { View, Alert, Button } from "react-native";
+import Text from "../components/Text";
 import { trpc } from "../../utils/trpc";
 import { authClient } from "../../lib/auth-client";
 
