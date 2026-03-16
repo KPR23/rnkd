@@ -12,6 +12,7 @@ import {
 } from "@expo-google-fonts/inter";
 import {
 	JetBrainsMono_400Regular,
+	JetBrainsMono_600SemiBold,
 	JetBrainsMono_700Bold,
 } from "@expo-google-fonts/jetbrains-mono";
 import "../globals.css";
@@ -25,6 +26,7 @@ export default function Layout() {
 		Inter_600SemiBold,
 		Inter_700Bold,
 		JetBrainsMono_400Regular,
+		JetBrainsMono_600SemiBold,
 		JetBrainsMono_700Bold,
 	});
 

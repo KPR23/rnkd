@@ -1,9 +1,11 @@
-import { Touchable, TouchableHighlight, View } from "react-native";
-import Text from "../components/Text";
+import { router } from "expo-router";
+import { ExportIcon, GearSixIcon } from "phosphor-react-native";
+import { Image, TouchableHighlight, View } from "react-native";
 import { authClient } from "../../lib/auth-client";
 import Screen from "../components/Screen";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { router } from "expo-router";
+import ScreenTitle from "../components/ScreenTitle";
+import Text from "../components/Text";
+import Button from "../components/Button";
 
 export default function ProfileTab() {
 	const { data: session } = authClient.useSession();
@@ -11,10 +13,14 @@ export default function ProfileTab() {
 	if (!session) {
 		return (
 			<Screen>
-				<Text className="will-change-variable text-3xl font-semibold text-text">
-					PROFILE
-				</Text>
-				<Text className="will-change-variable mt-2 text-base text-text text-center">
+				<Text className="text-2xl font-bold text-white">PROFILE</Text>
+				<TouchableHighlight
+					onPress={() => router.push("/settings")}
+					className="p-2 border w-9 h-9 items-center justify-center border-[#29262A]"
+				>
+					<ExportIcon size={20} color={"white"} />
+				</TouchableHighlight>
+				<Text className="mt-2 text-base text-white text-center">
 					Zaloguj się, aby zobaczyć profil
 				</Text>
 			</Screen>
@@ -23,13 +29,50 @@ export default function ProfileTab() {
 
 	return (
 		<Screen>
-			<View className="flex-row items-start mt-4 justify-between">
-				<Text className="will-change-variable text-[24px] font-bold text-text">
-					Profile
-				</Text>
-				<TouchableHighlight onPress={() => router.push("/settings")}>
-					<MaterialCommunityIcons name="cog" size={28} color={"#f5f2f5"} />
-				</TouchableHighlight>
+			<ScreenTitle
+				title="Profile"
+				actions={[
+					{
+						icon: <ExportIcon size={22} color="white" />,
+						onPress: () => void 0,
+						accessibilityLabel: "Share",
+					},
+					{
+						icon: <GearSixIcon size={22} color="white" />,
+						onPress: () => void 0,
+						accessibilityLabel: "Settings",
+					},
+				]}
+			/>
+
+			<View className="border-dark flex-col gap-5 items-center justify-center border mt-4 p-5">
+				<View className="flex items-center gap-2">
+					<Image
+						source={{ uri: session.user.image ?? "" }}
+						className="w-full h-full rounded-full"
+						resizeMode="cover"
+						style={{ width: 64, height: 64 }}
+					/>
+					<View className="flex flex-col items-center gap-1 text-center">
+						<Text className="text-2xl font-bold text-text">
+							{session.user.name}
+						</Text>
+						<Text
+							className="text-primary"
+							style={{ fontFamily: "JetBrainsMono_700Bold" }}
+						>
+							@{session.user.tag}
+						</Text>
+					</View>
+				</View>
+				<View className="w-full flex-row gap-3">
+					<Button
+						variant="primary"
+						actionText="Add friend"
+						className="flex-1"
+					/>
+					<Button variant="secondary" actionText="Message" className="flex-1" />
+				</View>
 			</View>
 		</Screen>
 	);
