@@ -11,7 +11,7 @@ export const authClient = createAuthClient({
 		inferAdditionalFields<typeof auth>(),
 		expoClient({
 			scheme: "rnkd",
-			storagePrefix: "mobile",
+			storagePrefix: "rnkd",
 			storage: SecureStore,
 			disableCache: true,
 		}),

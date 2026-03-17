@@ -26,11 +26,10 @@ export const auth = betterAuth({
 						env.BETTER_AUTH_URL,
 						"http://localhost:3000",
 						"exp://",
-						"mobile://",
 						"rnkd://",
 						"com.rnkd.mobile://",
 					]
-				: [env.BETTER_AUTH_URL, "mobile://", "rnkd://", "com.rnkd.mobile://"],
+				: [env.BETTER_AUTH_URL, "rnkd://", "com.rnkd.mobile://"],
 		),
 	),
 	user: {
