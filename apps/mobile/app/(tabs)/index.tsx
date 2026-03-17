@@ -32,7 +32,7 @@ export default function HomeTab() {
 		};
 
 		return (
-			<View className="flex-1 items-center justify-center bg-[#131013] px-6">
+			<View className="flex-1 items-center justify-center bg-background px-6">
 				<Text className="mb-4 text-center text-base text-slate-100">
 					You must be signed in to view this page
 				</Text>
@@ -42,7 +42,7 @@ export default function HomeTab() {
 	}
 
 	return (
-		<View className="flex-1 items-center justify-center bg-[#131013] px-6">
+		<View className="flex-1 items-center justify-center bg-background px-6">
 			<Text className="mb-2 text-2xl font-semibold text-white">Rnkd</Text>
 			<Text className="text-center text-slate-200">
 				{JSON.stringify(user.data)}
