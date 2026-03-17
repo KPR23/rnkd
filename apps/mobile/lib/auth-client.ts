@@ -3,7 +3,7 @@ import { inferAdditionalFields } from "better-auth/client/plugins";
 import { expoClient } from "@better-auth/expo/client";
 import * as SecureStore from "expo-secure-store";
 import { mobileServerUrl } from "@/lib/server-url";
-import type { auth } from "@web/src/lib/auth";
+import type { auth } from "@repo/auth-types";
 
 export const authClient = createAuthClient({
 	baseURL: mobileServerUrl,

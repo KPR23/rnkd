@@ -119,6 +119,9 @@ importers:
       '@repo/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@repo/auth-types':
+        specifier: workspace:*
+        version: link:../../packages/auth-types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config

@@ -6,7 +6,7 @@
 		"orientation": "portrait",
 		"icon": "./assets/rnkd.png",
 		"userInterfaceStyle": "light",
-		"scheme": "mobile",
+		"scheme": "rnkd",
 		"splash": {
 			"image": "./assets/splash-icon.png",
 			"resizeMode": "contain",
@@ -14,7 +14,7 @@
 		},
 		"ios": {
 			"supportsTablet": true,
-			"bundleIdentifier": "com.anonymous.mobile",
+			"bundleIdentifier": "com.rnkd.app",
 			"infoPlist": {
 				"ITSAppUsesNonExemptEncryption": false
 			}
@@ -27,7 +27,7 @@
 				"monochromeImage": "./assets/android-icon-monochrome.png"
 			},
 			"predictiveBackGestureEnabled": false,
-			"package": "com.anonymous.mobile"
+			"package": "com.rnkd.app"
 		},
 		"web": {
 			"favicon": "./assets/favicon.png"

@@ -57,12 +57,14 @@ export default function ProfileTab() {
 						<Text className="text-2xl font-bold text-text">
 							{session.user.name}
 						</Text>
-						<Text
-							className="text-primary"
-							style={{ fontFamily: "JetBrainsMono_700Bold" }}
-						>
-							@{session.user.tag}
-						</Text>
+						{session.user.tag && (
+							<Text
+								className="text-primary"
+								style={{ fontFamily: "JetBrainsMono_700Bold" }}
+							>
+								@{session.user.tag}
+							</Text>
+						)}
 					</View>
 				</View>
 				<View className="w-full flex-row gap-3">
@@ -70,8 +72,14 @@ export default function ProfileTab() {
 						variant="primary"
 						actionText="Add friend"
 						className="flex-1"
+						onPress={() => void 0}
 					/>
-					<Button variant="secondary" actionText="Message" className="flex-1" />
+					<Button
+						variant="secondary"
+						actionText="Message"
+						className="flex-1"
+						onPress={() => void 0}
+					/>
 				</View>
 			</View>
 		</Screen>
