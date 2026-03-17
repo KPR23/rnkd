@@ -1,14 +1,87 @@
-import { View, Text } from "react-native";
-import { GameType } from "./Profile/ProfileContent";
+import type { GameAccount } from "@repo/types";
+import { useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import Frame from "./Frame";
+import ProfileGameStatCard from "./ProfileGameStatCard";
 
 interface TabsProps {
-	games: GameType[];
+	gameAccounts: GameAccount[];
 }
 
-export default function Tabs({ games }: TabsProps) {
+function getTabLabel(gameId: string) {
+	switch (gameId) {
+		case "lol":
+			return "LOL";
+		case "cs2_faceit":
+			return "CS2";
+		default:
+			return gameId.replaceAll("_", " ").toUpperCase();
+	}
+}
+export default function Tabs({ gameAccounts }: TabsProps) {
+	const [activeTab, setActiveTab] = useState<string | undefined>(
+		gameAccounts[0]?.gameId ?? undefined,
+	);
+
+	if (gameAccounts.length === 0) {
+		return <Text>No games found</Text>;
+	}
+
+	const useHorizontalScroll = gameAccounts.length > 3;
+
+	const tabRow = (
+		<View className="flex-row w-full">
+			{gameAccounts.map((gameAccount, idx) => {
+				const isActive = activeTab === gameAccount.gameId;
+				const isLast = idx === gameAccounts.length - 1;
+				return (
+					<Pressable
+						key={gameAccount.id}
+						onPress={() => setActiveTab(gameAccount.gameId)}
+						className={[
+							"relative h-9 items-center justify-center px-6",
+							useHorizontalScroll ? "min-w-30" : "flex-1",
+							!isLast ? "border-r border-dark" : "",
+						].join(" ")}
+						accessibilityRole="tab"
+						accessibilityState={{ selected: isActive }}
+					>
+						<Text
+							className={[
+								"uppercase text-xs font-mono-semibold",
+								isActive ? "text-white" : "text-text-secondary",
+							].join(" ")}
+						>
+							{getTabLabel(gameAccount.gameId)}
+						</Text>
+
+						{isActive && (
+							<View className="absolute bottom-0 left-0 right-0 h-1 bg-primary" />
+						)}
+					</Pressable>
+				);
+			})}
+		</View>
+	);
+
 	return (
-		<View>
-			<Text>Tabs</Text>
+		<View className="mt-8 w-full">
+			<View className="w-full overflow-hidden border border-dark bg-background">
+				{useHorizontalScroll ? (
+					<ScrollView
+						horizontal
+						showsHorizontalScrollIndicator={false}
+						contentContainerStyle={{ flexGrow: 1 }}
+					>
+						{tabRow}
+					</ScrollView>
+				) : (
+					tabRow
+				)}
+			</View>
+			<View className="w-full text-text border-r border-l border-b border-dark flex-col gap-5 items-center justify-center p-4">
+				<ProfileGameStatCard />
+			</View>
 		</View>
 	);
 }

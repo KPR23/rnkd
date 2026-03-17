@@ -115,13 +115,14 @@ export type RiotPlatformRoute = (typeof RIOT_PLATFORM_ROUTE)[number];
 export const regionalRouteEnum = pgEnum("regional_route", RIOT_REGIONAL_ROUTE);
 export const platformRouteEnum = pgEnum("platform_route", RIOT_PLATFORM_ROUTE);
 
-export const GAME_IDS = ["lol", "cs2_faceit"] as const;
-export type GameId = (typeof GAME_IDS)[number];
-
 export const GAMES = {
 	LOL: "lol",
 	CS2_FACEIT: "cs2_faceit",
-} as const satisfies Record<string, GameId>;
+} as const;
+
+export type GameId = (typeof GAMES)[keyof typeof GAMES];
+
+export const GAME_IDS = Object.values(GAMES) as [GameId, ...GameId[]];
 
 export const games = pgTable("games", {
 	id: text("id").primaryKey(),

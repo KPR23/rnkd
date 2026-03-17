@@ -1,6 +1,7 @@
 import {
 	db,
 	gameAccounts,
+	GameId,
 	GAMES,
 	RIOT_REGIONAL_ROUTE,
 	RiotPlatformRoute,
@@ -37,7 +38,61 @@ const isGameAccountUniqueViolation = (error: unknown) => {
 	return false;
 };
 
+const LOL_PROFILE_REFRESH_TTL_MS = 1000 * 60 * 30;
+
+function refreshLolProfileInBackground(
+	accountId: string,
+	externalId: string,
+	platformRoute: RiotPlatformRoute,
+) {
+	getLolAccountDetails(externalId, platformRoute)
+		.then(async (details) => {
+			await db
+				.update(gameAccounts)
+				.set({
+					profileIconId: details.profileIconId,
+					summonerLevel: details.summonerLevel,
+					lastSyncedAt: new Date(),
+				})
+				.where(eq(gameAccounts.id, accountId));
+		})
+		.catch((error) => {
+			console.error(error);
+		});
+}
+
 export const gameAccountRouter = router({
+	getGameAccounts: protectedProcedure.query(async ({ ctx }) => {
+		const accounts = await db.query.gameAccounts.findMany({
+			where: eq(gameAccounts.userId, ctx.session.user.id),
+		});
+
+		const lolAccounts = accounts.filter(
+			(a) => a.gameId === GAMES.LOL && a.regionalRoute && a.platformRoute,
+		);
+
+		const faceitAccounts = accounts.filter(
+			(a) => a.gameId === GAMES.CS2_FACEIT,
+		);
+
+		for (const a of lolAccounts) {
+			const shouldRefresh =
+				!a.lastSyncedAt ||
+				Date.now() - a.lastSyncedAt.getTime() > LOL_PROFILE_REFRESH_TTL_MS;
+			if (!shouldRefresh) continue;
+
+			refreshLolProfileInBackground(
+				a.id,
+				a.externalId,
+				a.platformRoute as RiotPlatformRoute,
+			);
+		}
+
+		return {
+			lol: lolAccounts,
+			faceit: faceitAccounts,
+		};
+	}),
 	getLolDetailsDemo: protectedProcedure
 		.input(
 			z.object({
@@ -132,7 +187,6 @@ export const gameAccountRouter = router({
 				throw error;
 			}
 		}),
-
 	addFaceitAccount: protectedProcedure
 		.input(
 			z.object({

@@ -9,6 +9,7 @@
 @theme inline {
 	--font-sans: "Inter_400Regular";
 	--font-mono: "JetBrainsMono_400Regular";
+	--font-mono-semibold: "JetBrainsMono_600SemiBold";
 	--font-sans-medium: "Inter_500Medium";
 	--font-sans-semibold: "Inter_600SemiBold";
 	--font-sans-bold: "Inter_700Bold";
@@ -42,7 +43,6 @@
 	--text-9xl: 128px;
 	--text-9xl--line-height: 1;
 
-	/* Border radius */
 	--radius-xs: 2px;
 	--radius-sm: 4px;
 	--radius-md: 6px;

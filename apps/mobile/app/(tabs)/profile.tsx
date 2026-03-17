@@ -4,16 +4,19 @@ import ScreenTitle from "@/app/components/ScreenTitle";
 import Text from "@/app/components/Text";
 import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
-import { router } from "expo-router";
 import { ExportIcon, GearSixIcon } from "phosphor-react-native";
-import { Image, TouchableHighlight, View } from "react-native";
+import { Image, View } from "react-native";
+import Frame from "../components/Frame";
 import ProfileContent from "../components/Profile/ProfileContent";
 
 export default function ProfileTab() {
 	const { data: session } = authClient.useSession();
-	const { data: games } = trpc.game.getAllGames.useQuery(undefined, {
-		enabled: !!session,
-	});
+	const { data: gameAccounts } = trpc.gameAccount.getGameAccounts.useQuery(
+		undefined,
+		{
+			enabled: !!session,
+		},
+	);
 
 	if (!session) {
 		return (
@@ -42,7 +45,7 @@ export default function ProfileTab() {
 					},
 				]}
 			/>
-			<View className="border-dark flex-col gap-5 items-center justify-center border mt-4 p-5">
+			<Frame className="mt-4">
 				<View className="flex items-center gap-2">
 					<Image
 						source={{ uri: session.user.image ?? "" }}
@@ -78,8 +81,15 @@ export default function ProfileTab() {
 						onPress={() => void 0}
 					/>
 				</View>
-			</View>
-			<ProfileContent user={session.user} games={games ?? []} />
+			</Frame>
+
+			<ProfileContent
+				user={session.user}
+				gameAccounts={[
+					...(gameAccounts?.lol ?? []),
+					...(gameAccounts?.faceit ?? []),
+				]}
+			/>
 		</Screen>
 	);
 }
