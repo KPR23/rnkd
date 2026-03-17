@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import Text from "../components/Text";
+import Text from "@/app/components/Text";
 
 export default function ProgressTab() {
 	return (

@@ -1,11 +1,11 @@
 import { router } from "expo-router";
 import { ExportIcon, GearSixIcon } from "phosphor-react-native";
 import { Image, TouchableHighlight, View } from "react-native";
-import { authClient } from "../../lib/auth-client";
-import Screen from "../components/Screen";
-import ScreenTitle from "../components/ScreenTitle";
-import Text from "../components/Text";
-import Button from "../components/Button";
+import { authClient } from "@/lib/auth-client";
+import Screen from "@/app/components/Screen";
+import ScreenTitle from "@/app/components/ScreenTitle";
+import Text from "@/app/components/Text";
+import Button from "@/app/components/Button";
 
 export default function ProfileTab() {
 	const { data: session } = authClient.useSession();

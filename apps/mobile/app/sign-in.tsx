@@ -1,6 +1,6 @@
 import { Alert, Button } from "react-native";
 import { router } from "expo-router";
-import { authClient } from "../lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 export default function SocialSignIn() {
 	const handleLogin = async () => {

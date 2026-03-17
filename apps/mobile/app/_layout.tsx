@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { StatusBar } from "react-native";
-import { TRPCProvider } from "../utils/provider";
+import { TRPCProvider } from "@/utils/provider";
 import {
 	Inter_400Regular,
 	Inter_500Medium,
@@ -15,7 +15,7 @@ import {
 	JetBrainsMono_600SemiBold,
 	JetBrainsMono_700Bold,
 } from "@expo-google-fonts/jetbrains-mono";
-import "../globals.css";
+import "@/globals.css";
 
 SplashScreen.preventAutoHideAsync();
 
