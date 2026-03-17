@@ -54,13 +54,12 @@ export default function ProfileTab() {
 						style={{ width: 64, height: 64 }}
 					/>
 					<View className="flex flex-col items-center gap-1 text-center">
-						<Text className="text-2xl font-bold text-text">
+						<Text className="text-2xl font-sans-bold text-text">
 							{session.user.name}
 						</Text>
 						{session.user.tag && (
 							<Text
-								className="text-primary"
-								style={{ fontFamily: "JetBrainsMono_700Bold" }}
+								className="font-mono-bold text-primary"
 							>
 								@{session.user.tag}
 							</Text>

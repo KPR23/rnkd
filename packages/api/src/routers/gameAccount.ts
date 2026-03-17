@@ -1,7 +1,6 @@
 import {
 	db,
 	gameAccounts,
-	GameId,
 	GAMES,
 	RIOT_REGIONAL_ROUTE,
 	RiotPlatformRoute,
@@ -10,6 +9,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
+import { isValidPlatformRoute } from "../services/riot/helper";
 import { syncLolForAccount } from "../services/riot/lol-sync-runner";
 import {
 	getAccountByRiotId,
@@ -17,7 +17,6 @@ import {
 	getLolActiveRegionByPuuid,
 } from "../services/riot/riot";
 import { protectedProcedure, router } from "../trpc";
-import { isValidPlatformRoute } from "../services/riot/helper";
 const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 
 const isGameAccountUniqueViolation = (error: unknown) => {

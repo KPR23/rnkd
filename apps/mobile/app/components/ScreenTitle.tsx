@@ -16,7 +16,7 @@ type Props = {
 export default function ScreenTitle({ title, actions }: Props) {
 	return (
 		<View className="flex-row items-center mt-4 justify-between">
-			<Text className="text-2xl font-bold text-text">{title}</Text>
+			<Text className="text-2xl font-sans-bold text-text">{title}</Text>
 			{actions && actions.length > 0 && (
 				<View className="flex-row items-center gap-3">
 					{actions.map((action, index) => (

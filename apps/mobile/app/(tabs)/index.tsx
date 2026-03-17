@@ -43,7 +43,7 @@ export default function HomeTab() {
 
 	return (
 		<View className="flex-1 items-center justify-center bg-background px-6">
-			<Text className="mb-2 text-2xl font-semibold text-white">Rnkd</Text>
+			<Text className="mb-2 text-2xl font-sans-semibold text-white">Rnkd</Text>
 			<Text className="text-center text-slate-200">
 				{JSON.stringify(user.data)}
 			</Text>

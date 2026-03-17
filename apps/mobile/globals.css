@@ -10,6 +10,7 @@
 	--font-sans: "Inter_400Regular";
 	--font-mono: "JetBrainsMono_400Regular";
 	--font-mono-semibold: "JetBrainsMono_600SemiBold";
+	--font-mono-bold: "JetBrainsMono_700Bold";
 	--font-sans-medium: "Inter_500Medium";
 	--font-sans-semibold: "Inter_600SemiBold";
 	--font-sans-bold: "Inter_700Bold";
@@ -54,8 +55,26 @@
 }
 
 @layer utilities {
+	.font-sans {
+		font-family: var(--font-sans);
+	}
+	.font-sans-medium {
+		font-family: var(--font-sans-medium);
+	}
+	.font-sans-semibold {
+		font-family: var(--font-sans-semibold);
+	}
+	.font-sans-bold {
+		font-family: var(--font-sans-bold);
+	}
 	.font-mono {
 		font-family: var(--font-mono);
+	}
+	.font-mono-semibold {
+		font-family: var(--font-mono-semibold);
+	}
+	.font-mono-bold {
+		font-family: var(--font-mono-bold);
 	}
 	.font-medium {
 		font-family: var(--font-sans-medium);
