@@ -1,25 +1,23 @@
-import { router } from "expo-router";
-import { ExportIcon, GearSixIcon } from "phosphor-react-native";
-import { Image, TouchableHighlight, View } from "react-native";
-import { authClient } from "@/lib/auth-client";
+import Button from "@/app/components/Button";
 import Screen from "@/app/components/Screen";
 import ScreenTitle from "@/app/components/ScreenTitle";
 import Text from "@/app/components/Text";
-import Button from "@/app/components/Button";
+import { authClient } from "@/lib/auth-client";
+import { trpc } from "@/utils/trpc";
+import { router } from "expo-router";
+import { ExportIcon, GearSixIcon } from "phosphor-react-native";
+import { Image, TouchableHighlight, View } from "react-native";
+import ProfileContent from "../components/Profile/ProfileContent";
 
 export default function ProfileTab() {
 	const { data: session } = authClient.useSession();
+	const { data: games } = trpc.game.getAllGames.useQuery(undefined, {
+		enabled: !!session,
+	});
 
 	if (!session) {
 		return (
 			<Screen>
-				<Text className="text-2xl font-bold text-white">PROFILE</Text>
-				<TouchableHighlight
-					onPress={() => router.push("/settings")}
-					className="p-2 border w-9 h-9 items-center justify-center border-[#29262A]"
-				>
-					<ExportIcon size={20} color={"white"} />
-				</TouchableHighlight>
 				<Text className="mt-2 text-base text-white text-center">
 					Zaloguj się, aby zobaczyć profil
 				</Text>
@@ -44,7 +42,6 @@ export default function ProfileTab() {
 					},
 				]}
 			/>
-
 			<View className="border-dark flex-col gap-5 items-center justify-center border mt-4 p-5">
 				<View className="flex items-center gap-2">
 					<Image
@@ -82,6 +79,7 @@ export default function ProfileTab() {
 					/>
 				</View>
 			</View>
+			<ProfileContent user={session.user} games={games ?? []} />
 		</Screen>
 	);
 }

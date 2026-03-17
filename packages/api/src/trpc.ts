@@ -1,5 +1,5 @@
 import { TRPCError, initTRPC } from "@trpc/server";
-import type { BetterAuthSession } from "@repo/auth-types";
+import type { BetterAuthSession } from "@repo/types";
 import superjson from "superjson";
 
 export type TRPCContext = {

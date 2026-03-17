@@ -10,4 +10,3 @@ export type Session = AuthSession["session"];
 export type BetterAuthUser = User;
 export type BetterAuthSessionMeta = Session;
 export type BetterAuthSession = AuthSession;
-

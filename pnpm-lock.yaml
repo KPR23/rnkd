@@ -119,9 +119,9 @@ importers:
       '@repo/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@repo/auth-types':
+      '@repo/types':
         specifier: workspace:*
-        version: link:../../packages/auth-types
+        version: link:../../packages/types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -258,15 +258,15 @@ importers:
 
   packages/api:
     dependencies:
-      '@repo/auth-types':
-        specifier: workspace:*
-        version: link:../auth-types
       '@repo/db':
         specifier: workspace:*
         version: link:../db
       '@repo/env':
         specifier: workspace:*
         version: link:../env
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
       '@trpc/server':
         specifier: ^11.12.0
         version: 11.12.0(typescript@5.9.3)
@@ -286,15 +286,6 @@ importers:
       eslint:
         specifier: ^9.39.1
         version: 9.39.3(jiti@2.6.1)
-      typescript:
-        specifier: 5.9.3
-        version: 5.9.3
-
-  packages/auth-types:
-    devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -414,6 +405,19 @@ importers:
       react:
         specifier: 19.1.0
         version: 19.1.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/types:
+    dependencies:
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../db
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       typescript:
         specifier: 5.9.3
         version: 5.9.3
