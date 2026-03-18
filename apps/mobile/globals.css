@@ -9,6 +9,7 @@
 @theme inline {
 	--font-sans: "Inter_400Regular";
 	--font-mono: "JetBrainsMono_400Regular";
+	--font-mono-medium: "JetBrainsMono_600SemiBold";
 	--font-mono-semibold: "JetBrainsMono_600SemiBold";
 	--font-mono-bold: "JetBrainsMono_700Bold";
 	--font-sans-medium: "Inter_500Medium";
@@ -69,6 +70,9 @@
 	}
 	.font-mono {
 		font-family: var(--font-mono);
+	}
+	.font-mono-medium {
+		font-family: var(--font-mono-medium);
 	}
 	.font-mono-semibold {
 		font-family: var(--font-mono-semibold);
