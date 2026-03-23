@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import Text from "../../Text";
-import type { GameProfilePanelProps } from "../GameProfileRegistry";
+import type { GameProfilePanelProps } from "../_GameProfileRegistry";
 
 export default function Cs2FaceitProfilePanel({
 	gameAccount,

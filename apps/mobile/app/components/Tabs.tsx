@@ -1,7 +1,7 @@
 import type { GameAccount } from "@repo/types";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { getProfilePanelForGame } from "./Profile/GameProfileRegistry";
+import { getProfilePanelForGame } from "./Profile/_GameProfileRegistry";
 
 interface TabsProps {
 	gameAccounts: GameAccount[];
