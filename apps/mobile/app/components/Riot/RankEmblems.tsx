@@ -34,14 +34,16 @@ const uriCache: Partial<Record<EmblemKey, string>> = {};
 
 export default function RankEmblem({ tier }: { tier: string }) {
 	const maybeKey = tier.toLowerCase();
-	if (!(maybeKey in EMBLEM_ASSETS)) return null;
-	const key = maybeKey as EmblemKey;
-	const scale = EMBLEM_SCALES[key] ?? 1;
+	const key = (maybeKey in EMBLEM_ASSETS ? maybeKey : null) as EmblemKey | null;
+	const scale = key ? (EMBLEM_SCALES[key] ?? 1) : 1;
 
-	const fallbackUri = `${COMMUNITY_DRAGON_BASE}/${key}.svg`;
-	const [localUri, setLocalUri] = React.useState<string | null>(uriCache[key] ?? null);
+	const fallbackUri = key ? `${COMMUNITY_DRAGON_BASE}/${key}.svg` : null;
+	const [localUri, setLocalUri] = React.useState<string | null>(
+		key ? (uriCache[key] ?? null) : null,
+	);
 
 	React.useEffect(() => {
+		if (!key) return;
 		if (uriCache[key]) {
 			setLocalUri(uriCache[key] ?? null);
 			return;
@@ -64,7 +66,10 @@ export default function RankEmblem({ tier }: { tier: string }) {
 			.catch(() => setLocalUri(null));
 	}, [key]);
 
+	if (!key) return null;
+
 	const uri = localUri ?? fallbackUri;
+	if (!uri) return null;
 
 	return <SvgUri uri={uri} width={42 * scale} height={42 * scale} />;
 }
