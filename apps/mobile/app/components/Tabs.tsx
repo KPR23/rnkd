@@ -51,7 +51,8 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 						className={[
 							"relative h-9 items-center justify-center px-6",
 							useHorizontalScroll ? "min-w-30" : "flex-1",
-							!isLast ? "border-r border-dark" : "",
+							!isLast ? "border-r border-border" : "",
+							isActive ? "bg-dark" : "",
 						].join(" ")}
 						accessibilityRole="tab"
 						accessibilityState={{ selected: isActive }}
@@ -66,7 +67,7 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 						</Text>
 
 						{isActive && (
-							<View className="absolute bottom-0 left-0 right-0 h-1 bg-primary" />
+							<View className="absolute bottom-0 left-0 right-0 h-0.75 bg-primary" />
 						)}
 					</Pressable>
 				);
@@ -76,7 +77,7 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 
 	return (
 		<View className="mt-8 w-full">
-			<View className="w-full overflow-hidden border border-dark bg-background">
+			<View className="w-full overflow-hidden border border-border bg-background">
 				{useHorizontalScroll ? (
 					<ScrollView
 						horizontal
@@ -89,7 +90,7 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 					tabRow
 				)}
 			</View>
-			<View className="w-full text-text border-r border-l border-b border-dark flex-col gap-5 items-center justify-center p-4">
+			<View className="w-full text-text border-r border-l border-b border-border flex-col gap-5 items-center justify-center">
 				{activeTab === GAMES.LOL && <ProfileGameStatCard />}
 				{activeTab === GAMES.CS2_FACEIT && (
 					<Text className="text-text">CS2</Text>

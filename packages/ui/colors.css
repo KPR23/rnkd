@@ -1,8 +1,12 @@
 @theme {
-	--color-background: #131013;
-	--color-text: #f5f2f5;
-	--color-text-secondary: #a19a8f;
 	--color-primary: #6d28d9;
-	--color-gray: #504d50;
-	--color-dark: #29262a;
+	--color-text: #f5f2f5;
+	--color-text-secondary: #5b5666;
+	--color-gray: #6f6a7d;
+	--color-dark: #1d1826;
+	--color-border: #241f2b;
+	--color-background: #0f0b14;
+	--color-card: #17121f;
+	--color-games-lol: #c28f2b;
+	--color-games-cs2: #2a377e;
 }
