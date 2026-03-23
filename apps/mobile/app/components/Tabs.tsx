@@ -1,5 +1,5 @@
 import type { GameAccount } from "@repo/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { GAMES } from "../../../../packages/db/src/schema";
 import ProfileGameStatCard from "./ProfileGameStatCard";
@@ -23,6 +23,15 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 	const [activeTab, setActiveTab] = useState<string>(
 		gameAccounts[0]?.gameId ?? "",
 	);
+
+	useEffect(() => {
+		if (gameAccounts.length > 0 && !activeTab) {
+			const firstGameId = gameAccounts[0]?.gameId;
+			if (firstGameId) {
+				setActiveTab(firstGameId);
+			}
+		}
+	}, [gameAccounts, activeTab]);
 
 	if (gameAccounts.length === 0) {
 		return <Text>No games found</Text>;
