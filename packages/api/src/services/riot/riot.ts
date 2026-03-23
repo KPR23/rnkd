@@ -1,6 +1,7 @@
 import { env } from "@repo/env";
 import { fetchWithRetry, getPlatformApiUrl, getRiotApiUrl } from "./helper";
 import {
+	type LeagueEntryDTO,
 	MatchResponse,
 	QueueType,
 	RIOT_PLATFORM_ROUTE,
@@ -108,6 +109,39 @@ export async function getLolAccountDetails(
 		summonerLevel: number;
 		profileIconId: number;
 	};
+}
+
+export async function getLolLeagueEntriesByPuuid(
+	puuid: string,
+	platform: RiotPlatformRoute,
+): Promise<LeagueEntryDTO[]> {
+	const baseUrl = getPlatformApiUrl(platform);
+	const url = `${baseUrl}/lol/league/v4/entries/by-puuid/${encodeURIComponent(puuid)}`;
+
+	const response = await fetchWithRetry(
+		url,
+		{
+			headers: {
+				"X-Riot-Token": RIOT_API_KEY,
+			},
+		},
+		5000,
+	);
+
+	if (response.status === 404) {
+		return [];
+	}
+
+	if (!response.ok) {
+		const err = (await response.json().catch(() => ({}))) as {
+			status?: { message?: string };
+		};
+		throw new Error(
+			err.status?.message ?? `Riot API error: ${response.status}`,
+		);
+	}
+
+	return (await response.json()) as LeagueEntryDTO[];
 }
 
 export async function getMatchIdsByPuuid(

@@ -6,6 +6,7 @@ import {
 	boolean,
 	index,
 	integer,
+	primaryKey,
 	uniqueIndex,
 	real,
 	uuid,
@@ -165,6 +166,34 @@ export const gameAccounts = pgTable(
 		),
 		index("game_accounts_user_idx").on(table.userId),
 		index("game_accounts_last_synced_idx").on(table.lastSyncedAt),
+	],
+);
+
+export const lolRankedEntries = pgTable(
+	"lol_ranked_entries",
+	{
+		gameAccountId: text("game_account_id")
+			.notNull()
+			.references(() => gameAccounts.id, { onDelete: "cascade" }),
+		queueType: text("queue_type").notNull(),
+		tier: text("tier").notNull(),
+		rank: text("rank"),
+		leaguePoints: integer("league_points").notNull(),
+		wins: integer("wins").notNull(),
+		losses: integer("losses").notNull(),
+		hotStreak: boolean("hot_streak").default(false).notNull(),
+		inactive: boolean("inactive").default(false).notNull(),
+		syncedAt: timestamp("synced_at").notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => new Date())
+			.notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.gameAccountId, table.queueType] }),
+		index("lol_ranked_entries_account_idx").on(table.gameAccountId),
+		index("lol_ranked_entries_synced_idx").on(table.syncedAt),
 	],
 );
 
@@ -381,6 +410,17 @@ export const gameAccountRelations = relations(
 		}),
 		matchParticipants: many(matchParticipants),
 		eloHistory: many(eloHistory),
+		lolRankedEntries: many(lolRankedEntries),
+	}),
+);
+
+export const lolRankedEntriesRelations = relations(
+	lolRankedEntries,
+	({ one }) => ({
+		account: one(gameAccounts, {
+			fields: [lolRankedEntries.gameAccountId],
+			references: [gameAccounts.id],
+		}),
 	}),
 );
 

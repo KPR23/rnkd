@@ -1,6 +1,8 @@
-import type { GameProfilePanelProps } from "../gameProfileRegistry";
+import type { GameProfilePanelProps } from "../GameProfileRegistry";
 import ProfileGameStatCard from "../../ProfileGameStatCard";
 
-export default function LolProfilePanel({ gameAccount }: GameProfilePanelProps) {
+export default function LolProfilePanel({
+	gameAccount,
+}: GameProfilePanelProps) {
 	return <ProfileGameStatCard gameAccount={gameAccount} />;
 }

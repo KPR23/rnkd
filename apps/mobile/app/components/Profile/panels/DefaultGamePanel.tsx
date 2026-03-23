@@ -1,8 +1,10 @@
 import { View } from "react-native";
 import Text from "../../Text";
-import type { GameProfilePanelProps } from "../gameProfileRegistry";
+import type { GameProfilePanelProps } from "../GameProfileRegistry";
 
-export default function DefaultGamePanel({ gameAccount }: GameProfilePanelProps) {
+export default function DefaultGamePanel({
+	gameAccount,
+}: GameProfilePanelProps) {
 	return (
 		<View className="w-full py-6 px-4">
 			<Text className="text-sm text-text-secondary">

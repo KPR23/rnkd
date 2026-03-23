@@ -2,14 +2,40 @@ import { View } from "react-native";
 import Text from "./Text";
 import RankEmblem from "./Riot/RankEmblems";
 import type { GameAccount } from "@repo/types";
+import { trpc } from "@/utils/trpc";
 
-const placeholderStats = {
-	rank: "—",
-	queueType: "Ranked Solo/Duo",
-	wins: 0,
-	losses: 0,
-	winRate: 0,
+const QUEUE_LABELS: Record<string, string> = {
+	RANKED_SOLO_5x5: "Ranked Solo/Duo",
+	RANKED_FLEX_SR: "Ranked Flex",
 };
+
+function formatRankTitle(tier: string, rank: string | null) {
+	const t = tier.charAt(0) + tier.slice(1).toLowerCase();
+	if (!rank) {
+		return t;
+	}
+	return `${t} ${rank}`;
+}
+
+function riotTierToEmblemTier(tier: string | undefined): string {
+	if (!tier) {
+		return "gold";
+	}
+	const lower = tier.toLowerCase();
+	const keys = [
+		"iron",
+		"bronze",
+		"silver",
+		"gold",
+		"platinum",
+		"emerald",
+		"diamond",
+		"master",
+		"grandmaster",
+		"challenger",
+	];
+	return keys.includes(lower) ? lower : "gold";
+}
 
 type ProfileGameStatCardProps = {
 	gameAccount: GameAccount;
@@ -18,45 +44,58 @@ type ProfileGameStatCardProps = {
 export default function ProfileGameStatCard({
 	gameAccount,
 }: ProfileGameStatCardProps) {
-	const summonerLine =
-		gameAccount.gameName && gameAccount.tagLine
-			? `${gameAccount.gameName}#${gameAccount.tagLine}`
-			: gameAccount.gameName ??
-				gameAccount.tagLine ??
-				gameAccount.externalId.slice(0, 8);
+	const { data, isLoading } = trpc.gameAccount.getLolProfileDisplay.useQuery(
+		{ gameAccountId: gameAccount.id },
+		{ enabled: gameAccount.gameId === "lol" },
+	);
 
-	const levelLabel =
-		gameAccount.summonerLevel != null
-			? `Lvl ${gameAccount.summonerLevel}`
-			: null;
+	const ranked = data?.ranked;
+	const rankedWinRate = data?.rankedWinRate ?? 0;
+
+	const wlLine =
+		ranked != null
+			? `${ranked.wins}W ${ranked.losses}L`
+			: isLoading
+				? "…"
+				: "—";
+	const rankedWrLine =
+		ranked != null ? `${rankedWinRate.toFixed(0)}%` : isLoading ? "…" : "—";
+
+	const gamesVal = "0";
+	const kdaVal = "0";
+	const csPerMinVal = "0";
 
 	return (
 		<View className="w-full flex flex-col">
-			<View className="w-full h-16 text-text pl-3 pr-4 py-2 flex-row gap-5 items-center justify-between">
+			<View className="w-full min-h-16 text-text pl-3 pr-4 py-2 flex-row gap-5 items-center justify-between">
 				<View className="flex-row gap-3 items-center flex-1 min-w-0">
 					<View className="w-12 h-12 flex items-center justify-center shrink-0">
-						<RankEmblem tier="gold" />
+						<RankEmblem tier={riotTierToEmblemTier(ranked?.tier)} />
 					</View>
-					<View className="flex-col items-start min-w-0 flex-1">
+					<View className="flex-col items-start flex-1 -gap-2">
 						<Text
 							className="text-base font-sans-semibold text-text"
 							numberOfLines={1}
 						>
-							{summonerLine}
+							{formatRankTitle(ranked?.tier ?? "Unranked", ranked?.rank ?? "")}{" "}
+							<Text className="text-text-secondary font-sans-semibold">
+								({ranked?.leaguePoints} LP)
+							</Text>
 						</Text>
-						<Text className="font-mono-semibold text-text-secondary uppercase text-xs">
-							{levelLabel
-								? `${placeholderStats.queueType} · ${levelLabel}`
-								: placeholderStats.queueType}
+						<Text
+							className="font-mono-semibold text-text-secondary uppercase text-xs"
+							numberOfLines={1}
+						>
+							{QUEUE_LABELS[ranked?.queueType ?? ""]}
 						</Text>
 					</View>
 				</View>
 				<View className="flex-col gap-0.5 justify-center items-end shrink-0">
-					<Text className="text-xs font-mono-medium line-height-1 text-text">
-						{placeholderStats.wins}W {placeholderStats.losses}L
+					<Text className="text-xs font-mono-medium leading-none text-text">
+						{wlLine}
 					</Text>
-					<Text className="text-xs font-mono-semibold line-height-1 text-text-secondary">
-						{placeholderStats.winRate}%
+					<Text className="text-xs font-mono-semibold leading-none text-text-secondary">
+						{rankedWrLine}
 						<Text
 							className="text-text-secondary font-sans-medium text-xs"
 							style={{ letterSpacing: -0.35 }}
@@ -69,13 +108,13 @@ export default function ProfileGameStatCard({
 			</View>
 			<View className="w-full h-12 flex flex-row items-center justify-between border-t border-border">
 				<View className="flex-1 items-center justify-center border-r h-full border-border">
-					<StatItem value="—" label="Games" />
+					<StatItem value={gamesVal} label="games" />
 				</View>
 				<View className="flex-1 items-center justify-center border-r h-full border-border">
-					<StatItem value="—" label="AVG K/D" />
+					<StatItem value={kdaVal} label="avg kda" />
 				</View>
 				<View className="flex-1 w-full items-center justify-center h-full">
-					<StatItem value="—" label="AVG HS%" />
+					<StatItem value={csPerMinVal} label="avg cs/min" />
 				</View>
 			</View>
 		</View>

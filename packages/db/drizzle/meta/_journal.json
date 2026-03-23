@@ -134,6 +134,27 @@
       "when": 1773265527182,
       "tag": "0018_steep_valeria_richards",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1774268956350,
+      "tag": "0019_lol_ranked_entries",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1774270209965,
+      "tag": "0020_lol_match_queue_cs",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1774270606830,
+      "tag": "0021_drop_lol_match_aggregate_cols",
+      "breakpoints": true
     }
   ]
 }

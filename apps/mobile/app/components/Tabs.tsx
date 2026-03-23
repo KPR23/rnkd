@@ -1,7 +1,7 @@
 import type { GameAccount } from "@repo/types";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { getProfilePanelForGame } from "./Profile/gameProfileRegistry";
+import { getProfilePanelForGame } from "./Profile/GameProfileRegistry";
 
 interface TabsProps {
 	gameAccounts: GameAccount[];
@@ -27,7 +27,7 @@ function getTabDisplayLabel(accounts: GameAccount[], account: GameAccount) {
 	const detail =
 		account.gameName && account.tagLine
 			? `${account.gameName}#${account.tagLine}`
-			: account.gameName ?? account.tagLine ?? account.id.slice(0, 8);
+			: (account.gameName ?? account.tagLine ?? account.id.slice(0, 8));
 	return `${base} · ${detail}`;
 }
 
@@ -112,9 +112,7 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 				)}
 			</View>
 			<View className="w-full text-text border-r border-l border-b border-border flex-col gap-5 items-center justify-center">
-				{activeAccount && Panel ? (
-					<Panel gameAccount={activeAccount} />
-				) : null}
+				{activeAccount && Panel ? <Panel gameAccount={activeAccount} /> : null}
 			</View>
 		</View>
 	);
