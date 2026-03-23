@@ -1,9 +1,9 @@
 import type { GameAccount, GameId } from "@repo/types";
 import type { ComponentType } from "react";
-import { GAMES } from "../../../../../packages/db/src/schema";
-import Cs2FaceitProfilePanel from "./panels/Cs2FaceitProfilePanel";
-import LolProfilePanel from "./panels/LolProfilePanel";
-import DefaultGamePanel from "./panels/DefaultGamePanel";
+import { GAMES } from "../../../packages/db/src/schema";
+import Cs2FaceitProfilePanel from "../app/components/Profile/panels/Cs2FaceitProfilePanel";
+import LolProfilePanel from "../app/components/Profile/panels/LolProfilePanel";
+import DefaultGamePanel from "../app/components/Profile/panels/DefaultGamePanel";
 
 export type GameProfilePanelProps = {
 	gameAccount: GameAccount;

@@ -1,4 +1,4 @@
-import type { GameProfilePanelProps } from "../_GameProfileRegistry";
+import type { GameProfilePanelProps } from "@/profile/GameProfileRegistry";
 import ProfileGameStatCard from "../../ProfileGameStatCard";
 
 export default function LolProfilePanel({
