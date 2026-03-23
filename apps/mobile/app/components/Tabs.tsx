@@ -1,8 +1,7 @@
 import type { GameAccount } from "@repo/types";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { GAMES } from "../../../../packages/db/src/schema";
-import ProfileGameStatCard from "./ProfileGameStatCard";
+import { getProfilePanelForGame } from "./Profile/gameProfileRegistry";
 
 interface TabsProps {
 	gameAccounts: GameAccount[];
@@ -19,35 +18,56 @@ function getTabLabel(gameId: string) {
 	}
 }
 
+function getTabDisplayLabel(accounts: GameAccount[], account: GameAccount) {
+	const base = getTabLabel(account.gameId);
+	const sameGame = accounts.filter((a) => a.gameId === account.gameId);
+	if (sameGame.length <= 1) {
+		return base;
+	}
+	const detail =
+		account.gameName && account.tagLine
+			? `${account.gameName}#${account.tagLine}`
+			: account.gameName ?? account.tagLine ?? account.id.slice(0, 8);
+	return `${base} · ${detail}`;
+}
+
 export default function Tabs({ gameAccounts }: TabsProps) {
-	const [activeTab, setActiveTab] = useState<string>(
-		gameAccounts[0]?.gameId ?? "",
+	const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
+		gameAccounts[0]?.id ?? null,
 	);
 
 	useEffect(() => {
-		if (gameAccounts.length > 0 && !activeTab) {
-			const firstGameId = gameAccounts[0]?.gameId;
-			if (firstGameId) {
-				setActiveTab(firstGameId);
-			}
+		if (gameAccounts.length === 0) {
+			return;
 		}
-	}, [gameAccounts, activeTab]);
+		setSelectedAccountId((prev) => {
+			if (prev && gameAccounts.some((a) => a.id === prev)) {
+				return prev;
+			}
+			return gameAccounts[0]!.id;
+		});
+	}, [gameAccounts]);
 
 	if (gameAccounts.length === 0) {
 		return <Text>No games found</Text>;
 	}
+
+	const activeAccount = gameAccounts.find((a) => a.id === selectedAccountId);
+	const Panel = activeAccount
+		? getProfilePanelForGame(activeAccount.gameId)
+		: null;
 
 	const useHorizontalScroll = gameAccounts.length > 3;
 
 	const tabRow = (
 		<View className="flex-row w-full">
 			{gameAccounts.map((gameAccount, idx) => {
-				const isActive = activeTab === gameAccount.gameId;
+				const isActive = selectedAccountId === gameAccount.id;
 				const isLast = idx === gameAccounts.length - 1;
 				return (
 					<Pressable
 						key={gameAccount.id}
-						onPress={() => setActiveTab(gameAccount.gameId)}
+						onPress={() => setSelectedAccountId(gameAccount.id)}
 						className={[
 							"relative h-9 items-center justify-center px-6",
 							useHorizontalScroll ? "min-w-30" : "flex-1",
@@ -62,8 +82,9 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 								"uppercase text-xs font-mono-semibold",
 								isActive ? "text-white" : "text-text-secondary",
 							].join(" ")}
+							numberOfLines={1}
 						>
-							{getTabLabel(gameAccount.gameId)}
+							{getTabDisplayLabel(gameAccounts, gameAccount)}
 						</Text>
 
 						{isActive && (
@@ -91,10 +112,9 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 				)}
 			</View>
 			<View className="w-full text-text border-r border-l border-b border-border flex-col gap-5 items-center justify-center">
-				{activeTab === GAMES.LOL && <ProfileGameStatCard />}
-				{activeTab === GAMES.CS2_FACEIT && (
-					<Text className="text-text">CS2</Text>
-				)}
+				{activeAccount && Panel ? (
+					<Panel gameAccount={activeAccount} />
+				) : null}
 			</View>
 		</View>
 	);
