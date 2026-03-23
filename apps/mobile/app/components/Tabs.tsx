@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import Frame from "./Frame";
 import ProfileGameStatCard from "./ProfileGameStatCard";
+import { GAMES } from "../../../../packages/db/src/schema";
 
 interface TabsProps {
 	gameAccounts: GameAccount[];
@@ -18,10 +19,13 @@ function getTabLabel(gameId: string) {
 			return gameId.replaceAll("_", " ").toUpperCase();
 	}
 }
+
 export default function Tabs({ gameAccounts }: TabsProps) {
-	const [activeTab, setActiveTab] = useState<string | undefined>(
-		gameAccounts[0]?.gameId ?? undefined,
+	const [activeTab, setActiveTab] = useState<string>(
+		gameAccounts[0]?.gameId ?? "",
 	);
+
+	console.log(activeTab);
 
 	if (gameAccounts.length === 0) {
 		return <Text>No games found</Text>;
@@ -80,7 +84,10 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 				)}
 			</View>
 			<View className="w-full text-text border-r border-l border-b border-dark flex-col gap-5 items-center justify-center p-4">
-				<ProfileGameStatCard />
+				{activeTab === GAMES.LOL && <ProfileGameStatCard />}
+				{activeTab === GAMES.CS2_FACEIT && (
+					<Text className="text-text">CS2</Text>
+				)}
 			</View>
 		</View>
 	);
