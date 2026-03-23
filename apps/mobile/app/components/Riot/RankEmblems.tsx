@@ -1,7 +1,7 @@
 import React from "react";
-import { SvgUri } from "react-native-svg";
+import { SvgXml } from "react-native-svg";
 import { Asset } from "expo-asset";
-import { COMMUNITY_DRAGON_BASE } from "@/app/constants/riotApiUrl";
+import * as FileSystem from "expo-file-system/legacy";
 
 type EmblemKey =
 	| "iron"
@@ -14,8 +14,6 @@ type EmblemKey =
 	| "master"
 	| "grandmaster"
 	| "challenger";
-
-const EMBLEM_SCALES: Partial<Record<EmblemKey, number>> = {};
 
 const EMBLEM_ASSETS: Record<EmblemKey, number> = {
 	iron: require("../../../assets/riot/rank-emblems/iron.svg"),
@@ -30,46 +28,37 @@ const EMBLEM_ASSETS: Record<EmblemKey, number> = {
 	challenger: require("../../../assets/riot/rank-emblems/challenger.svg"),
 };
 
-const uriCache: Partial<Record<EmblemKey, string>> = {};
+const xmlCache: Partial<Record<EmblemKey, string>> = {};
 
 export default function RankEmblem({ tier }: { tier: string }) {
 	const maybeKey = tier.toLowerCase();
 	const key = (maybeKey in EMBLEM_ASSETS ? maybeKey : null) as EmblemKey | null;
-	const scale = key ? (EMBLEM_SCALES[key] ?? 1) : 1;
 
-	const fallbackUri = key ? `${COMMUNITY_DRAGON_BASE}/${key}.svg` : null;
-	const [localUri, setLocalUri] = React.useState<string | null>(
-		key ? (uriCache[key] ?? null) : null,
-	);
+	const [xml, setXml] = React.useState<string | null>(key ? (xmlCache[key] ?? null) : null);
 
 	React.useEffect(() => {
-		if (!key) return;
-		if (uriCache[key]) {
-			setLocalUri(uriCache[key] ?? null);
-			return;
-		}
+		if (!key || xmlCache[key]) return;
 
-		const moduleId = EMBLEM_ASSETS[key];
-		const asset = Asset.fromModule(moduleId);
+		const loadSvg = async () => {
+			try {
+				const asset = Asset.fromModule(EMBLEM_ASSETS[key]);
+				await asset.downloadAsync();
+				const uri = asset.localUri ?? asset.uri;
 
-		void asset
-			.downloadAsync()
-			.then(() => {
-				const resolved = asset.localUri ?? asset.uri;
-				if (resolved) {
-					uriCache[key] = resolved;
-					setLocalUri(resolved);
-				} else {
-					setLocalUri(null);
+				if (uri) {
+					const content = await FileSystem.readAsStringAsync(uri);
+					xmlCache[key] = content;
+					setXml(content);
 				}
-			})
-			.catch(() => setLocalUri(null));
+			} catch (error) {
+				console.error("Failed to load rank emblem:", error);
+			}
+		};
+
+		void loadSvg();
 	}, [key]);
 
-	if (!key) return null;
+	if (!key || !xml) return null;
 
-	const uri = localUri ?? fallbackUri;
-	if (!uri) return null;
-
-	return <SvgUri uri={uri} width={42 * scale} height={42 * scale} />;
+	return <SvgXml xml={xml} width={42} height={42} />;
 }
