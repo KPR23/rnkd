@@ -22,10 +22,23 @@ export const auth = betterAuth({
 	trustedOrigins: Array.from(
 		new Set(
 			env.NODE_ENV === "development"
-				? [env.BETTER_AUTH_URL, "http://localhost:3000", "mobile://", "exp://"]
-				: [env.BETTER_AUTH_URL, "mobile://"],
+				? [
+						env.BETTER_AUTH_URL,
+						"http://localhost:3000",
+						"exp://",
+						"rnkd://",
+						"com.rnkd.mobile://",
+					]
+				: [env.BETTER_AUTH_URL, "rnkd://", "com.rnkd.mobile://"],
 		),
 	),
+	user: {
+		additionalFields: {
+			tag: {
+				type: "string",
+			},
+		},
+	},
 	plugins: [expo()],
 	socialProviders,
 });

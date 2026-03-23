@@ -9,6 +9,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
+import { isValidPlatformRoute } from "../services/riot/helper";
 import { syncLolForAccount } from "../services/riot/lol-sync-runner";
 import {
 	getAccountByRiotId,
@@ -16,7 +17,6 @@ import {
 	getLolActiveRegionByPuuid,
 } from "../services/riot/riot";
 import { protectedProcedure, router } from "../trpc";
-import { isValidPlatformRoute } from "../services/riot/helper";
 const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 
 const isGameAccountUniqueViolation = (error: unknown) => {
@@ -37,7 +37,61 @@ const isGameAccountUniqueViolation = (error: unknown) => {
 	return false;
 };
 
+const LOL_PROFILE_REFRESH_TTL_MS = 1000 * 60 * 30;
+
+function refreshLolProfileInBackground(
+	accountId: string,
+	externalId: string,
+	platformRoute: RiotPlatformRoute,
+) {
+	getLolAccountDetails(externalId, platformRoute)
+		.then(async (details) => {
+			await db
+				.update(gameAccounts)
+				.set({
+					profileIconId: details.profileIconId,
+					summonerLevel: details.summonerLevel,
+					lastSyncedAt: new Date(),
+				})
+				.where(eq(gameAccounts.id, accountId));
+		})
+		.catch((error) => {
+			console.error(error);
+		});
+}
+
 export const gameAccountRouter = router({
+	getGameAccounts: protectedProcedure.query(async ({ ctx }) => {
+		const accounts = await db.query.gameAccounts.findMany({
+			where: eq(gameAccounts.userId, ctx.session.user.id),
+		});
+
+		const lolAccounts = accounts.filter(
+			(a) => a.gameId === GAMES.LOL && a.regionalRoute && a.platformRoute,
+		);
+
+		const faceitAccounts = accounts.filter(
+			(a) => a.gameId === GAMES.CS2_FACEIT,
+		);
+
+		for (const a of lolAccounts) {
+			const shouldRefresh =
+				!a.lastSyncedAt ||
+				Date.now() - a.lastSyncedAt.getTime() > LOL_PROFILE_REFRESH_TTL_MS;
+			if (!shouldRefresh) continue;
+
+			refreshLolProfileInBackground(
+				a.id,
+				a.externalId,
+				a.platformRoute as RiotPlatformRoute,
+			);
+		}
+
+		return {
+			lol: lolAccounts,
+			faceit: faceitAccounts,
+		};
+	}),
 	getLolDetailsDemo: protectedProcedure
 		.input(
 			z.object({
@@ -132,7 +186,6 @@ export const gameAccountRouter = router({
 				throw error;
 			}
 		}),
-
 	addFaceitAccount: protectedProcedure
 		.input(
 			z.object({

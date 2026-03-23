@@ -4,6 +4,10 @@
 		"expo/tsconfig.base"
 	],
 	"compilerOptions": {
-		"strict": true
+		"strict": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./*"]
+		}
 	}
 }

@@ -1,17 +1,10 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View } from "react-native";
+import Text from "@/app/components/Text";
 
 export default function SearchTab() {
 	return (
-		<View style={styles.container}>
-			<Text>Search</Text>
+		<View className="flex-1 items-center justify-center bg-background">
+			<Text className="text-white">Search</Text>
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-});

@@ -1,13 +1,13 @@
 import { Alert, Button } from "react-native";
 import { router } from "expo-router";
-import { authClient } from "../lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 export default function SocialSignIn() {
 	const handleLogin = async () => {
 		try {
 			const result = await authClient.signIn.social({
 				provider: "github",
-				callbackURL: "mobile://",
+				callbackURL: "/",
 			});
 			if (result.error) {
 				Alert.alert(

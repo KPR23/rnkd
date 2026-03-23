@@ -13,32 +13,52 @@
 	},
 	"dependencies": {
 		"@better-auth/expo": "^1.5.4",
+		"@expo-google-fonts/inter": "^0.4.2",
+		"@expo-google-fonts/jetbrains-mono": "^0.4.1",
 		"@tanstack/react-query": "^5.90.21",
 		"@trpc/client": "^11.12.0",
 		"@trpc/react-query": "^11.12.0",
 		"better-auth": "^1.5.4",
 		"expo": "~54.0.33",
+		"expo-asset": "^55.0.9",
 		"expo-constants": "^18.0.13",
+		"expo-font": "~14.0.11",
 		"expo-linking": "^8.0.11",
 		"expo-network": "^8.0.8",
 		"expo-router": "^6.0.23",
 		"expo-secure-store": "~15.0.8",
+		"expo-splash-screen": "~31.0.13",
 		"expo-status-bar": "~3.0.9",
 		"expo-web-browser": "^15.0.10",
-		"@repo/forms": "workspace:*",
+		"nativewind": "5.0.0-preview.2",
+		"phosphor-react-native": "^3.0.3",
 		"react": "19.1.0",
 		"react-dom": "19.1.0",
 		"react-native": "0.81.5",
+		"react-native-css": "^3.0.4",
+		"react-native-reanimated": "^4.2.2",
+		"react-native-safe-area-context": "^5.7.0",
 		"react-native-screens": "4.16.0",
+		"react-native-svg": "^15.15.3",
 		"react-native-web": "0.21.0",
 		"superjson": "^2.2.6"
 	},
 	"devDependencies": {
 		"@repo/api": "workspace:*",
+		"@repo/types": "workspace:*",
 		"@repo/typescript-config": "workspace:*",
+		"@tailwindcss/postcss": "^4.2.1",
 		"@types/react": "19.2.14",
 		"eslint-config-expo": "~10.0.0",
+		"postcss": "^8.5.8",
+		"prettier-plugin-tailwindcss": "^0.7.2",
+		"tailwindcss": "^4.2.1",
 		"typescript": "5.9.3"
+	},
+	"pnpm": {
+		"overrides": {
+			"lightningcss": "1.30.1"
+		}
 	},
 	"private": true
 }

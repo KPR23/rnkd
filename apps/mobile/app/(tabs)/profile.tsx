@@ -1,10 +1,17 @@
-import { View, Text, StyleSheet } from "react-native";
-import { trpc } from "../../utils/trpc";
-import { authClient } from "../../lib/auth-client";
+import Button from "@/app/components/Button";
+import Screen from "@/app/components/Screen";
+import ScreenTitle from "@/app/components/ScreenTitle";
+import Text from "@/app/components/Text";
+import { authClient } from "@/lib/auth-client";
+import { trpc } from "@/utils/trpc";
+import { ExportIcon, GearSixIcon } from "phosphor-react-native";
+import { Image, View } from "react-native";
+import Frame from "../components/Frame";
+import ProfileContent from "../components/Profile/ProfileContent";
 
 export default function ProfileTab() {
 	const { data: session } = authClient.useSession();
-	const { data: gameAccountsData } = trpc.user.getGameAccounts.useQuery(
+	const { data: gameAccounts } = trpc.gameAccount.getGameAccounts.useQuery(
 		undefined,
 		{
 			enabled: !!session,
@@ -13,30 +20,75 @@ export default function ProfileTab() {
 
 	if (!session) {
 		return (
-			<View style={styles.container}>
-				<Text>Zaloguj się, aby zobaczyć profil</Text>
-			</View>
+			<Screen>
+				<Text className="mt-2 text-base text-white text-center">
+					Zaloguj się, aby zobaczyć profil
+				</Text>
+			</Screen>
 		);
 	}
 
 	return (
-		<View style={styles.container}>
-			<Text>
-				LOL:{" "}
-				{gameAccountsData?.lol
-					.map(
-						(lol) => `${lol.gameName} #${lol.tagLine} (${lol.platformRoute})`,
-					)
-					.join(", ")}
-			</Text>
-		</View>
+		<Screen>
+			<ScreenTitle
+				title="Profile"
+				actions={[
+					{
+						icon: <ExportIcon size={22} color="white" />,
+						onPress: () => void 0,
+						accessibilityLabel: "Share",
+					},
+					{
+						icon: <GearSixIcon size={22} color="white" />,
+						onPress: () => void 0,
+						accessibilityLabel: "Settings",
+					},
+				]}
+			/>
+			<Frame className="mt-4">
+				<View className="flex items-center gap-2">
+					<Image
+						source={{ uri: session.user.image ?? "" }}
+						className="w-full h-full rounded-full"
+						resizeMode="cover"
+						style={{ width: 64, height: 64 }}
+					/>
+					<View className="flex flex-col items-center gap-1 text-center">
+						<Text className="text-2xl font-sans-bold text-text">
+							{session.user.name}
+						</Text>
+						{session.user.tag && (
+							<Text
+								className="font-mono-bold text-primary"
+							>
+								@{session.user.tag}
+							</Text>
+						)}
+					</View>
+				</View>
+				<View className="w-full flex-row gap-3">
+					<Button
+						variant="primary"
+						actionText="Add friend"
+						className="flex-1"
+						onPress={() => void 0}
+					/>
+					<Button
+						variant="secondary"
+						actionText="Message"
+						className="flex-1"
+						onPress={() => void 0}
+					/>
+				</View>
+			</Frame>
+
+			<ProfileContent
+				user={session.user}
+				gameAccounts={[
+					...(gameAccounts?.lol ?? []),
+					...(gameAccounts?.faceit ?? []),
+				]}
+			/>
+		</Screen>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-});
