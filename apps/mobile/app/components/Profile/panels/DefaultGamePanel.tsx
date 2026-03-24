@@ -8,7 +8,7 @@ export default function DefaultGamePanel({
 	return (
 		<View className="w-full py-6 px-4">
 			<Text className="text-sm text-text-secondary">
-				Brak panelu dla tej gry ({gameAccount.gameId})
+				No profile panel available for this game ({gameAccount.gameId})
 			</Text>
 		</View>
 	);

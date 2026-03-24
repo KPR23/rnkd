@@ -47,6 +47,7 @@
 		"@repo/api": "workspace:*",
 		"@repo/types": "workspace:*",
 		"@repo/typescript-config": "workspace:*",
+		"@repo/ui": "workspace:*",
 		"@tailwindcss/postcss": "^4.2.1",
 		"@types/react": "19.2.14",
 		"eslint-config-expo": "~10.0.0",

@@ -77,9 +77,21 @@ export default function ProfileGameStatCard({
 							className="text-base font-sans-semibold text-text"
 							numberOfLines={1}
 						>
-							{formatRankTitle(ranked?.tier ?? "Unranked", ranked?.rank ?? "")}{" "}
-							<Text className="text-text-secondary font-sans-semibold">
-								({ranked?.leaguePoints} LP)
+							<Text
+								className="text-base font-sans-semibold text-text"
+								numberOfLines={1}
+							>
+								{formatRankTitle(
+									ranked?.tier ?? "Unranked",
+									ranked?.rank ?? "",
+								)}
+								{ranked != null && (
+									<Text className="text-text-secondary font-sans-semibold">
+										{" "}
+										({ranked.leaguePoints} LP)
+									</Text>
+								)}
+								i
 							</Text>
 						</Text>
 						<Text

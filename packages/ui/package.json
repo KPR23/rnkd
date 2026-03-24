@@ -4,6 +4,7 @@
 	"private": true,
 	"exports": {
 		"./lib/utils": "./lib/utils.ts",
+		"./components/getInitialsForFallbackPhoto": "./components/getInitialsForFallbackPhoto.ts",
 		"./*": "./components/ui/*.tsx"
 	},
 	"scripts": {
