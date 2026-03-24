@@ -14,8 +14,9 @@ function formatRankTitle(tier: string, rank: string | null) {
 
 function riotTierToEmblemTier(tier: string | undefined): string {
 	if (!tier) {
-		return "gold";
+		return "unranked";
 	}
+
 	const lower = tier.toLowerCase();
 	const keys = [
 		"iron",
@@ -29,7 +30,7 @@ function riotTierToEmblemTier(tier: string | undefined): string {
 		"grandmaster",
 		"challenger",
 	];
-	return keys.includes(lower) ? lower : "gold";
+	return keys.includes(lower) ? lower : "unranked";
 }
 
 type ProfileGameStatCardProps = {

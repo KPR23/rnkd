@@ -4,6 +4,7 @@ import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system/legacy";
 
 type EmblemKey =
+	| "unranked"
 	| "iron"
 	| "bronze"
 	| "silver"
@@ -16,6 +17,7 @@ type EmblemKey =
 	| "challenger";
 
 const EMBLEM_ASSETS: Record<EmblemKey, number> = {
+	unranked: require("../../../assets/riot/rank-emblems/unranked.svg"),
 	iron: require("../../../assets/riot/rank-emblems/iron.svg"),
 	bronze: require("../../../assets/riot/rank-emblems/bronze.svg"),
 	silver: require("../../../assets/riot/rank-emblems/silver.svg"),
