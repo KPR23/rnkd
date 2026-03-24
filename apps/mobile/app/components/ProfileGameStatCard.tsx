@@ -3,6 +3,7 @@ import Text from "./Text";
 import RankEmblem from "./Riot/RankEmblems";
 import type { GameAccount } from "@repo/types";
 import { trpc } from "@/utils/trpc";
+import Frame from "@/app/components/Frame";
 
 const QUEUE_LABELS: Record<string, string> = {
 	RANKED_SOLO_5x5: "Ranked Solo/Duo",
@@ -66,7 +67,72 @@ export default function ProfileGameStatCard({
 	const csPerMinVal = "-";
 
 	return (
-		<View className="w-full flex flex-col">
+		<View className="w-full flex flex-col px-3 pt-4 pb-3 gap-4">
+			<View className="w-full flex flex-col gap-2">
+				<Text className="font-sans-semibold text-[11px] text-text-muted uppercase">
+					Overview
+				</Text>
+				<View className="w-full flex items-center flex-row border-border bg-card border px-4 py-2 h-16 justify-between">
+					<View className="flex flex-row items-center gap-3 flex-1">
+						<View className="w-12 h-12 flex items-center justify-center shrink-0 ">
+							<RankEmblem tier={riotTierToEmblemTier(ranked?.tier)} />
+						</View>
+						<View className="flex-col items-start flex-1 ">
+							<View className="flex flex-row items-center gap-1">
+								<Text className="text-base font-sans-semibold text-text">
+									{formatRankTitle(
+										ranked?.tier ?? "Unranked",
+										ranked?.rank ?? "",
+									)}{" "}
+								</Text>
+								<Text className="font-sans-semibold text-text-muted text-base">
+									{ranked?.leaguePoints} LP
+								</Text>
+							</View>
+							<Text className="font-sans-medium text-text-secondary text-xs">
+								{data?.gameAccount.gameName} #{data?.gameAccount.tagLine}
+							</Text>
+						</View>
+					</View>
+					<View className="flex flex-row items-center gap-3 shrink-0 justify-end">
+						<View className="flex flex-col items-end gap-1">
+							<View className="flex flex-row items-center gap-1">
+								<Text className="font-mono-medium text-text uppercase text-xs">
+									{ranked?.wins ?? 0}
+									<Text className="font-sans-medium text-text uppercase text-xs">
+										W
+									</Text>
+								</Text>
+								<Text className="font-sans-medium text-text uppercase text-xs">
+									{ranked?.losses ?? 0}
+									<Text className="font-sans-medium text-text uppercase text-xs">
+										L
+									</Text>
+								</Text>
+							</View>
+							<View className="flex flex-row items-center gap-1">
+								<Text className="font-mono-semibold text-text-muted uppercase text-xs">
+									{rankedWrLine}
+								</Text>
+								<Text className="font-sans-medium text-text-muted uppercase text-xs">
+									WR
+								</Text>
+							</View>
+						</View>
+					</View>
+				</View>
+			</View>
+			<View>
+				<Text className="font-sans-semibold text-[11px] text-text-muted uppercase">
+					Recent performance · last 20 games
+				</Text>
+			</View>
+		</View>
+	);
+}
+
+{
+	/* <View className="w-full flex flex-col">
 			<View className="w-full min-h-16 text-text pl-3 pr-4 py-2 flex-row gap-5 items-center justify-between">
 				<View className="flex-row gap-3 items-center flex-1 min-w-0">
 					<View className="w-12 h-12 flex items-center justify-center shrink-0">
@@ -128,8 +194,7 @@ export default function ProfileGameStatCard({
 					<StatItem value={csPerMinVal} label="avg cs/min" />
 				</View>
 			</View>
-		</View>
-	);
+		</View> */
 }
 
 const StatItem = ({ value, label }: { value: string; label: string }) => {
