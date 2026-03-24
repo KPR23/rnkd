@@ -44,7 +44,7 @@ export default function ProfileScreen({
 			<ScreenTitle title={title} actions={actions} />
 			<ScrollView
 				style={{ flex: 1 }}
-				contentContainerStyle={{ paddingBottom: 24 }}
+				contentContainerStyle={{ paddingBottom: 96 }}
 				showsVerticalScrollIndicator={false}
 				keyboardShouldPersistTaps="handled"
 			>

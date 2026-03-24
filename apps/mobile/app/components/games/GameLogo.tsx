@@ -11,7 +11,6 @@ const GAME_LOGO_ASSETS: Record<LogoKey, number> = {
 	[GAMES.CS2_FACEIT]: require("../../../assets/games/CounterStrikeLogo.svg"),
 };
 
-/** Natural aspect ratios from SVG viewBoxes (width / height). */
 const GAME_LOGO_LAYOUT: Record<LogoKey, { width: number; height: number }> = {
 	[GAMES.LOL]: { width: 74, height: 28 },
 	[GAMES.CS2_FACEIT]: { width: 66, height: 28 },

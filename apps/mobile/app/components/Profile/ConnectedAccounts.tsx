@@ -8,7 +8,7 @@ export default function ConnectedAccounts({
 	gameAccounts: GameAccount[];
 }) {
 	return (
-		<View className="flex flex-col">
+		<View className="flex flex-col gap-4">
 			{gameAccounts.map((gameAccount) => (
 				<ConnectedAccountCard key={gameAccount.id} gameAccount={gameAccount} />
 			))}

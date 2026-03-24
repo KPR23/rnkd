@@ -1,6 +1,7 @@
 import { GameAccount, GAMES } from "@repo/types";
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 import GameLogo from "@/app/components/games/GameLogo";
+import { CaretRightIcon } from "phosphor-react-native";
 
 function headerForGame(gameAccount: GameAccount): {
 	bgClass: string;
@@ -36,10 +37,37 @@ export default function ConnectedAccountCard({
 					{label}
 				</Text>
 			</View>
-			<View>
-				<Text className="font-mono-bold text-sm uppercase text-text text-right">
-					{gameAccount.gameName} #{gameAccount.tagLine}
-				</Text>
+			<View className="p-5 bg-card border-t-0 border border-border flex flex-row items-center justify-between">
+				<View className="flex flex-row items-center gap-3">
+					<Image
+						source={{
+							uri: `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/profileicon/${gameAccount.profileIconId}.png`,
+						}}
+						className="w-12 h-12 rounded-full"
+					/>
+					<View className="flex flex-col gap-0.5">
+						<View className="flex flex-row items-center gap-1.5">
+							<Text className="font-sans-semibold text-base text-text">
+								{gameAccount.gameName}
+							</Text>
+							<Text className="font-sans-semibold text-sm text-text-secondary">
+								#{gameAccount.tagLine}
+							</Text>
+						</View>
+
+						<View className="flex flex-row items-center gap-1">
+							<Text className="font-mono-medium text-xs uppercase text-text-secondary">
+								Level
+							</Text>
+							<Text className="font-mono-semibold text-xs text-text-secondary">
+								{gameAccount.summonerLevel}
+							</Text>
+						</View>
+					</View>
+				</View>
+				<View>
+					<CaretRightIcon size={19} color="#5b5666" weight="bold" />
+				</View>
 			</View>
 		</View>
 	);
