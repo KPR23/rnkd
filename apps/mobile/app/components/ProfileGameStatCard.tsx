@@ -70,15 +70,23 @@ export default function ProfileGameStatCard({
 						<View className="flex-col w-full flex-1">
 							<View className="flex flex-row w-full items-center justify-between gap-1">
 								<View className="flex flex-row items-center gap-1">
-									<Text className="text-base font-sans-semibold text-text">
-										{formatRankTitle(
-											ranked?.tier ?? "Unranked",
-											ranked?.rank ?? "",
-										)}{" "}
-									</Text>
-									<Text className="font-sans-semibold text-text-muted text-base">
-										{ranked?.leaguePoints} LP
-									</Text>
+									{ranked?.tier ? (
+										<>
+											<Text className="text-base font-sans-semibold text-text">
+												{formatRankTitle(
+													ranked.tier ?? "Unranked",
+													ranked.rank ?? "",
+												)}{" "}
+											</Text>
+											<Text className="font-sans-semibold text-text-muted text-base">
+												{ranked.leaguePoints} LP
+											</Text>
+										</>
+									) : (
+										<Text className="text-base font-sans-semibold text-text">
+											Unranked
+										</Text>
+									)}
 								</View>
 								<View className="flex flex-row items-center gap-1">
 									<Text className="font-mono-medium text-text uppercase text-xs">
@@ -87,7 +95,7 @@ export default function ProfileGameStatCard({
 											W
 										</Text>
 									</Text>
-									<Text className="font-sans-medium text-text uppercase text-xs">
+									<Text className="font-mono-medium text-text uppercase text-xs">
 										{ranked?.losses ?? 0}
 										<Text className="font-sans-medium text-text uppercase text-xs">
 											L
