@@ -98,7 +98,7 @@ export default function ProfileGameStatCard({
 							className="font-mono-semibold text-text-secondary uppercase text-xs"
 							numberOfLines={1}
 						>
-							{QUEUE_LABELS[ranked?.queueType ?? ""]}
+							{QUEUE_LABELS[ranked?.queueType ?? ""] ?? "Ranked"}
 						</Text>
 					</View>
 				</View>

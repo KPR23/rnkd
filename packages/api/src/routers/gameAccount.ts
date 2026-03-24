@@ -156,7 +156,7 @@ export const gameAccountRouter = router({
 	}),
 	getLolProfileDisplay: protectedProcedure
 		.input(z.object({ gameAccountId: z.uuid() }))
-		.query(async ({ ctx, input }) => {
+		.query(async ({ input }) => {
 			const account = await db.query.gameAccounts.findFirst({
 				where: eq(gameAccounts.id, input.gameAccountId),
 			});
