@@ -36,10 +36,23 @@ export default function RankEmblem({ tier }: { tier: string }) {
 	const maybeKey = tier.toLowerCase();
 	const key = (maybeKey in EMBLEM_ASSETS ? maybeKey : null) as EmblemKey | null;
 
-	const [xml, setXml] = React.useState<string | null>(key ? (xmlCache[key] ?? null) : null);
+	const [xml, setXml] = React.useState<string | null>(null);
 
 	React.useEffect(() => {
-		if (!key || xmlCache[key]) return;
+		if (!key) {
+			setXml(null);
+			return;
+		}
+
+		const cached = xmlCache[key];
+		if (cached) {
+			setXml(cached);
+			return;
+		}
+
+		setXml(null);
+
+		let cancelled = false;
 
 		const loadSvg = async () => {
 			try {
@@ -50,7 +63,9 @@ export default function RankEmblem({ tier }: { tier: string }) {
 				if (uri) {
 					const content = await FileSystem.readAsStringAsync(uri);
 					xmlCache[key] = content;
-					setXml(content);
+					if (!cancelled) {
+						setXml(content);
+					}
 				}
 			} catch (error) {
 				console.error("Failed to load rank emblem:", error);
@@ -58,6 +73,10 @@ export default function RankEmblem({ tier }: { tier: string }) {
 		};
 
 		void loadSvg();
+
+		return () => {
+			cancelled = true;
+		};
 	}, [key]);
 
 	if (!key || !xml) return null;
