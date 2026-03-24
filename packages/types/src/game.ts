@@ -1,8 +1,14 @@
-import type { games, GameId, gameAccounts } from "@repo/db";
+import type { games, gameAccounts } from "@repo/db";
+
+export const GAMES = {
+	LOL: "lol",
+	CS2_FACEIT: "cs2_faceit",
+} as const;
+
+export type GameId = (typeof GAMES)[keyof typeof GAMES];
 
 export type Game = typeof games.$inferSelect;
 export type GameInsert = typeof games.$inferInsert;
-export type { GameId };
 
 export type GameFromList = {
 	id: GameId;

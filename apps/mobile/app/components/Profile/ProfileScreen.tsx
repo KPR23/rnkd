@@ -59,7 +59,7 @@ export default function ProfileScreen({
 				</View>
 			</Frame>
 
-			<ProfileContent user={user} gameAccounts={gameAccounts} />
+			<ProfileContent gameAccounts={gameAccounts} />
 		</>
 	);
 }

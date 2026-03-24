@@ -61,9 +61,9 @@ export default function ProfileGameStatCard({
 	const rankedWrLine =
 		ranked != null ? `${rankedWinRate.toFixed(0)}%` : isLoading ? "…" : "—";
 
-	const gamesVal = "0";
-	const kdaVal = "0";
-	const csPerMinVal = "0";
+	const gamesVal = "-";
+	const kdaVal = "-";
+	const csPerMinVal = "-";
 
 	return (
 		<View className="w-full flex flex-col">
@@ -108,7 +108,7 @@ export default function ProfileGameStatCard({
 			</View>
 			<View className="w-full h-12 flex flex-row items-center justify-between border-t border-border">
 				<View className="flex-1 items-center justify-center border-r h-full border-border">
-					<StatItem value={gamesVal} label="games" />
+					<StatItem value={gamesVal} label="last 20 games" />
 				</View>
 				<View className="flex-1 items-center justify-center border-r h-full border-border">
 					<StatItem value={kdaVal} label="avg kda" />

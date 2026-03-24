@@ -1,15 +1,11 @@
-import type { GameAccount, User } from "@repo/types";
+import type { GameAccount } from "@repo/types";
 import { View } from "react-native";
-import Tabs from "../Tabs";
+import Tabs from "@/app/components/Tabs";
 interface ProfileContentProps {
-	user: User | null;
 	gameAccounts: GameAccount[] | undefined;
 }
 
-export default function ProfileContent({
-	user,
-	gameAccounts,
-}: ProfileContentProps) {
+export default function ProfileContent({ gameAccounts }: ProfileContentProps) {
 	return (
 		<View className="">
 			<Tabs gameAccounts={gameAccounts ?? []} />
