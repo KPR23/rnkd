@@ -58,31 +58,33 @@ function refreshLolAccountDataInBackground(
 				})
 				.where(eq(gameAccounts.id, accountId));
 		}),
-		getLolLeagueEntriesByPuuid(externalId, platformRoute).then(
-			async (entries) => {
-				await db
-					.delete(lolRankedEntries)
-					.where(eq(lolRankedEntries.gameAccountId, accountId));
-				if (entries.length === 0) {
-					return;
-				}
-				const syncedAt = new Date();
-				await db.insert(lolRankedEntries).values(
-					entries.map((e) => ({
-						gameAccountId: accountId,
-						queueType: e.queueType,
-						tier: e.tier,
-						rank: e.rank || null,
-						leaguePoints: e.leaguePoints,
-						wins: e.wins,
-						losses: e.losses,
-						hotStreak: e.hotStreak,
-						inactive: e.inactive,
-						syncedAt,
-					})),
-				);
-			},
-		),
+		(async () => {
+			const entries = await getLolLeagueEntriesByPuuid(
+				externalId,
+				platformRoute,
+			);
+			await db
+				.delete(lolRankedEntries)
+				.where(eq(lolRankedEntries.gameAccountId, accountId));
+			if (entries.length === 0) {
+				return;
+			}
+			const syncedAt = new Date();
+			await db.insert(lolRankedEntries).values(
+				entries.map((e) => ({
+					gameAccountId: accountId,
+					queueType: e.queueType,
+					tier: e.tier,
+					rank: e.rank || null,
+					leaguePoints: e.leaguePoints,
+					wins: e.wins,
+					losses: e.losses,
+					hotStreak: e.hotStreak,
+					inactive: e.inactive,
+					syncedAt,
+				})),
+			);
+		})(),
 	]).then((results) => {
 		for (const r of results) {
 			if (r.status === "rejected") {

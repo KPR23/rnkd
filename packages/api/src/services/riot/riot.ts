@@ -128,10 +128,6 @@ export async function getLolLeagueEntriesByPuuid(
 		5000,
 	);
 
-	if (response.status === 404) {
-		return [];
-	}
-
 	if (!response.ok) {
 		const err = (await response.json().catch(() => ({}))) as {
 			status?: { message?: string };
