@@ -91,7 +91,6 @@ export default function ProfileGameStatCard({
 										({ranked.leaguePoints} LP)
 									</Text>
 								)}
-								i
 							</Text>
 						</Text>
 						<Text

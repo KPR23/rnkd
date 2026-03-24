@@ -43,14 +43,16 @@ export default function ProfileScreen({
 		<>
 			<ScreenTitle title={title} actions={actions} />
 			<Frame className="mt-4">
-				<View className="flex items-center gap-2">
+				<View className="flex items-center gap-4">
 					{userImage}
 					<View className="flex flex-col items-center gap-1 text-center">
 						<Text className="text-2xl font-sans-bold text-text">
 							{user.name}
 						</Text>
 						{user.tag && (
-							<Text className="font-mono-bold text-primary">@{user.tag}</Text>
+							<Text className="font-mono-bold text-base text-primary">
+								@{user.tag}
+							</Text>
 						)}
 					</View>
 				</View>

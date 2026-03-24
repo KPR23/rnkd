@@ -7,7 +7,7 @@ export default function Frame({
 }: PropsWithChildren<{ className?: string }>) {
 	return (
 		<View
-			className={`text-text border-dark flex-col gap-5 items-center justify-center border p-5 ${className ?? ""}`}
+			className={`text-text bg-card border-border flex-col gap-5 items-center justify-center border p-5 ${className ?? ""}`}
 		>
 			{children}
 		</View>
