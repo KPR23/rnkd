@@ -5,7 +5,7 @@ import ScreenTitle, {
 } from "@/app/components/ScreenTitle";
 import Text from "@/app/components/Text";
 import type { GameAccount, User } from "@repo/types";
-import { Image, View } from "react-native";
+import { Image, ScrollView, View } from "react-native";
 import ProfileContent from "./ProfileContent";
 import { getInitialsForFallbackPhoto } from "@repo/ui/components/getInitialsForFallbackPhoto";
 
@@ -42,37 +42,44 @@ export default function ProfileScreen({
 	return (
 		<>
 			<ScreenTitle title={title} actions={actions} />
-			<Frame className="mt-4">
-				<View className="flex items-center gap-4">
-					{userImage}
-					<View className="flex flex-col items-center gap-1 text-center">
-						<Text className="text-2xl font-sans-bold text-text">
-							{user.name}
-						</Text>
-						{user.tag && (
-							<Text className="font-mono-bold text-base text-primary">
-								@{user.tag}
+			<ScrollView
+				style={{ flex: 1 }}
+				contentContainerStyle={{ paddingBottom: 24 }}
+				showsVerticalScrollIndicator={false}
+				keyboardShouldPersistTaps="handled"
+			>
+				<Frame>
+					<View className="flex items-center gap-4">
+						{userImage}
+						<View className="flex flex-col items-center gap-1 text-center">
+							<Text className="text-2xl font-sans-bold text-text">
+								{user.name}
 							</Text>
-						)}
+							{user.tag && (
+								<Text className="font-mono-bold text-base text-primary">
+									@{user.tag}
+								</Text>
+							)}
+						</View>
 					</View>
-				</View>
-				<View className="w-full flex-row gap-3">
-					<Button
-						variant="primary"
-						actionText={isOwnProfile ? "Edit profile" : "Add friend"}
-						className="flex-1"
-						onPress={() => void 0}
-					/>
-					<Button
-						variant="secondary"
-						actionText={isOwnProfile ? "Accounts" : "Message"}
-						className="flex-1"
-						onPress={() => void 0}
-					/>
-				</View>
-			</Frame>
+					<View className="w-full flex-row gap-3">
+						<Button
+							variant="primary"
+							actionText={isOwnProfile ? "Edit profile" : "Add friend"}
+							className="flex-1"
+							onPress={() => void 0}
+						/>
+						<Button
+							variant="secondary"
+							actionText={isOwnProfile ? "Accounts" : "Message"}
+							className="flex-1"
+							onPress={() => void 0}
+						/>
+					</View>
+				</Frame>
 
-			<ProfileContent gameAccounts={gameAccounts} />
+				<ProfileContent gameAccounts={gameAccounts} />
+			</ScrollView>
 		</>
 	);
 }
