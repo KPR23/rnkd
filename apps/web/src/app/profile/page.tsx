@@ -7,6 +7,7 @@ export default async function ProfilePage() {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
+
 	if (!session) {
 		redirect("/");
 	}
@@ -14,7 +15,7 @@ export default async function ProfilePage() {
 	return (
 		<div className="flex min-h-screen items-center justify-center">
 			<div className="w-full max-w-md flex flex-col gap-4">
-				<ListMatchHistory />
+				{/* <ListMatchHistory /> */}
 			</div>
 		</div>
 	);

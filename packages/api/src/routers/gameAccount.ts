@@ -19,6 +19,7 @@ import {
 	getLolLeagueEntriesByPuuid,
 } from "../services/riot/riot";
 import { protectedProcedure, router } from "../trpc";
+
 const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 
 const isGameAccountUniqueViolation = (error: unknown) => {
@@ -147,7 +148,7 @@ export const gameAccountRouter = router({
 				where: eq(gameAccounts.id, input.gameAccountId),
 			});
 
-			if (!account || account.userId !== ctx.session.user.id) {
+			if (!account) {
 				throw new TRPCError({ code: "NOT_FOUND" });
 			}
 

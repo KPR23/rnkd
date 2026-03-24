@@ -18,33 +18,41 @@ import z from "zod";
 const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 
 export const riotRouter = router({
-	getMatchHistory: protectedProcedure.query(async ({ ctx }) => {
-		const [gameAccount] = await db
-			.select()
-			.from(gameAccounts)
-			.where(
-				and(
-					eq(gameAccounts.userId, ctx.session.user.id),
-					eq(gameAccounts.gameId, GAMES.LOL),
-				),
-			);
-		if (!gameAccount) {
-			throw new TRPCError({ code: "NOT_FOUND" });
-		}
-		const matchHistory = await db
-			.select()
-			.from(matches)
-			.innerJoin(matchParticipants, eq(matches.id, matchParticipants.matchId))
-			.where(
-				and(
-					eq(matches.gameId, GAMES.LOL),
-					eq(matchParticipants.gameAccountId, gameAccount.id),
-				),
-			)
-			.orderBy(desc(matches.playedAt));
+	getMatchHistory: protectedProcedure
+		.input(
+			z.object({
+				gameAccountId: z.uuid(),
+			}),
+		)
+		.query(async ({ input }) => {
+			const [gameAccount] = await db
+				.select()
+				.from(gameAccounts)
+				.where(
+					and(
+						eq(gameAccounts.id, input.gameAccountId),
+						eq(gameAccounts.gameId, GAMES.LOL),
+					),
+				);
 
-		return matchHistory;
-	}),
+			if (!gameAccount) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			const matchHistory = await db
+				.select()
+				.from(matches)
+				.innerJoin(matchParticipants, eq(matches.id, matchParticipants.matchId))
+				.where(
+					and(
+						eq(matches.gameId, GAMES.LOL),
+						eq(matchParticipants.gameAccountId, gameAccount.id),
+					),
+				)
+				.orderBy(desc(matches.playedAt));
+
+			return matchHistory;
+		}),
 	getLolAccountDetails: protectedProcedure
 		.input(
 			z.object({
