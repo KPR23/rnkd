@@ -1,7 +1,6 @@
 import { auth } from "@/src/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { ListMatchHistory } from "./_components/listMatchHistory";
 
 export default async function ProfilePage() {
 	const session = await auth.api.getSession({
