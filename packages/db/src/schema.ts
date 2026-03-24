@@ -1,5 +1,8 @@
 import { relations } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import {
+	check,
+	foreignKey,
 	pgTable,
 	text,
 	timestamp,
@@ -164,6 +167,7 @@ export const gameAccounts = pgTable(
 			table.gameId,
 			table.externalId,
 		),
+		uniqueIndex("game_accounts_id_game_id_unique").on(table.id, table.gameId),
 		index("game_accounts_user_idx").on(table.userId),
 		index("game_accounts_last_synced_idx").on(table.lastSyncedAt),
 	],
@@ -172,9 +176,8 @@ export const gameAccounts = pgTable(
 export const lolRankedEntries = pgTable(
 	"lol_ranked_entries",
 	{
-		gameAccountId: text("game_account_id")
-			.notNull()
-			.references(() => gameAccounts.id, { onDelete: "cascade" }),
+		gameAccountId: text("game_account_id").notNull(),
+		gameId: text("game_id").notNull().default(GAMES.LOL),
 		queueType: text("queue_type").notNull(),
 		tier: text("tier").notNull(),
 		rank: text("rank"),
@@ -192,6 +195,12 @@ export const lolRankedEntries = pgTable(
 	},
 	(table) => [
 		primaryKey({ columns: [table.gameAccountId, table.queueType] }),
+		check("lol_ranked_entries_game_id_is_lol", sql`${table.gameId} = 'lol'`),
+		foreignKey({
+			columns: [table.gameAccountId, table.gameId],
+			foreignColumns: [gameAccounts.id, gameAccounts.gameId],
+			name: "lol_ranked_entries_game_account_lol_fk",
+		}).onDelete("cascade"),
 		index("lol_ranked_entries_account_idx").on(table.gameAccountId),
 		index("lol_ranked_entries_synced_idx").on(table.syncedAt),
 	],
@@ -418,8 +427,8 @@ export const lolRankedEntriesRelations = relations(
 	lolRankedEntries,
 	({ one }) => ({
 		account: one(gameAccounts, {
-			fields: [lolRankedEntries.gameAccountId],
-			references: [gameAccounts.id],
+			fields: [lolRankedEntries.gameAccountId, lolRankedEntries.gameId],
+			references: [gameAccounts.id, gameAccounts.gameId],
 		}),
 	}),
 );

@@ -46,6 +46,7 @@ function refreshLolAccountDataInBackground(
 	accountId: string,
 	externalId: string,
 	platformRoute: RiotPlatformRoute,
+	gameAccountGameId: string,
 ) {
 	void Promise.allSettled([
 		getLolAccountDetails(externalId, platformRoute).then(async (details) => {
@@ -59,13 +60,21 @@ function refreshLolAccountDataInBackground(
 				.where(eq(gameAccounts.id, accountId));
 		}),
 		(async () => {
+			if (gameAccountGameId !== GAMES.LOL) {
+				return;
+			}
 			const entries = await getLolLeagueEntriesByPuuid(
 				externalId,
 				platformRoute,
 			);
 			await db
 				.delete(lolRankedEntries)
-				.where(eq(lolRankedEntries.gameAccountId, accountId));
+				.where(
+					and(
+						eq(lolRankedEntries.gameAccountId, accountId),
+						eq(lolRankedEntries.gameId, GAMES.LOL),
+					),
+				);
 			if (entries.length === 0) {
 				return;
 			}
@@ -73,6 +82,7 @@ function refreshLolAccountDataInBackground(
 			await db.insert(lolRankedEntries).values(
 				entries.map((e) => ({
 					gameAccountId: accountId,
+					gameId: GAMES.LOL,
 					queueType: e.queueType,
 					tier: e.tier,
 					rank: e.rank || null,
@@ -135,6 +145,7 @@ export const gameAccountRouter = router({
 				a.id,
 				a.externalId,
 				a.platformRoute as RiotPlatformRoute,
+				a.gameId,
 			);
 		}
 
@@ -267,6 +278,9 @@ export const gameAccountRouter = router({
 				const [created] = gameAccountRecord;
 				if (created) {
 					try {
+						if (created.gameId !== GAMES.LOL) {
+							return gameAccountRecord;
+						}
 						const entries = await getLolLeagueEntriesByPuuid(
 							created.externalId,
 							created.platformRoute as RiotPlatformRoute,
@@ -276,6 +290,7 @@ export const gameAccountRouter = router({
 							await db.insert(lolRankedEntries).values(
 								entries.map((e) => ({
 									gameAccountId: created.id,
+									gameId: GAMES.LOL,
 									queueType: e.queueType,
 									tier: e.tier,
 									rank: e.rank || null,
