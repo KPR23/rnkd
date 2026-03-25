@@ -1,5 +1,6 @@
+import type { ReactNode } from "react";
 import { GameAccount, GAMES } from "@repo/types";
-import { Image, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 import GameLogo from "@/app/components/games/GameLogo";
 import { CaretRightIcon } from "phosphor-react-native";
 
@@ -20,12 +21,105 @@ function headerForGame(gameAccount: GameAccount): {
 	}
 }
 
+function LolAccountBody({ gameAccount }: { gameAccount: GameAccount }) {
+	return (
+		<View className="flex flex-row items-center gap-3">
+			<Image
+				source={{
+					uri: `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/profileicon/${gameAccount.profileIconId}.png`,
+				}}
+				className="w-12 h-12 rounded-full"
+			/>
+			<View className="flex flex-col gap-0.5 min-w-0 flex-1">
+				<View className="flex flex-row items-center gap-1.5 flex-wrap">
+					<Text className="font-sans-semibold text-base text-text">
+						{gameAccount.gameName}
+					</Text>
+					<Text className="font-sans-semibold text-sm text-text-secondary">
+						#{gameAccount.tagLine}
+					</Text>
+				</View>
+
+				<View className="flex flex-row items-center gap-1">
+					<Text className="font-mono-medium text-xs uppercase text-text-secondary">
+						Level
+					</Text>
+					<Text className="font-mono-semibold text-xs text-text-secondary">
+						{gameAccount.summonerLevel}
+					</Text>
+				</View>
+			</View>
+		</View>
+	);
+}
+
+function Cs2FaceitAccountBody({ gameAccount }: { gameAccount: GameAccount }) {
+	const faceitNick = gameAccount.gameName?.trim() || gameAccount.externalId;
+	const steamNick = gameAccount.tagLine?.trim();
+
+	return (
+		<View className="flex flex-row items-center gap-3 min-w-0 flex-1">
+			<View className="flex flex-col gap-2 min-w-0 flex-1">
+				<View className="flex flex-col gap-0.5">
+					<Text className="font-mono-medium text-xs uppercase text-text-secondary">
+						Faceit
+					</Text>
+					<Text
+						className="font-sans-semibold text-base text-text"
+						numberOfLines={1}
+					>
+						{faceitNick}
+					</Text>
+				</View>
+				{steamNick ? (
+					<View className="flex flex-col gap-0.5">
+						<Text className="font-mono-medium text-xs uppercase text-text-secondary">
+							Steam
+						</Text>
+						<Text
+							className="font-sans-semibold text-sm text-text-secondary"
+							numberOfLines={1}
+						>
+							{steamNick}
+						</Text>
+					</View>
+				) : null}
+			</View>
+		</View>
+	);
+}
+
+function FallbackAccountBody({ gameAccount }: { gameAccount: GameAccount }) {
+	return (
+		<View className="flex flex-row items-center gap-3 min-w-0 flex-1">
+			<Text
+				className="font-sans-semibold text-base text-text"
+				numberOfLines={2}
+			>
+				{gameAccount.gameName ?? gameAccount.externalId}
+			</Text>
+		</View>
+	);
+}
+
 export default function ConnectedAccountCard({
 	gameAccount,
 }: {
 	gameAccount: GameAccount;
 }) {
 	const { bgClass, label } = headerForGame(gameAccount);
+
+	let body: ReactNode;
+	switch (gameAccount.gameId) {
+		case GAMES.LOL:
+			body = <LolAccountBody gameAccount={gameAccount} />;
+			break;
+		case GAMES.CS2_FACEIT:
+			body = <Cs2FaceitAccountBody gameAccount={gameAccount} />;
+			break;
+		default:
+			body = <FallbackAccountBody gameAccount={gameAccount} />;
+	}
 
 	return (
 		<View className="flex flex-col">
@@ -37,38 +131,18 @@ export default function ConnectedAccountCard({
 					{label}
 				</Text>
 			</View>
-			<View className="p-5 bg-card border-t-0 border border-border flex flex-row items-center justify-between">
-				<View className="flex flex-row items-center gap-3">
-					<Image
-						source={{
-							uri: `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/profileicon/${gameAccount.profileIconId}.png`,
-						}}
-						className="w-12 h-12 rounded-full"
-					/>
-					<View className="flex flex-col gap-0.5">
-						<View className="flex flex-row items-center gap-1.5">
-							<Text className="font-sans-semibold text-base text-text">
-								{gameAccount.gameName}
-							</Text>
-							<Text className="font-sans-semibold text-sm text-text-secondary">
-								#{gameAccount.tagLine}
-							</Text>
-						</View>
-
-						<View className="flex flex-row items-center gap-1">
-							<Text className="font-mono-medium text-xs uppercase text-text-secondary">
-								Level
-							</Text>
-							<Text className="font-mono-semibold text-xs text-text-secondary">
-								{gameAccount.summonerLevel}
-							</Text>
-						</View>
-					</View>
-				</View>
-				<View>
+			<Pressable
+				className="p-5 bg-card border-t-0 border border-border flex flex-row items-center justify-between"
+				onPress={() => {
+					// TODO: Navigate to the game account profile
+					console.log("pressed");
+				}}
+			>
+				<View className="flex-1 min-w-0 flex-row items-center">{body}</View>
+				<View className="shrink-0">
 					<CaretRightIcon size={19} color="#5b5666" weight="bold" />
 				</View>
-			</View>
+			</Pressable>
 		</View>
 	);
 }
