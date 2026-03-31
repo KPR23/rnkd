@@ -1,5 +1,4 @@
-import { View, Alert, Button } from "react-native";
-import Text from "@/app/components/Text";
+import { View, Alert, Button, Text } from "react-native";
 import { trpc } from "@/utils/trpc";
 import { authClient } from "@/lib/auth-client";
 
@@ -33,7 +32,7 @@ export default function HomeTab() {
 
 		return (
 			<View className="flex-1 items-center justify-center bg-background px-6">
-				<Text className="mb-4 text-center text-base text-slate-100">
+				<Text className="mb-4 text-center font-sans text-base text-slate-100">
 					You must be signed in to view this page
 				</Text>
 				<Button title="Login with Github" onPress={handleLogin} />
@@ -44,7 +43,7 @@ export default function HomeTab() {
 	return (
 		<View className="flex-1 items-center justify-center bg-background px-6">
 			<Text className="mb-2 text-2xl font-sans-semibold text-white">Rnkd</Text>
-			<Text className="text-center text-slate-200">
+			<Text className="text-center font-sans text-slate-200">
 				{JSON.stringify(user.data)}
 			</Text>
 		</View>

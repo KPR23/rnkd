@@ -16,7 +16,7 @@ export default function Button({
 }: Props) {
 	return (
 		<Pressable
-			className={`will-change-pressable p-2 h-11 items-center justify-center active:opacity-70 ${variant === "primary" ? "bg-primary" : "bg-dark border border-border"} ${className ?? ""}`}
+			className={`will-change-pressable h-11 items-center justify-center active:opacity-70 ${variant === "primary" ? "bg-primary" : "bg-dark border border-border"} ${className ?? ""}`}
 			onPress={onPress}
 			{...pressableProps}
 		>

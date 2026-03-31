@@ -1,6 +1,5 @@
 import { isCs2FaceitGameAccount } from "@repo/types";
-import { View } from "react-native";
-import Text from "@/app/components/Text";
+import { Text, View } from "react-native";
 import type { GameProfilePanelProps } from "@/profile/GameProfileRegistry";
 
 export default function Cs2FaceitProfilePanel({
@@ -24,7 +23,9 @@ export default function Cs2FaceitProfilePanel({
 			<Text className="text-base font-sans-semibold text-text">
 				CS2 (FACEIT)
 			</Text>
-			<Text className="mt-1 text-sm text-text-secondary">{subtitle}</Text>
+			<Text className="mt-1 font-sans text-sm text-text-secondary">
+				{subtitle}
+			</Text>
 		</View>
 	);
 }

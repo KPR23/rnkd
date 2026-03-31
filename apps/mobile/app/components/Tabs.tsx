@@ -67,7 +67,7 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 	}, [gameAccounts]);
 
 	if (gameAccounts.length === 0) {
-		return <Text>No games found</Text>;
+		return <Text className="font-sans text-text">No games found</Text>;
 	}
 
 	const activeAccount = gameAccounts.find((a) => a.id === selectedAccountId);

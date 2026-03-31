@@ -1,5 +1,4 @@
-import { View } from "react-native";
-import Text from "./Text";
+import { Text, View } from "react-native";
 import IconButton from "./IconButton";
 
 export type ScreenTitleAction = {

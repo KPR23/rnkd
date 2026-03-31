@@ -1,6 +1,11 @@
 import Cs2FaceitAccountDetailsModal from "@/app/components/Profile/Cs2FaceitAccountDetailsModal";
 import LolAccountDetailsModal from "@/app/components/Profile/LolAccountDetailsModal";
-import { GAMES, GameAccount, isLolGameAccount } from "@repo/types";
+import {
+	GAMES,
+	GameAccount,
+	isCs2FaceitGameAccount,
+	isLolGameAccount,
+} from "@repo/types";
 import { XIcon } from "phosphor-react-native";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +24,9 @@ function AccountDetailsContent({ gameAccount }: { gameAccount: GameAccount }) {
 			}
 			return <LolAccountDetailsModal gameAccount={gameAccount} />;
 		case GAMES.CS2_FACEIT:
+			if (!isCs2FaceitGameAccount(gameAccount)) {
+				return null;
+			}
 			return <Cs2FaceitAccountDetailsModal gameAccount={gameAccount} />;
 		default:
 			return null;
@@ -52,7 +60,6 @@ export default function AccountDetailsModal({
 						showsVerticalScrollIndicator={false}
 						contentContainerStyle={{
 							paddingHorizontal: 20,
-							paddingTop: 8,
 							paddingBottom: 32,
 						}}
 					>

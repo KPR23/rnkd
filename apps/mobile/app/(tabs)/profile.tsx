@@ -1,8 +1,8 @@
 import Screen from "@/app/components/Screen";
-import Text from "@/app/components/Text";
 import ProfileScreen from "@/app/components/Profile/ProfileScreen";
 import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
+import { Text } from "react-native";
 import { ExportIcon, GearSixIcon } from "phosphor-react-native";
 
 export default function ProfileTab() {
@@ -17,7 +17,7 @@ export default function ProfileTab() {
 	if (!session) {
 		return (
 			<Screen>
-				<Text className="mt-2 text-base text-white text-center">
+				<Text className="mt-2 font-sans text-base text-white text-center">
 					Zaloguj się, aby zobaczyć profil
 				</Text>
 			</Screen>

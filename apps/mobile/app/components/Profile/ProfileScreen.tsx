@@ -3,9 +3,8 @@ import Frame from "@/app/components/Frame";
 import ScreenTitle, {
 	type ScreenTitleAction,
 } from "@/app/components/ScreenTitle";
-import Text from "@/app/components/Text";
 import type { GameAccount, User } from "@repo/types";
-import { Image, ScrollView, View } from "react-native";
+import { Image, ScrollView, Text, View } from "react-native";
 import ProfileContent from "./ProfileContent";
 import { getInitialsForFallbackPhoto } from "@repo/ui/components/getInitialsForFallbackPhoto";
 

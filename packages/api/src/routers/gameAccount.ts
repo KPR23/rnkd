@@ -236,6 +236,11 @@ export const gameAccountRouter = router({
 
 			const primaryRanked = pickPrimaryLolRankedEntry(rankedRows);
 
+			const rankedSoloDuo =
+				rankedRows.find((row) => row.queueType === RANKED_SOLO) ?? null;
+			const rankedFlex =
+				rankedRows.find((row) => row.queueType === RANKED_FLEX) ?? null;
+
 			let rankedWinRate = 0;
 			if (primaryRanked) {
 				const played = primaryRanked.wins + primaryRanked.losses;
@@ -245,6 +250,8 @@ export const gameAccountRouter = router({
 			return {
 				gameAccount: account,
 				ranked: primaryRanked,
+				rankedSoloDuo,
+				rankedFlex,
 				rankedWinRate,
 			};
 		}),
