@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
 	GAMES,
 	isLolGameAccount,
@@ -7,8 +7,10 @@ import {
 	type LolGameAccount,
 } from "@repo/types";
 import { Image, Pressable, Text, View } from "react-native";
+import { router } from "expo-router";
 import GameLogo from "@/app/components/games/GameLogo";
 import { CaretRightIcon } from "phosphor-react-native";
+import AccountDetailsModal from "@/app/components/AccountDetailsModal";
 
 const DRAGON_CDN_VERSION = "14.24.1";
 
@@ -122,6 +124,7 @@ export default function ConnectedAccountCard({
 }: {
 	gameAccount: GameAccount;
 }) {
+	const [isModalOpen, setIsModalOpen] = useState(false);
 	const { bgClass, label } = headerForGame(gameAccount);
 
 	let body: ReactNode;
@@ -153,8 +156,7 @@ export default function ConnectedAccountCard({
 			<Pressable
 				className="p-5 bg-card border-t-0 border border-border flex flex-row items-center justify-between"
 				onPress={() => {
-					// TODO: Navigate to the game account profile
-					console.log("pressed");
+					setIsModalOpen(true);
 				}}
 			>
 				<View className="flex-1 min-w-0 flex-row items-center">{body}</View>
@@ -162,6 +164,11 @@ export default function ConnectedAccountCard({
 					<CaretRightIcon size={19} color="#5b5666" weight="bold" />
 				</View>
 			</Pressable>
+			<AccountDetailsModal
+				gameAccount={gameAccount}
+				visible={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+			/>
 		</View>
 	);
 }
