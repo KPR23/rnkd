@@ -189,7 +189,17 @@ export const gameAccountRouter = router({
 			);
 		}
 
-		const normalizedAccounts = accounts.map(mapGameAccountRecord);
+		const normalizedAccounts = accounts.flatMap((account) => {
+			try {
+				return [mapGameAccountRecord(account)];
+			} catch (error) {
+				console.error("Skipping malformed game account", {
+					accountId: account.id,
+					error,
+				});
+				return [];
+			}
+		});
 
 		return {
 			lol: normalizedAccounts.filter(isLolGameAccount),

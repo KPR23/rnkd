@@ -107,8 +107,11 @@ export default function ProfileGameStatCard({
 							</View>
 							<View className="flex flex-row w-full items-center justify-between gap-1">
 								<Text className="font-sans-medium text-text-secondary text-xs">
-									{data?.gameAccount.profile.gameName} #
-									{data?.gameAccount.profile.tagLine}
+									{isLolAccount &&
+									data?.gameAccount.profile?.gameName &&
+									data?.gameAccount.profile?.tagLine
+										? `${data.gameAccount.profile.gameName} #${data.gameAccount.profile.tagLine}`
+										: gameAccount.externalId}
 								</Text>
 								<View className="flex flex-row items-center gap-1">
 									<Text className="font-mono-semibold text-text-muted uppercase text-xs">

@@ -37,11 +37,10 @@ function getTabDisplayLabel(accounts: GameAccount[], account: GameAccount) {
 		}
 
 		if (isCs2FaceitGameAccount(account)) {
-			return (
-				account.profile?.faceitNickname ??
-				account.profile?.steamNickname ??
-				fallbackDetail
-			);
+			const faceitNickname = account.profile?.faceitNickname?.trim();
+			const steamNickname = account.profile?.steamNickname?.trim();
+
+			return faceitNickname || steamNickname || fallbackDetail;
 		}
 
 		return fallbackDetail;
