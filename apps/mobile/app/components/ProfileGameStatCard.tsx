@@ -111,7 +111,7 @@ export default function ProfileGameStatCard({
 									data?.gameAccount.profile?.gameName &&
 									data?.gameAccount.profile?.tagLine
 										? `${data.gameAccount.profile.gameName} #${data.gameAccount.profile.tagLine}`
-										: gameAccount.externalId}
+										: gameAccount.externalId.slice(0, 10)}
 								</Text>
 								<View className="flex flex-row items-center gap-1">
 									<Text className="font-mono-semibold text-text-muted uppercase text-xs">
