@@ -4,6 +4,8 @@ import { Image, Pressable, Text, View } from "react-native";
 import GameLogo from "@/app/components/games/GameLogo";
 import { CaretRightIcon } from "phosphor-react-native";
 
+const DRAGON_CDN_VERSION = "14.24.1";
+
 function headerForGame(gameAccount: GameAccount): {
 	bgClass: string;
 	label: string;
@@ -26,7 +28,7 @@ function LolAccountBody({ gameAccount }: { gameAccount: GameAccount }) {
 		<View className="flex flex-row items-center gap-3">
 			<Image
 				source={{
-					uri: `https://ddragon.leagueoflegends.com/cdn/14.24.1/img/profileicon/${gameAccount.profileIconId}.png`,
+					uri: `https://ddragon.leagueoflegends.com/cdn/${DRAGON_CDN_VERSION}/img/profileicon/${gameAccount.profileIconId}.png`,
 				}}
 				className="w-12 h-12 rounded-full"
 			/>
