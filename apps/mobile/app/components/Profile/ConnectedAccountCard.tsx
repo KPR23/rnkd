@@ -1,4 +1,4 @@
-import AccountDetailsModal from "@/app/components/AccountDetailsModal";
+import AccountDetailsModal from "@/app/components/Profile/AccountDetailsModal";
 import GameLogo from "@/app/components/games/GameLogo";
 import { DRAGON_CDN_VERSION } from "@/constants/riotApiUrl";
 import {
@@ -11,25 +11,6 @@ import {
 import { CaretRightIcon } from "phosphor-react-native";
 import { useState, type ReactNode } from "react";
 import { Image, Pressable, Text, View } from "react-native";
-
-function headerForGame(gameAccount: GameAccount): {
-	bgClass: string;
-	label: string;
-} {
-	switch (gameAccount.gameId) {
-		case GAMES.CS2_FACEIT:
-			return { bgClass: "bg-games-cs2", label: "FACEIT" };
-		case GAMES.LOL:
-			return {
-				bgClass: "bg-games-lol",
-				label: isLolGameAccount(gameAccount)
-					? gameAccount.profile.platformRoute
-					: "Unknown",
-			};
-		default:
-			return { bgClass: "dark", label: "Unknown" };
-	}
-}
 
 function LolAccountBody({ gameAccount }: { gameAccount: LolGameAccount }) {
 	return (
@@ -117,29 +98,47 @@ function FallbackAccountBody({ gameAccount }: { gameAccount: GameAccount }) {
 	);
 }
 
+function accountCardPresentation(gameAccount: GameAccount): {
+	bgClass: string;
+	label: string;
+	body: ReactNode;
+} {
+	switch (gameAccount.gameId) {
+		case GAMES.CS2_FACEIT:
+			return {
+				bgClass: "bg-games-cs2",
+				label: "FACEIT",
+				body: <Cs2FaceitAccountBody gameAccount={gameAccount} />,
+			};
+		case GAMES.LOL:
+			if (!isLolGameAccount(gameAccount)) {
+				return {
+					bgClass: "bg-games-lol",
+					label: "Unknown",
+					body: <FallbackAccountBody gameAccount={gameAccount} />,
+				};
+			}
+			return {
+				bgClass: "bg-games-lol",
+				label: gameAccount.profile.platformRoute,
+				body: <LolAccountBody gameAccount={gameAccount} />,
+			};
+		default:
+			return {
+				bgClass: "dark",
+				label: "Unknown",
+				body: <FallbackAccountBody gameAccount={gameAccount} />,
+			};
+	}
+}
+
 export default function ConnectedAccountCard({
 	gameAccount,
 }: {
 	gameAccount: GameAccount;
 }) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const { bgClass, label } = headerForGame(gameAccount);
-
-	let body: ReactNode;
-	switch (gameAccount.gameId) {
-		case GAMES.LOL:
-			if (!isLolGameAccount(gameAccount)) {
-				body = <FallbackAccountBody gameAccount={gameAccount} />;
-				break;
-			}
-			body = <LolAccountBody gameAccount={gameAccount} />;
-			break;
-		case GAMES.CS2_FACEIT:
-			body = <Cs2FaceitAccountBody gameAccount={gameAccount} />;
-			break;
-		default:
-			body = <FallbackAccountBody gameAccount={gameAccount} />;
-	}
+	const { bgClass, label, body } = accountCardPresentation(gameAccount);
 
 	return (
 		<View className="flex flex-col">
