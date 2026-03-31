@@ -1,4 +1,9 @@
-import type { games, gameAccounts } from "@repo/db";
+import type {
+	cs2FaceitGameAccountProfiles,
+	gameAccounts,
+	games,
+	lolGameAccountProfiles,
+} from "@repo/db";
 
 export const GAMES = {
 	LOL: "lol",
@@ -15,9 +20,38 @@ export type GameFromList = {
 	name: string;
 };
 
-export type GameAccount = typeof gameAccounts.$inferSelect;
+export type GameAccountRow = typeof gameAccounts.$inferSelect;
 export type GameAccountInsert = typeof gameAccounts.$inferInsert;
-export type GameAccounts = {
-	lol: GameAccount[];
-	faceit: GameAccount[];
+
+export type LolGameAccountProfile = typeof lolGameAccountProfiles.$inferSelect;
+export type Cs2FaceitGameAccountProfile =
+	typeof cs2FaceitGameAccountProfiles.$inferSelect;
+
+export type LolGameAccount = Omit<GameAccountRow, "gameId"> & {
+	gameId: typeof GAMES.LOL;
+	profile: LolGameAccountProfile;
 };
+
+export type Cs2FaceitGameAccount = Omit<GameAccountRow, "gameId"> & {
+	gameId: typeof GAMES.CS2_FACEIT;
+	profile: Cs2FaceitGameAccountProfile | null;
+};
+
+export type GameAccount = LolGameAccount | Cs2FaceitGameAccount;
+
+export type GameAccounts = {
+	lol: LolGameAccount[];
+	faceit: Cs2FaceitGameAccount[];
+};
+
+export function isLolGameAccount(
+	gameAccount: GameAccount,
+): gameAccount is LolGameAccount {
+	return gameAccount.gameId === GAMES.LOL;
+}
+
+export function isCs2FaceitGameAccount(
+	gameAccount: GameAccount,
+): gameAccount is Cs2FaceitGameAccount {
+	return gameAccount.gameId === GAMES.CS2_FACEIT;
+}

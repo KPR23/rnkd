@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import type { GameAccount } from "@repo/types";
 import ConnectedAccountCard from "@/app/components/Profile/ConnectedAccountCard";
 

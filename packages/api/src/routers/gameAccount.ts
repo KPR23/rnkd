@@ -1,12 +1,19 @@
 import {
+	cs2FaceitGameAccountProfiles,
 	db,
 	gameAccounts,
 	GAMES,
+	lolGameAccountProfiles,
 	lolRankedEntries,
 	RIOT_REGIONAL_ROUTE,
-	RiotPlatformRoute,
-	RiotRegionalRoute,
+	type RiotPlatformRoute,
+	type RiotRegionalRoute,
 } from "@repo/db";
+import {
+	isCs2FaceitGameAccount,
+	isLolGameAccount,
+	type GameAccount,
+} from "@repo/types";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
@@ -42,36 +49,63 @@ const isGameAccountUniqueViolation = (error: unknown) => {
 
 const LOL_PROFILE_REFRESH_TTL_MS = 1000 * 60 * 30;
 
+type GameAccountRecord = typeof gameAccounts.$inferSelect & {
+	lolProfile: typeof lolGameAccountProfiles.$inferSelect | null;
+	cs2FaceitProfile: typeof cs2FaceitGameAccountProfiles.$inferSelect | null;
+};
+
+function mapGameAccountRecord(account: GameAccountRecord): GameAccount {
+	const { lolProfile, cs2FaceitProfile, ...baseAccount } = account;
+
+	switch (baseAccount.gameId) {
+		case GAMES.LOL:
+			if (!lolProfile) {
+				throw new Error("Missing LoL profile for game account");
+			}
+
+			return {
+				...baseAccount,
+				gameId: GAMES.LOL,
+				profile: lolProfile,
+			};
+		case GAMES.CS2_FACEIT:
+			return {
+				...baseAccount,
+				gameId: GAMES.CS2_FACEIT,
+				profile: cs2FaceitProfile,
+			};
+		default:
+			throw new Error(`Unsupported game account type: ${baseAccount.gameId}`);
+	}
+}
+
 function refreshLolAccountDataInBackground(
 	accountId: string,
 	externalId: string,
 	platformRoute: RiotPlatformRoute,
-	gameAccountGameId: string,
 ) {
 	void (async () => {
 		try {
 			const [details, entries] = await Promise.all([
 				getLolAccountDetails(externalId, platformRoute),
-				gameAccountGameId === GAMES.LOL
-					? getLolLeagueEntriesByPuuid(externalId, platformRoute)
-					: Promise.resolve([] as Awaited<
-							ReturnType<typeof getLolLeagueEntriesByPuuid>
-						>),
+				getLolLeagueEntriesByPuuid(externalId, platformRoute),
 			]);
 
 			await db.transaction(async (tx) => {
 				await tx
-					.update(gameAccounts)
+					.update(lolGameAccountProfiles)
 					.set({
 						profileIconId: details.profileIconId,
 						summonerLevel: details.summonerLevel,
+					})
+					.where(eq(lolGameAccountProfiles.gameAccountId, accountId));
+
+				await tx
+					.update(gameAccounts)
+					.set({
 						lastSyncedAt: new Date(),
 					})
 					.where(eq(gameAccounts.id, accountId));
-
-				if (gameAccountGameId !== GAMES.LOL) {
-					return;
-				}
 
 				await tx
 					.delete(lolRankedEntries)
@@ -88,17 +122,17 @@ function refreshLolAccountDataInBackground(
 
 				const syncedAt = new Date();
 				await tx.insert(lolRankedEntries).values(
-					entries.map((e) => ({
+					entries.map((entry) => ({
 						gameAccountId: accountId,
 						gameId: GAMES.LOL,
-						queueType: e.queueType,
-						tier: e.tier,
-						rank: e.rank || null,
-						leaguePoints: e.leaguePoints,
-						wins: e.wins,
-						losses: e.losses,
-						hotStreak: e.hotStreak,
-						inactive: e.inactive,
+						queueType: entry.queueType,
+						tier: entry.tier,
+						rank: entry.rank || null,
+						leaguePoints: entry.leaguePoints,
+						wins: entry.wins,
+						losses: entry.losses,
+						hotStreak: entry.hotStreak,
+						inactive: entry.inactive,
 						syncedAt,
 					})),
 				);
@@ -118,9 +152,10 @@ function pickPrimaryLolRankedEntry<T extends { queueType: string }>(
 	if (rows.length === 0) {
 		return null;
 	}
+
 	return (
-		rows.find((r) => r.queueType === RANKED_SOLO) ??
-		rows.find((r) => r.queueType === RANKED_FLEX) ??
+		rows.find((row) => row.queueType === RANKED_SOLO) ??
+		rows.find((row) => row.queueType === RANKED_FLEX) ??
 		rows[0] ??
 		null
 	);
@@ -130,47 +165,65 @@ export const gameAccountRouter = router({
 	getGameAccounts: protectedProcedure.query(async ({ ctx }) => {
 		const accounts = await db.query.gameAccounts.findMany({
 			where: eq(gameAccounts.userId, ctx.session.user.id),
+			with: {
+				lolProfile: true,
+				cs2FaceitProfile: true,
+			},
 		});
 
-		const lolAccounts = accounts.filter(
-			(a) => a.gameId === GAMES.LOL && a.regionalRoute && a.platformRoute,
-		);
+		for (const account of accounts) {
+			if (account.gameId !== GAMES.LOL || !account.lolProfile) {
+				continue;
+			}
 
-		const faceitAccounts = accounts.filter(
-			(a) => a.gameId === GAMES.CS2_FACEIT,
-		);
-
-		for (const a of lolAccounts) {
 			const shouldRefresh =
-				!a.lastSyncedAt ||
-				Date.now() - a.lastSyncedAt.getTime() > LOL_PROFILE_REFRESH_TTL_MS;
+				!account.lastSyncedAt ||
+				Date.now() - account.lastSyncedAt.getTime() >
+					LOL_PROFILE_REFRESH_TTL_MS;
 			if (!shouldRefresh) continue;
 
 			refreshLolAccountDataInBackground(
-				a.id,
-				a.externalId,
-				a.platformRoute as RiotPlatformRoute,
-				a.gameId,
+				account.id,
+				account.externalId,
+				account.lolProfile.platformRoute as RiotPlatformRoute,
 			);
 		}
 
+		const normalizedAccounts = accounts.flatMap((account) => {
+			try {
+				return [mapGameAccountRecord(account)];
+			} catch (error) {
+				console.error("Skipping malformed game account", {
+					accountId: account.id,
+					error,
+				});
+				return [];
+			}
+		});
+
 		return {
-			lol: lolAccounts,
-			faceit: faceitAccounts,
+			lol: normalizedAccounts.filter(isLolGameAccount),
+			faceit: normalizedAccounts.filter(isCs2FaceitGameAccount),
 		};
 	}),
 	getLolProfileDisplay: protectedProcedure
 		.input(z.object({ gameAccountId: z.uuid() }))
 		.query(async ({ input }) => {
-			const account = await db.query.gameAccounts.findFirst({
+			const accountRecord = await db.query.gameAccounts.findFirst({
 				where: eq(gameAccounts.id, input.gameAccountId),
+				with: {
+					lolProfile: true,
+					cs2FaceitProfile: true,
+				},
 			});
 
-			if (!account) {
+			if (!accountRecord) {
 				throw new TRPCError({ code: "NOT_FOUND" });
 			}
 
-			if (account.gameId !== GAMES.LOL) {
+			const account = mapGameAccountRecord(accountRecord);
+
+			if (!isLolGameAccount(account)) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "Not a League of Legends account",
@@ -263,57 +316,80 @@ export const gameAccountRouter = router({
 			);
 
 			try {
-				const gameAccountRecord = await db
-					.insert(gameAccounts)
-					.values({
-						id: crypto.randomUUID(),
-						userId: ctx.session.user.id,
-						gameId: GAMES.LOL,
-						externalId: riotAccount.puuid,
-						gameName: riotAccount.gameName,
-						tagLine: riotAccount.tagLine,
-						profileIconId: details.profileIconId,
-						summonerLevel: details.summonerLevel,
-						regionalRoute: input.region as RiotRegionalRoute,
-						platformRoute: activeRegion as RiotPlatformRoute,
-						lastSyncedAt: new Date(),
-					})
-					.returning();
+				const createdAccount = await db.transaction(async (tx) => {
+					const [gameAccount] = await tx
+						.insert(gameAccounts)
+						.values({
+							id: crypto.randomUUID(),
+							userId: ctx.session.user.id,
+							gameId: GAMES.LOL,
+							externalId: riotAccount.puuid,
+							lastSyncedAt: new Date(),
+						})
+						.returning();
 
-				const [created] = gameAccountRecord;
-				if (created) {
-					try {
-						if (created.gameId !== GAMES.LOL) {
-							return gameAccountRecord;
-						}
-						const entries = await getLolLeagueEntriesByPuuid(
-							created.externalId,
-							created.platformRoute as RiotPlatformRoute,
-						);
-						if (entries.length > 0) {
-							const syncedAt = new Date();
-							await db.insert(lolRankedEntries).values(
-								entries.map((e) => ({
-									gameAccountId: created.id,
-									gameId: GAMES.LOL,
-									queueType: e.queueType,
-									tier: e.tier,
-									rank: e.rank || null,
-									leaguePoints: e.leaguePoints,
-									wins: e.wins,
-									losses: e.losses,
-									hotStreak: e.hotStreak,
-									inactive: e.inactive,
-									syncedAt,
-								})),
-							);
-						}
-					} catch (rankedError) {
-						console.error(rankedError);
+					if (!gameAccount) {
+						throw new Error("Failed to create LoL game account");
 					}
+
+					const [lolProfile] = await tx
+						.insert(lolGameAccountProfiles)
+						.values({
+							gameAccountId: gameAccount.id,
+							gameId: GAMES.LOL,
+							gameName: riotAccount.gameName,
+							tagLine: riotAccount.tagLine,
+							profileIconId: details.profileIconId,
+							summonerLevel: details.summonerLevel,
+							regionalRoute: input.region as RiotRegionalRoute,
+							platformRoute: activeRegion as RiotPlatformRoute,
+						})
+						.returning();
+
+					if (!lolProfile) {
+						throw new Error("Failed to create LoL account profile");
+					}
+
+					return mapGameAccountRecord({
+						...gameAccount,
+						lolProfile,
+						cs2FaceitProfile: null,
+					});
+				});
+
+				if (!isLolGameAccount(createdAccount)) {
+					throw new Error("Created account is not a LoL account");
 				}
 
-				return gameAccountRecord;
+				try {
+					const entries = await getLolLeagueEntriesByPuuid(
+						createdAccount.externalId,
+						createdAccount.profile.platformRoute,
+					);
+
+					if (entries.length > 0) {
+						const syncedAt = new Date();
+						await db.insert(lolRankedEntries).values(
+							entries.map((entry) => ({
+								gameAccountId: createdAccount.id,
+								gameId: GAMES.LOL,
+								queueType: entry.queueType,
+								tier: entry.tier,
+								rank: entry.rank || null,
+								leaguePoints: entry.leaguePoints,
+								wins: entry.wins,
+								losses: entry.losses,
+								hotStreak: entry.hotStreak,
+								inactive: entry.inactive,
+								syncedAt,
+							})),
+						);
+					}
+				} catch (rankedError) {
+					console.error(rankedError);
+				}
+
+				return createdAccount;
 			} catch (error) {
 				if (isGameAccountUniqueViolation(error)) {
 					throw new TRPCError({ code: "CONFLICT" });
@@ -330,19 +406,37 @@ export const gameAccountRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			try {
-				const gameAccountRecord = await db
-					.insert(gameAccounts)
-					.values({
-						id: crypto.randomUUID(),
-						gameId: GAMES.CS2_FACEIT,
-						externalId: input.externalId,
-						regionalRoute: null,
-						platformRoute: null,
-						userId: ctx.session.user.id,
-					})
-					.returning();
+				return await db.transaction(async (tx) => {
+					const [gameAccount] = await tx
+						.insert(gameAccounts)
+						.values({
+							id: crypto.randomUUID(),
+							userId: ctx.session.user.id,
+							gameId: GAMES.CS2_FACEIT,
+							externalId: input.externalId,
+							lastSyncedAt: new Date(),
+						})
+						.returning();
 
-				return gameAccountRecord;
+					if (!gameAccount) {
+						throw new Error("Failed to create Faceit game account");
+					}
+
+					const [cs2FaceitProfile] = await tx
+						.insert(cs2FaceitGameAccountProfiles)
+						.values({
+							gameAccountId: gameAccount.id,
+							gameId: GAMES.CS2_FACEIT,
+							faceitNickname: input.externalId,
+						})
+						.returning();
+
+					return mapGameAccountRecord({
+						...gameAccount,
+						lolProfile: null,
+						cs2FaceitProfile: cs2FaceitProfile ?? null,
+					});
+				});
 			} catch (error) {
 				if (isGameAccountUniqueViolation(error)) {
 					throw new TRPCError({ code: "CONFLICT" });

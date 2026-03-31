@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import Text from "./Text";
 import RankEmblem from "./Riot/RankEmblems";
-import type { GameAccount } from "@repo/types";
+import { isLolGameAccount, type GameAccount } from "@repo/types";
 import { trpc } from "@/utils/trpc";
 
 function formatRankTitle(tier: string, rank: string | null) {
@@ -40,9 +40,10 @@ type ProfileGameStatCardProps = {
 export default function ProfileGameStatCard({
 	gameAccount,
 }: ProfileGameStatCardProps) {
+	const isLolAccount = isLolGameAccount(gameAccount);
 	const { data, isLoading } = trpc.gameAccount.getLolProfileDisplay.useQuery(
 		{ gameAccountId: gameAccount.id },
-		{ enabled: gameAccount.gameId === "lol" },
+		{ enabled: isLolAccount },
 	);
 
 	const ranked = data?.ranked;
@@ -106,7 +107,11 @@ export default function ProfileGameStatCard({
 							</View>
 							<View className="flex flex-row w-full items-center justify-between gap-1">
 								<Text className="font-sans-medium text-text-secondary text-xs">
-									{data?.gameAccount.gameName} #{data?.gameAccount.tagLine}
+									{isLolAccount &&
+									data?.gameAccount.profile?.gameName &&
+									data?.gameAccount.profile?.tagLine
+										? `${data.gameAccount.profile.gameName} #${data.gameAccount.profile.tagLine}`
+										: gameAccount.externalId}
 								</Text>
 								<View className="flex flex-row items-center gap-1">
 									<Text className="font-mono-semibold text-text-muted uppercase text-xs">

@@ -1,4 +1,9 @@
-import type { GameAccount } from "@repo/types";
+import {
+	GAMES,
+	isCs2FaceitGameAccount,
+	isLolGameAccount,
+	type GameAccount,
+} from "@repo/types";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { getProfilePanelForGame } from "@/profile/GameProfileRegistry";
@@ -9,9 +14,9 @@ interface TabsProps {
 
 function getTabLabel(gameId: string) {
 	switch (gameId) {
-		case "lol":
+		case GAMES.LOL:
 			return "LOL";
-		case "cs2_faceit":
+		case GAMES.CS2_FACEIT:
 			return "CS2";
 		default:
 			return gameId.replaceAll("_", " ").toUpperCase();
@@ -20,14 +25,27 @@ function getTabLabel(gameId: string) {
 
 function getTabDisplayLabel(accounts: GameAccount[], account: GameAccount) {
 	const base = getTabLabel(account.gameId);
+	const fallbackDetail = account.id.slice(0, 8);
 	const sameGame = accounts.filter((a) => a.gameId === account.gameId);
 	if (sameGame.length <= 1) {
 		return base;
 	}
-	const detail =
-		account.gameName && account.tagLine
-			? `${account.gameName}#${account.tagLine}`
-			: (account.gameName ?? account.tagLine ?? account.id.slice(0, 8));
+
+	const detail = (() => {
+		if (isLolGameAccount(account)) {
+			return `${account.profile.gameName}#${account.profile.tagLine}`;
+		}
+
+		if (isCs2FaceitGameAccount(account)) {
+			const faceitNickname = account.profile?.faceitNickname?.trim();
+			const steamNickname = account.profile?.steamNickname?.trim();
+
+			return faceitNickname || steamNickname || fallbackDetail;
+		}
+
+		return fallbackDetail;
+	})();
+
 	return `${base} · ${detail}`;
 }
 
