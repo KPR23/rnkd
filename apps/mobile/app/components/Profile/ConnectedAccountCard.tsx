@@ -162,6 +162,7 @@ export default function ConnectedAccountCard({
 					<CaretRightIcon size={19} color="#5b5666" weight="bold" />
 				</View>
 			</Pressable>
+
 			<AccountDetailsModal
 				gameAccount={gameAccount}
 				visible={isModalOpen}
