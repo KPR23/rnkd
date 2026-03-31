@@ -1,4 +1,6 @@
-import { useState, type ReactNode } from "react";
+import AccountDetailsModal from "@/app/components/AccountDetailsModal";
+import GameLogo from "@/app/components/games/GameLogo";
+import { DRAGON_CDN_VERSION } from "@/constants/riotApiUrl";
 import {
 	GAMES,
 	isLolGameAccount,
@@ -6,13 +8,9 @@ import {
 	type GameAccount,
 	type LolGameAccount,
 } from "@repo/types";
-import { Image, Pressable, Text, View } from "react-native";
-import { router } from "expo-router";
-import GameLogo from "@/app/components/games/GameLogo";
 import { CaretRightIcon } from "phosphor-react-native";
-import AccountDetailsModal from "@/app/components/AccountDetailsModal";
-
-const DRAGON_CDN_VERSION = "14.24.1";
+import { useState, type ReactNode } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 
 function headerForGame(gameAccount: GameAccount): {
 	bgClass: string;
