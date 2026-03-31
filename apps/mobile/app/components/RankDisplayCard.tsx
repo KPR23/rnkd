@@ -76,33 +76,37 @@ export default function RankDisplayCard({
 								</Text>
 							)}
 						</View>
-						<View className="flex flex-row items-center gap-1">
-							<Text className="font-mono-medium text-text uppercase text-xs">
-								{ranked?.wins ?? 0}
-								<Text className="font-sans-medium text-text uppercase text-xs">
-									W
+						{ranked?.rank && (
+							<View className="flex flex-row items-center gap-1">
+								<Text className="font-mono-medium text-text uppercase text-xs">
+									{ranked?.wins ?? 0}
+									<Text className="font-sans-medium text-text uppercase text-xs">
+										W
+									</Text>
 								</Text>
-							</Text>
-							<Text className="font-mono-medium text-text uppercase text-xs">
-								{ranked?.losses ?? 0}
-								<Text className="font-sans-medium text-text uppercase text-xs">
-									L
+								<Text className="font-mono-medium text-text uppercase text-xs">
+									{ranked?.losses ?? 0}
+									<Text className="font-sans-medium text-text uppercase text-xs">
+										L
+									</Text>
 								</Text>
-							</Text>
-						</View>
+							</View>
+						)}
 					</View>
 					<View className="flex flex-row w-full items-center justify-between gap-1">
 						<Text className="font-sans-medium text-text-secondary text-xs">
 							{accountLabel}
 						</Text>
-						<View className="flex flex-row items-center gap-1">
-							<Text className="font-mono-semibold text-text-muted uppercase text-xs">
-								{winRateLine}
-							</Text>
-							<Text className="font-sans-medium text-text-muted uppercase text-xs">
-								WR
-							</Text>
-						</View>
+						{ranked?.rank && (
+							<View className="flex flex-row items-center gap-1">
+								<Text className="font-mono-semibold text-text-muted uppercase text-xs">
+									{winRateLine}
+								</Text>
+								<Text className="font-sans-medium text-text-muted uppercase text-xs">
+									WR
+								</Text>
+							</View>
+						)}
 					</View>
 				</View>
 			</View>
