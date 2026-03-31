@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
-import { GameAccount, GAMES } from "@repo/types";
+import {
+	GAMES,
+	isLolGameAccount,
+	type Cs2FaceitGameAccount,
+	type GameAccount,
+	type LolGameAccount,
+} from "@repo/types";
 import { Image, Pressable, Text, View } from "react-native";
 import GameLogo from "@/app/components/games/GameLogo";
 import { CaretRightIcon } from "phosphor-react-native";
@@ -16,29 +22,31 @@ function headerForGame(gameAccount: GameAccount): {
 		case GAMES.LOL:
 			return {
 				bgClass: "bg-games-lol",
-				label: gameAccount.platformRoute ?? "Unknown",
+				label: isLolGameAccount(gameAccount)
+					? gameAccount.profile.platformRoute
+					: "Unknown",
 			};
 		default:
 			return { bgClass: "dark", label: "Unknown" };
 	}
 }
 
-function LolAccountBody({ gameAccount }: { gameAccount: GameAccount }) {
+function LolAccountBody({ gameAccount }: { gameAccount: LolGameAccount }) {
 	return (
 		<View className="flex flex-row items-center gap-3">
 			<Image
 				source={{
-					uri: `https://ddragon.leagueoflegends.com/cdn/${DRAGON_CDN_VERSION}/img/profileicon/${gameAccount.profileIconId}.png`,
+					uri: `https://ddragon.leagueoflegends.com/cdn/${DRAGON_CDN_VERSION}/img/profileicon/${gameAccount.profile.profileIconId}.png`,
 				}}
 				className="w-12 h-12 rounded-full"
 			/>
 			<View className="flex flex-col gap-0.5 min-w-0 flex-1">
 				<View className="flex flex-row items-center gap-1.5 flex-wrap">
 					<Text className="font-sans-semibold text-base text-text">
-						{gameAccount.gameName}
+						{gameAccount.profile.gameName}
 					</Text>
 					<Text className="font-sans-semibold text-sm text-text-secondary">
-						#{gameAccount.tagLine}
+						#{gameAccount.profile.tagLine}
 					</Text>
 				</View>
 
@@ -47,7 +55,7 @@ function LolAccountBody({ gameAccount }: { gameAccount: GameAccount }) {
 						Level
 					</Text>
 					<Text className="font-mono-semibold text-xs text-text-secondary">
-						{gameAccount.summonerLevel}
+						{gameAccount.profile.summonerLevel}
 					</Text>
 				</View>
 			</View>
@@ -55,9 +63,14 @@ function LolAccountBody({ gameAccount }: { gameAccount: GameAccount }) {
 	);
 }
 
-function Cs2FaceitAccountBody({ gameAccount }: { gameAccount: GameAccount }) {
-	const faceitNick = gameAccount.gameName?.trim() || gameAccount.externalId;
-	const steamNick = gameAccount.tagLine?.trim();
+function Cs2FaceitAccountBody({
+	gameAccount,
+}: {
+	gameAccount: Cs2FaceitGameAccount;
+}) {
+	const faceitNick =
+		gameAccount.profile?.faceitNickname?.trim() || gameAccount.externalId;
+	const steamNick = gameAccount.profile?.steamNickname?.trim();
 
 	return (
 		<View className="flex flex-row items-center gap-3 min-w-0 flex-1">
@@ -98,7 +111,7 @@ function FallbackAccountBody({ gameAccount }: { gameAccount: GameAccount }) {
 				className="font-sans-semibold text-base text-text"
 				numberOfLines={2}
 			>
-				{gameAccount.gameName ?? gameAccount.externalId}
+				{gameAccount.externalId}
 			</Text>
 		</View>
 	);
@@ -114,6 +127,10 @@ export default function ConnectedAccountCard({
 	let body: ReactNode;
 	switch (gameAccount.gameId) {
 		case GAMES.LOL:
+			if (!isLolGameAccount(gameAccount)) {
+				body = <FallbackAccountBody gameAccount={gameAccount} />;
+				break;
+			}
 			body = <LolAccountBody gameAccount={gameAccount} />;
 			break;
 		case GAMES.CS2_FACEIT:
