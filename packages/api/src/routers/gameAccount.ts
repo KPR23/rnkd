@@ -48,60 +48,65 @@ function refreshLolAccountDataInBackground(
 	platformRoute: RiotPlatformRoute,
 	gameAccountGameId: string,
 ) {
-	void Promise.allSettled([
-		getLolAccountDetails(externalId, platformRoute).then(async (details) => {
-			await db
-				.update(gameAccounts)
-				.set({
-					profileIconId: details.profileIconId,
-					summonerLevel: details.summonerLevel,
-					lastSyncedAt: new Date(),
-				})
-				.where(eq(gameAccounts.id, accountId));
-		}),
-		(async () => {
-			if (gameAccountGameId !== GAMES.LOL) {
-				return;
-			}
-			const entries = await getLolLeagueEntriesByPuuid(
-				externalId,
-				platformRoute,
-			);
-			await db
-				.delete(lolRankedEntries)
-				.where(
-					and(
-						eq(lolRankedEntries.gameAccountId, accountId),
-						eq(lolRankedEntries.gameId, GAMES.LOL),
-					),
+	void (async () => {
+		try {
+			const [details, entries] = await Promise.all([
+				getLolAccountDetails(externalId, platformRoute),
+				gameAccountGameId === GAMES.LOL
+					? getLolLeagueEntriesByPuuid(externalId, platformRoute)
+					: Promise.resolve([] as Awaited<
+							ReturnType<typeof getLolLeagueEntriesByPuuid>
+						>),
+			]);
+
+			await db.transaction(async (tx) => {
+				await tx
+					.update(gameAccounts)
+					.set({
+						profileIconId: details.profileIconId,
+						summonerLevel: details.summonerLevel,
+						lastSyncedAt: new Date(),
+					})
+					.where(eq(gameAccounts.id, accountId));
+
+				if (gameAccountGameId !== GAMES.LOL) {
+					return;
+				}
+
+				await tx
+					.delete(lolRankedEntries)
+					.where(
+						and(
+							eq(lolRankedEntries.gameAccountId, accountId),
+							eq(lolRankedEntries.gameId, GAMES.LOL),
+						),
+					);
+
+				if (entries.length === 0) {
+					return;
+				}
+
+				const syncedAt = new Date();
+				await tx.insert(lolRankedEntries).values(
+					entries.map((e) => ({
+						gameAccountId: accountId,
+						gameId: GAMES.LOL,
+						queueType: e.queueType,
+						tier: e.tier,
+						rank: e.rank || null,
+						leaguePoints: e.leaguePoints,
+						wins: e.wins,
+						losses: e.losses,
+						hotStreak: e.hotStreak,
+						inactive: e.inactive,
+						syncedAt,
+					})),
 				);
-			if (entries.length === 0) {
-				return;
-			}
-			const syncedAt = new Date();
-			await db.insert(lolRankedEntries).values(
-				entries.map((e) => ({
-					gameAccountId: accountId,
-					gameId: GAMES.LOL,
-					queueType: e.queueType,
-					tier: e.tier,
-					rank: e.rank || null,
-					leaguePoints: e.leaguePoints,
-					wins: e.wins,
-					losses: e.losses,
-					hotStreak: e.hotStreak,
-					inactive: e.inactive,
-					syncedAt,
-				})),
-			);
-		})(),
-	]).then((results) => {
-		for (const r of results) {
-			if (r.status === "rejected") {
-				console.error(r.reason);
-			}
+			});
+		} catch (error) {
+			console.error(error);
 		}
-	});
+	})();
 }
 
 const RANKED_SOLO = "RANKED_SOLO_5x5";
