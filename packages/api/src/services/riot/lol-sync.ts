@@ -29,6 +29,7 @@ export async function mapRiotMatchToDb(
 				id: crypto.randomUUID(),
 				gameId: GAMES.LOL,
 				externalMatchId: riotMatch.metadata.matchId,
+				queueId: riotMatch.info.queueId,
 				team1Score,
 				team2Score,
 				playedAt: new Date(riotMatch.info.gameCreation),

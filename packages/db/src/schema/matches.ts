@@ -42,6 +42,7 @@ export const matches = pgTable(
 			.notNull()
 			.references(() => games.id, { onDelete: "cascade" }),
 		externalMatchId: text("external_match_id").notNull(),
+		queueId: integer("queue_id"),
 		team1Score: integer("team1_score").notNull(),
 		team2Score: integer("team2_score").notNull(),
 		playedAt: timestamp("played_at").notNull(),

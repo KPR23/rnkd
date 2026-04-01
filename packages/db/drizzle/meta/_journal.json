@@ -176,6 +176,13 @@
       "when": 1775046218406,
       "tag": "0024_match_participant_champion_cols",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1775046905290,
+      "tag": "0025_matches_queue_id",
+      "breakpoints": true
     }
   ]
 }
