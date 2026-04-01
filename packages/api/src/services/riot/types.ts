@@ -57,6 +57,8 @@ export type RiotParticipant = {
 	teamPosition: string;
 	individualPosition: string;
 	timePlayed: number;
+	totalMinionsKilled?: number;
+	neutralMinionsKilled?: number;
 	[key: string]: unknown;
 };
 

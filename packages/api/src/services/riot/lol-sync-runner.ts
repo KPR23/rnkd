@@ -52,9 +52,13 @@ export async function syncLolForAccount(
 	);
 
 	const riotMatches: Awaited<ReturnType<typeof getMatchById>>[] = [];
+
 	for (const id of matchIds.slice(0, maxMatchesToSync)) {
 		riotMatches.push(
-			await getMatchById(id, account.lolProfile.regionalRoute as RiotRegionalRoute),
+			await getMatchById(
+				id,
+				account.lolProfile.regionalRoute as RiotRegionalRoute,
+			),
 		);
 		await new Promise((r) => setTimeout(r, RIOT_API_DELAY_MS));
 	}

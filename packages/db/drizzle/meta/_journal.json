@@ -169,6 +169,13 @@
       "when": 1774947986579,
       "tag": "0023_tense_prima",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1775046218406,
+      "tag": "0024_match_participant_champion_cols",
+      "breakpoints": true
     }
   ]
 }
