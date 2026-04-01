@@ -6,7 +6,7 @@ import {
 } from "@repo/types";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { getProfilePanelForGame } from "@/profile/GameProfileRegistry";
+import getProfilePanelForGame from "@/app/components/GameProfileRegistry";
 
 interface TabsProps {
 	gameAccounts: GameAccount[];

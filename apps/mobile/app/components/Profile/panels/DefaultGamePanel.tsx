@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import type { GameProfilePanelProps } from "@/profile/GameProfileRegistry";
+import type { GameProfilePanelProps } from "@/app/components/GameProfileRegistry";
 
 export default function DefaultGamePanel({
 	gameAccount,

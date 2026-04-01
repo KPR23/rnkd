@@ -3,6 +3,8 @@ import type {
 	gameAccounts,
 	games,
 	lolGameAccountProfiles,
+	matchParticipants,
+	matches,
 } from "@repo/db";
 
 export const GAMES = {
@@ -55,3 +57,10 @@ export function isCs2FaceitGameAccount(
 ): gameAccount is Cs2FaceitGameAccount {
 	return gameAccount.gameId === GAMES.CS2_FACEIT;
 }
+
+export type LolMatchHistoryRow = {
+	matches: typeof matches.$inferSelect;
+	match_participants: typeof matchParticipants.$inferSelect;
+};
+
+export type LolMatchHistory = LolMatchHistoryRow[];

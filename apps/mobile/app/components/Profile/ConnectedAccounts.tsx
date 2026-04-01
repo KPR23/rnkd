@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import type { GameAccount } from "@repo/types";
-import ConnectedAccountCard from "@/app/components/Profile/ConnectedAccountCard";
+import ConnectedAccountCard from "@/app/components/profile/ConnectedAccountCard";
 
 export default function ConnectedAccounts({
 	gameAccounts,

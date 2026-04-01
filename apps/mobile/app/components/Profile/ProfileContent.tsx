@@ -1,7 +1,7 @@
 import type { GameAccount } from "@repo/types";
 import { Text, View } from "react-native";
 import Tabs from "@/app/components/Tabs";
-import ConnectedAccounts from "@/app/components/Profile/ConnectedAccounts";
+import ConnectedAccounts from "@/app/components/profile/ConnectedAccounts";
 interface ProfileContentProps {
 	gameAccounts: GameAccount[] | undefined;
 }

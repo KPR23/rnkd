@@ -1,5 +1,5 @@
-import Cs2FaceitAccountDetailsModal from "@/app/components/Profile/Cs2FaceitAccountDetailsModal";
-import LolAccountDetailsModal from "@/app/components/Profile/LolAccountDetailsModal";
+import Cs2FaceitAccountDetailsModal from "@/app/components/profile/Cs2FaceitAccountDetailsModal";
+import LolAccountDetailsModal from "@/app/components/profile/LolAccountDetailsModal";
 import {
 	GAMES,
 	GameAccount,

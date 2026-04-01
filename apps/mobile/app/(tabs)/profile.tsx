@@ -1,5 +1,5 @@
 import Screen from "@/app/components/Screen";
-import ProfileScreen from "@/app/components/Profile/ProfileScreen";
+import ProfileScreen from "@/app/components/profile/ProfileScreen";
 import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
 import { Text } from "react-native";

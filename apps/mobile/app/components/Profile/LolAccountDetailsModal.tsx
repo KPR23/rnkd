@@ -1,5 +1,6 @@
 import Button from "@/app/components/Button";
 import Frame from "@/app/components/Frame";
+import LolMatchHistoryCard from "@/app/components/profile/LolMatchHistoryCard";
 import RankDisplayCard from "@/app/components/RankDisplayCard";
 import { DRAGON_CDN_VERSION } from "@/constants/riotApiUrl";
 import { trpc } from "@/utils/trpc";
@@ -26,6 +27,9 @@ export default function LolAccountDetailsModal({
 	gameAccount: LolGameAccount;
 }) {
 	const { data, isLoading } = trpc.gameAccount.getLolProfileDisplay.useQuery({
+		gameAccountId: gameAccount.id,
+	});
+	const { data: matchHistory } = trpc.riot.getMatchHistory.useQuery({
 		gameAccountId: gameAccount.id,
 	});
 
@@ -97,6 +101,16 @@ export default function LolAccountDetailsModal({
 						accountLabel="Ranked Flex"
 						winRateLine={flexWr}
 					/>
+				</View>
+			</View>
+			<View className="w-full flex flex-col gap-2">
+				<Text className="font-sans-semibold text-[11px] text-text-muted uppercase">
+					Match history
+				</Text>
+				<View className="flex flex-col gap-2">
+					{matchHistory?.map((match) => (
+						<LolMatchHistoryCard key={match.matches.id} matchHistory={match} />
+					))}
 				</View>
 			</View>
 		</View>

@@ -1,4 +1,4 @@
-import AccountDetailsModal from "@/app/components/Profile/AccountDetailsModal";
+import AccountDetailsModal from "@/app/components/profile/AccountDetailsModal";
 import GameLogo from "@/app/components/games/GameLogo";
 import { DRAGON_CDN_VERSION } from "@/constants/riotApiUrl";
 import {
