@@ -66,7 +66,7 @@ function RootNavigator() {
 						}}
 					/>
 				</Stack.Protected>
-				<Stack.Protected guard={!!!session}>
+				<Stack.Protected guard={!session}>
 					<Stack.Screen
 						name="(auth)/sign-in"
 						options={{

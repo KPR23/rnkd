@@ -8,9 +8,9 @@
 		"userInterfaceStyle": "dark",
 		"scheme": "rnkd",
 		"splash": {
-			"image": "./assets/splash-icon.png",
+			"image": "./assets/rnkd.png",
 			"resizeMode": "contain",
-			"backgroundColor": "#ffffff"
+			"backgroundColor": "#131013"
 		},
 		"ios": {
 			"supportsTablet": true,
