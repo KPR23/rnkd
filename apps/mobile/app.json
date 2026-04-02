@@ -5,12 +5,12 @@
 		"version": "1.0.0",
 		"orientation": "portrait",
 		"icon": "./assets/rnkd.png",
-		"userInterfaceStyle": "light",
+		"userInterfaceStyle": "dark",
 		"scheme": "rnkd",
 		"splash": {
-			"image": "./assets/splash-icon.png",
+			"image": "./assets/rnkd.png",
 			"resizeMode": "contain",
-			"backgroundColor": "#ffffff"
+			"backgroundColor": "#131013"
 		},
 		"ios": {
 			"supportsTablet": true,
