@@ -6,7 +6,7 @@ import {
 	type GameAccount,
 } from "@repo/types";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 interface TabsProps {
 	gameAccounts: GameAccount[];
@@ -83,8 +83,9 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 				const isActive = selectedAccountId === gameAccount.id;
 				const isLast = idx === gameAccounts.length - 1;
 				return (
-					<Pressable
+					<TouchableOpacity
 						key={gameAccount.id}
+						activeOpacity={0.7}
 						onPress={() => setSelectedAccountId(gameAccount.id)}
 						className={[
 							"relative h-9 items-center justify-center px-6",
@@ -108,7 +109,7 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 						{isActive && (
 							<View className="absolute bottom-0 left-0 right-0 h-0.75 bg-primary" />
 						)}
-					</Pressable>
+					</TouchableOpacity>
 				);
 			})}
 		</View>

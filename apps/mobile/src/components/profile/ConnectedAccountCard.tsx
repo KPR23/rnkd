@@ -11,7 +11,7 @@ import {
 import { colors } from "@repo/ui/colors";
 import { CaretRightIcon, IconContext } from "phosphor-react-native";
 import { useState, type ReactNode } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 const accountRowIconContext = {
 	size: 19,
@@ -158,7 +158,8 @@ export default function ConnectedAccountCard({
 				</Text>
 			</View>
 			<IconContext.Provider value={accountRowIconContext}>
-				<Pressable
+				<TouchableOpacity
+					activeOpacity={0.7}
 					className="p-5 bg-card border-t-0 border border-border flex flex-row items-center justify-between"
 					onPress={() => {
 						setIsModalOpen(true);
@@ -168,7 +169,7 @@ export default function ConnectedAccountCard({
 					<View className="shrink-0">
 						<CaretRightIcon />
 					</View>
-				</Pressable>
+				</TouchableOpacity>
 			</IconContext.Provider>
 
 			<AccountDetailsModal

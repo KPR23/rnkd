@@ -8,7 +8,7 @@ import {
 } from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import { XIcon } from "phosphor-react-native";
-import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface AccountDetailsModalProps {
@@ -52,9 +52,9 @@ export default function AccountDetailsModal({
 						<Text className="text-text text-lg font-sans-bold">
 							Account Details
 						</Text>
-						<Pressable onPress={onClose}>
+						<TouchableOpacity activeOpacity={0.7} onPress={onClose}>
 							<XIcon size={24} color={colors.textMuted} weight="bold" />
-						</Pressable>
+						</TouchableOpacity>
 					</View>
 					<ScrollView
 						className="flex-1"

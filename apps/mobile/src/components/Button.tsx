@@ -1,6 +1,6 @@
-import { Pressable, PressableProps, Text } from "react-native";
+import { Text, TouchableOpacity, type TouchableOpacityProps } from "react-native";
 
-interface Props extends Pick<PressableProps, "onPress" | "disabled"> {
+interface Props extends Pick<TouchableOpacityProps, "onPress" | "disabled"> {
 	variant: "primary" | "secondary";
 	className?: string;
 	actionText: string;
@@ -12,13 +12,14 @@ export default function Button({
 	className,
 	actionText,
 	onPress,
-	...pressableProps
+	...touchableProps
 }: Props) {
 	return (
-		<Pressable
-			className={`will-change-pressable h-11 items-center justify-center active:opacity-70 ${variant === "primary" ? "bg-primary" : "bg-dark border border-border"} ${className ?? ""}`}
+		<TouchableOpacity
+			activeOpacity={0.7}
+			className={`h-11 items-center justify-center ${variant === "primary" ? "bg-primary" : "bg-dark border border-border"} ${className ?? ""}`}
 			onPress={onPress}
-			{...pressableProps}
+			{...touchableProps}
 		>
 			<Text
 				className="text-text uppercase text-sm"
@@ -26,6 +27,6 @@ export default function Button({
 			>
 				{actionText}
 			</Text>
-		</Pressable>
+		</TouchableOpacity>
 	);
 }

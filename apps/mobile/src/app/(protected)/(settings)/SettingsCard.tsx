@@ -1,6 +1,6 @@
 import { colors } from "@repo/ui/colors";
 import { CaretRightIcon, IconContext } from "phosphor-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface SettingsCardProps {
 	title: string;
@@ -21,7 +21,8 @@ export default function SettingsCard({
 }: SettingsCardProps) {
 	return (
 		<IconContext.Provider value={iconContext}>
-			<Pressable
+			<TouchableOpacity
+				activeOpacity={0.7}
 				className="flex flex-row gap-2 justify-between! border border-border bg-card px-4 items-center h-12"
 				onPress={onPress}
 			>
@@ -30,7 +31,7 @@ export default function SettingsCard({
 					<Text className="font-sans-semibold text-sm text-text">{title}</Text>
 				</View>
 				<CaretRightIcon />
-			</Pressable>
+			</TouchableOpacity>
 		</IconContext.Provider>
 	);
 }

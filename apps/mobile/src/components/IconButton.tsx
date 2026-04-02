@@ -1,6 +1,6 @@
-import { Pressable, PressableProps } from "react-native";
+import { TouchableOpacity, type TouchableOpacityProps } from "react-native";
 
-type Props = PressableProps & {
+type Props = TouchableOpacityProps & {
 	icon: React.ReactNode;
 	size?: number;
 	className?: string;
@@ -12,15 +12,17 @@ export default function IconButton({
 	icon,
 	size = DEFAULT_SIZE,
 	className = "",
-	...pressableProps
+	style,
+	...touchableProps
 }: Props) {
 	return (
-		<Pressable
-			{...pressableProps}
-			className={`will-change-pressable items-center justify-center border border-dark active:opacity-70 ${className}`}
-			style={[{ width: size, height: size }]}
+		<TouchableOpacity
+			activeOpacity={0.7}
+			{...touchableProps}
+			className={`items-center justify-center border border-dark ${className}`}
+			style={[{ width: size, height: size }, style]}
 		>
 			{icon}
-		</Pressable>
+		</TouchableOpacity>
 	);
 }
