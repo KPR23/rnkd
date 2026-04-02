@@ -46,6 +46,7 @@ export const matches = pgTable(
 		team1Score: integer("team1_score").notNull(),
 		team2Score: integer("team2_score").notNull(),
 		playedAt: timestamp("played_at").notNull(),
+		durationSeconds: integer("duration_seconds"),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
 			.defaultNow()

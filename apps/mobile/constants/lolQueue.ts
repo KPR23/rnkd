@@ -1,9 +1,9 @@
 const LOL_QUEUE_LABELS: Record<number, string> = {
 	0: "Custom",
 	400: "Normal draft",
-	420: "Ranked Solo/Duo",
+	420: "Solo/Duo",
 	430: "Quickplay",
-	440: "Ranked Flex",
+	440: "Flex",
 	450: "ARAM",
 	700: "Clash",
 	720: "ARAM Clash",

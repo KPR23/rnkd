@@ -33,6 +33,7 @@ export async function mapRiotMatchToDb(
 				team1Score,
 				team2Score,
 				playedAt: new Date(riotMatch.info.gameCreation),
+				durationSeconds: riotMatch.info.gameDuration,
 			})
 			.returning();
 
