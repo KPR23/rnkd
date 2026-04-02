@@ -8,6 +8,7 @@ import {
 	type GameAccount,
 	type LolGameAccount,
 } from "@repo/types";
+import { colors } from "@repo/ui/colors";
 import { CaretRightIcon } from "phosphor-react-native";
 import { useState, type ReactNode } from "react";
 import { Image, Pressable, Text, View } from "react-native";
@@ -158,7 +159,7 @@ export default function ConnectedAccountCard({
 			>
 				<View className="flex-1 min-w-0 flex-row items-center">{body}</View>
 				<View className="shrink-0">
-					<CaretRightIcon size={19} color="#5b5666" weight="bold" />
+					<CaretRightIcon size={19} color={colors.textMuted} weight="bold" />
 				</View>
 			</Pressable>
 

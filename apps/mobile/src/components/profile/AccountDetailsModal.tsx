@@ -6,6 +6,7 @@ import {
 	isCs2FaceitGameAccount,
 	isLolGameAccount,
 } from "@repo/types";
+import { colors } from "@repo/ui/colors";
 import { XIcon } from "phosphor-react-native";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -52,7 +53,7 @@ export default function AccountDetailsModal({
 							Account Details
 						</Text>
 						<Pressable onPress={onClose}>
-							<XIcon size={24} color="#5b5666" weight="bold" />
+							<XIcon size={24} color={colors.textMuted} weight="bold" />
 						</Pressable>
 					</View>
 					<ScrollView

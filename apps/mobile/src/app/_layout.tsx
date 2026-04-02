@@ -13,6 +13,7 @@ import {
 	JetBrainsMono_600SemiBold,
 	JetBrainsMono_700Bold,
 } from "@expo-google-fonts/jetbrains-mono";
+import { colors } from "@repo/ui/colors";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -53,7 +54,7 @@ function RootNavigator() {
 			<Stack
 				screenOptions={{
 					contentStyle: {
-						backgroundColor: "#131013",
+						backgroundColor: colors.background,
 					},
 				}}
 			>
