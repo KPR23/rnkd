@@ -2,17 +2,17 @@ import { colors } from "@repo/ui/colors";
 import { CaretRightIcon, IconContext } from "phosphor-react-native";
 import { Pressable, Text, View } from "react-native";
 
-const iconContext = {
-	size: 20,
-	color: colors.gray,
-	weight: "bold" as const,
-};
-
 interface SettingsCardProps {
 	title: string;
 	icon: React.ReactNode;
 	onPress: () => void;
 }
+
+const iconContext = {
+	size: 20,
+	color: colors.gray,
+	weight: "bold" as const,
+};
 
 export default function SettingsCard({
 	title,

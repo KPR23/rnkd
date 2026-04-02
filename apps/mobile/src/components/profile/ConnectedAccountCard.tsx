@@ -9,9 +9,15 @@ import {
 	type LolGameAccount,
 } from "@repo/types";
 import { colors } from "@repo/ui/colors";
-import { CaretRightIcon } from "phosphor-react-native";
+import { CaretRightIcon, IconContext } from "phosphor-react-native";
 import { useState, type ReactNode } from "react";
 import { Image, Pressable, Text, View } from "react-native";
+
+const accountRowIconContext = {
+	size: 19,
+	color: colors.textMuted,
+	weight: "bold" as const,
+};
 
 function LolAccountBody({ gameAccount }: { gameAccount: LolGameAccount }) {
 	return (
@@ -151,17 +157,19 @@ export default function ConnectedAccountCard({
 					{label}
 				</Text>
 			</View>
-			<Pressable
-				className="p-5 bg-card border-t-0 border border-border flex flex-row items-center justify-between"
-				onPress={() => {
-					setIsModalOpen(true);
-				}}
-			>
-				<View className="flex-1 min-w-0 flex-row items-center">{body}</View>
-				<View className="shrink-0">
-					<CaretRightIcon size={19} color={colors.textMuted} weight="bold" />
-				</View>
-			</Pressable>
+			<IconContext.Provider value={accountRowIconContext}>
+				<Pressable
+					className="p-5 bg-card border-t-0 border border-border flex flex-row items-center justify-between"
+					onPress={() => {
+						setIsModalOpen(true);
+					}}
+				>
+					<View className="flex-1 min-w-0 flex-row items-center">{body}</View>
+					<View className="shrink-0">
+						<CaretRightIcon />
+					</View>
+				</Pressable>
+			</IconContext.Provider>
 
 			<AccountDetailsModal
 				gameAccount={gameAccount}

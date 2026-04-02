@@ -40,12 +40,12 @@ export default function ProfileTab() {
 				]}
 				actions={[
 					{
-						icon: <ExportIcon size={22} color="white" />,
+						icon: <ExportIcon />,
 						onPress: () => void 0,
 						accessibilityLabel: "Share",
 					},
 					{
-						icon: <GearSixIcon size={22} color="white" />,
+						icon: <GearSixIcon />,
 						onPress: () => router.push("/settings"),
 						accessibilityLabel: "Settings",
 					},
