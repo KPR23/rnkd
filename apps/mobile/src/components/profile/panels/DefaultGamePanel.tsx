@@ -1,4 +1,4 @@
-import { GameProfilePanelProps } from "@/src/components/GameProfileRegistry";
+import { type GameProfilePanelProps } from "@/src/components/GameProfileRegistry";
 import { Text, View } from "react-native";
 
 export default function DefaultGamePanel({
