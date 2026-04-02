@@ -1,9 +1,9 @@
 import Button from "@/src/components/Button";
 import Frame from "@/src/components/Frame";
 import ScreenTitle, { ScreenTitleAction } from "@/src/components/ScreenTitle";
+import UserProfileImage from "@/src/components/UserProfileImage";
 import type { GameAccount, User } from "@repo/types";
-import { getInitialsForFallbackPhoto } from "@repo/ui/components/getInitialsForFallbackPhoto";
-import { Image, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import ProfileContent from "./ProfileContent";
 
 export type ProfileScreenProps = {
@@ -21,21 +21,6 @@ export default function ProfileScreen({
 	title = "Profile",
 	actions,
 }: ProfileScreenProps) {
-	const userImage = user.image ? (
-		<Image
-			source={{ uri: user.image }}
-			className="w-full h-full rounded-full"
-			resizeMode="cover"
-			style={{ width: 64, height: 64 }}
-		/>
-	) : (
-		<View className="w-16 h-16 rounded-full bg-dark flex items-center justify-center">
-			<Text className="text-text text-xl font-mono-medium">
-				{getInitialsForFallbackPhoto(user.name)}
-			</Text>
-		</View>
-	);
-
 	return (
 		<>
 			<ScreenTitle title={title} actions={actions} />
@@ -47,7 +32,7 @@ export default function ProfileScreen({
 			>
 				<Frame>
 					<View className="flex items-center gap-4">
-						{userImage}
+						<UserProfileImage user={user} />
 						<View className="flex flex-col items-center gap-1 text-center">
 							<Text className="text-2xl font-sans-bold text-text">
 								{user.name}

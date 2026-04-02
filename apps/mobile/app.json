@@ -2,7 +2,6 @@
 	"expo": {
 		"name": "Rnkd",
 		"slug": "rnkd",
-		"version": "1.0.0",
 		"orientation": "portrait",
 		"icon": "./assets/rnkd.png",
 		"userInterfaceStyle": "dark",

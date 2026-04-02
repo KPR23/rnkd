@@ -1,20 +1,47 @@
-import Screen from "@/src/components/Screen";
+import Button from "@/src/components/Button";
+import UserHeader from "@/src/components/UserHeader";
+import { APP_VERSION } from "@/src/lib/constants/app-version";
 import { authClient } from "@/src/lib/auth/auth-client";
+import { useAuth } from "@/src/lib/auth/use-auth";
 import { useRouter } from "expo-router";
-import { Button, Text } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 export default function SettingsScreen() {
 	const router = useRouter();
+	const { data: session, isPending } = useAuth();
 
 	const handleSignOut = async () => {
 		await authClient.signOut();
 		router.replace("/(auth)/sign-in");
 	};
 
+	if (isPending) {
+		return (
+			<View className="flex-1 items-center justify-center bg-background">
+				<ActivityIndicator />
+			</View>
+		);
+	}
+
+	if (!session?.user) {
+		return null;
+	}
+
 	return (
-		<Screen>
-			<Text className="text-text">settings</Text>
-			<Button title="Sign Out" onPress={handleSignOut} />
-		</Screen>
+		<View className="p-5 flex flex-col gap-4">
+			<UserHeader user={session.user} />
+			<Button
+				variant="secondary"
+				actionText="Sign out"
+				className="w-full"
+				onPress={handleSignOut}
+			/>
+			<View className="flex-col justify-center items-center">
+				<Text className="text-sm text-text-muted">Version {APP_VERSION}</Text>
+				<Text className="text-sm text-text-muted">
+					© 2026 KPR's Lab All rights reserved.
+				</Text>
+			</View>
+		</View>
 	);
 }
