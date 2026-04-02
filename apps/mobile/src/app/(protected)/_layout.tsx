@@ -21,7 +21,7 @@ export default function ProtectedLayout() {
 					}}
 				/>
 				<Stack.Screen
-					name="settings"
+					name="(settings)/settings"
 					options={{
 						title: "Settings",
 						headerStyle: { backgroundColor: colors.background },
