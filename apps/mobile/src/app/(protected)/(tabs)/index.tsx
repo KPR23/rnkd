@@ -1,6 +1,6 @@
 import { authClient } from "@/src/lib/auth-client";
 import { trpc } from "@/src/utils/trpc";
-import { Alert, Button, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 export default function HomeTab() {
 	const { data: session } = authClient.useSession();
@@ -9,35 +9,7 @@ export default function HomeTab() {
 	});
 
 	if (!session) {
-		const handleLogin = async () => {
-			try {
-				const result = await authClient.signIn.social({
-					provider: "github",
-					callbackURL: "/",
-				});
-
-				if (result.error) {
-					Alert.alert(
-						"Sign in failed",
-						result.error.message || `HTTP ${result.error.status ?? "unknown"}`,
-					);
-				}
-			} catch (error) {
-				const message =
-					error instanceof Error ? error.message : "Unknown error";
-				console.error("LOGIN EXCEPTION", error);
-				Alert.alert("Sign in exception", message);
-			}
-		};
-
-		return (
-			<View className="flex-1 items-center justify-center bg-background px-6">
-				<Text className="mb-4 text-center font-sans text-base text-slate-100">
-					You must be signed in to view this page
-				</Text>
-				<Button title="Login with Github" onPress={handleLogin} />
-			</View>
-		);
+		return null;
 	}
 
 	return (

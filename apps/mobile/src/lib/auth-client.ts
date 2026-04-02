@@ -1,4 +1,4 @@
-import { mobileServerUrl } from "@/lib/server-url";
+import { mobileServerUrl } from "@/src/lib/server-url";
 import { expoClient } from "@better-auth/expo/client";
 import type { auth } from "@repo/types";
 import { inferAdditionalFields } from "better-auth/client/plugins";
