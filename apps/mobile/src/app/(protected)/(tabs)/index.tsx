@@ -1,12 +1,20 @@
-import { authClient } from "@/src/lib/auth-client";
+import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
-import { Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 export default function HomeTab() {
-	const { data: session } = authClient.useSession();
+	const { data: session, isPending } = useAuth();
 	const user = trpc.user.getCurrentUser.useQuery(undefined, {
 		enabled: !!session,
 	});
+
+	if (isPending) {
+		return (
+			<View className="flex-1 items-center justify-center bg-background">
+				<ActivityIndicator />
+			</View>
+		);
+	}
 
 	if (!session) {
 		return null;

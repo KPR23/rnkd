@@ -1,28 +1,35 @@
-import { authClient } from "@/src/lib/auth-client";
-import { router } from "expo-router";
+import { authClient } from "@/src/lib/auth/auth-client";
+import { useAuth } from "@/src/lib/auth/use-auth";
+import { useRouter } from "expo-router";
 import { Alert, Button, Text, View } from "react-native";
 
 export default function SignInScreen() {
+	const router = useRouter();
+	const { data: session } = useAuth();
+
 	const handleLogin = async () => {
 		try {
 			const result = await authClient.signIn.social({
 				provider: "github",
 				callbackURL: "/",
 			});
+
 			if (result.error) {
 				Alert.alert(
 					"Sign in failed",
 					result.error.message || `HTTP ${result.error.status ?? "unknown"}`,
 				);
-				return;
 			}
-			router.replace("/(protected)/(tabs)");
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Unknown error";
 			console.error("LOGIN EXCEPTION", error);
 			Alert.alert("Sign in exception", message);
 		}
 	};
+
+	if (session) {
+		router.replace("/(protected)/(tabs)");
+	}
 
 	return (
 		<View className="flex-1 items-center justify-center bg-background px-6">

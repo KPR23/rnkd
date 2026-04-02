@@ -1,5 +1,5 @@
 import "@/globals.css";
-import { authClient } from "@/src/lib/auth-client";
+import { useAuth } from "@/src/lib/auth/use-auth";
 import { TRPCProvider } from "@/src/utils/provider";
 import {
 	Inter_400Regular,
@@ -23,7 +23,8 @@ import { useEffect } from "react";
 SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
-	const { data: session, isPending } = authClient.useSession();
+	const { data: session, isPending } = useAuth();
+
 	const [fontsLoaded, fontError] = useFonts({
 		Inter_400Regular,
 		Inter_500Medium,

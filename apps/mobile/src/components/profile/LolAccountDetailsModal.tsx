@@ -5,7 +5,7 @@ import RankDisplayCard from "@/src/components/RankDisplayCard";
 import { DRAGON_CDN_VERSION } from "@/src/lib/constants/riotApiUrl";
 import { trpc } from "@/src/utils/trpc";
 import { LolGameAccount } from "@repo/types";
-import { Image, Text, View } from "react-native";
+import { ActivityIndicator, Image, Text, View } from "react-native";
 
 function queueWinRateLine(
 	ranked: { wins: number; losses: number } | null | undefined,
@@ -29,9 +29,10 @@ export default function LolAccountDetailsModal({
 	const { data, isLoading } = trpc.gameAccount.getLolProfileDisplay.useQuery({
 		gameAccountId: gameAccount.id,
 	});
-	const { data: matchHistory } = trpc.riot.getMatchHistory.useQuery({
-		gameAccountId: gameAccount.id,
-	});
+	const { data: matchHistory, isLoading: isMatchHistoryLoading } =
+		trpc.riot.getMatchHistory.useQuery({
+			gameAccountId: gameAccount.id,
+		});
 
 	const soloWr = queueWinRateLine(data?.rankedSoloDuo, isLoading);
 	const flexWr = queueWinRateLine(data?.rankedFlex, isLoading);
@@ -108,9 +109,16 @@ export default function LolAccountDetailsModal({
 					Match history
 				</Text>
 				<View className="flex flex-col gap-2">
-					{matchHistory?.map((match) => (
-						<LolMatchHistoryCard key={match.matches.id} matchHistory={match} />
-					))}
+					{isMatchHistoryLoading ? (
+						<ActivityIndicator />
+					) : (
+						matchHistory?.map((match) => (
+							<LolMatchHistoryCard
+								key={match.matches.id}
+								matchHistory={match}
+							/>
+						))
+					)}
 				</View>
 			</View>
 		</View>

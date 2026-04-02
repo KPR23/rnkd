@@ -13,7 +13,13 @@ export default function ProtectedLayout() {
 					},
 				}}
 			>
-				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+				<Stack.Screen
+					name="(tabs)"
+					options={{
+						headerShown: false,
+						title: "Profile",
+					}}
+				/>
 				<Stack.Screen
 					name="settings"
 					options={{

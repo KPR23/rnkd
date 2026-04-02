@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import superjson from "superjson";
 import { trpc } from "@/src/utils/trpc";
 import { mobileTrpcUrl } from "@/src/lib/server-url";
-import { authClient } from "@/src/lib/auth-client";
+import { authClient } from "@/src/lib/auth/auth-client";
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
 	const [queryClient] = useState(() => new QueryClient());
