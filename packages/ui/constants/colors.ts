@@ -10,4 +10,5 @@ export const colors = {
 	card: "#17121f",
 	gamesLoL: "#c28f2b",
 	gamesCS2: "#2a377e",
+	destructive: "#DC2626",
 };

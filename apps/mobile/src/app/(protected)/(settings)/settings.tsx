@@ -6,7 +6,12 @@ import { useAuth } from "@/src/lib/auth/use-auth";
 import { useRouter } from "expo-router";
 import { ActivityIndicator, Text, View } from "react-native";
 import Frame from "@/src/components/Frame";
-import { UserIcon } from "phosphor-react-native";
+import {
+	BellIcon,
+	LinkIcon,
+	SignOutIcon,
+	UserIcon,
+} from "phosphor-react-native";
 import SettingsCard from "@/src/app/(protected)/(settings)/SettingsCard";
 
 export default function SettingsScreen() {
@@ -30,11 +35,31 @@ export default function SettingsScreen() {
 		return null;
 	}
 
-	const accountDetailsItems = [
+	const settingsSections = [
 		{
-			title: "Personal information",
-			icon: <UserIcon />,
-			onPress: () => void 0,
+			title: "Account details",
+			items: [
+				{
+					title: "Personal information",
+					icon: <UserIcon />,
+					onPress: () => void 0,
+				},
+				{
+					title: "Linked accounts",
+					icon: <LinkIcon />,
+					onPress: () => void 0,
+				},
+			],
+		},
+		{
+			title: "Preferences",
+			items: [
+				{
+					title: "Notifications",
+					icon: <BellIcon />,
+					onPress: () => void 0,
+				},
+			],
 		},
 	];
 
@@ -42,22 +67,28 @@ export default function SettingsScreen() {
 		<View className="p-5 flex flex-col gap-4">
 			<UserHeader user={session.user} />
 			<Button
-				variant="secondary"
+				variant="destructive"
 				actionText="Sign out"
+				icon={<SignOutIcon />}
 				className="w-full"
 				onPress={handleSignOut}
 			/>
-			<View className="flex flex-col gap-2">
-				<Text className="font-sans-semibold text-xs text-text uppercase">
-					Account details
-				</Text>
-				{accountDetailsItems.map((card) => (
-					<SettingsCard
-						key={card.title}
-						title={card.title}
-						icon={card.icon}
-						onPress={card.onPress}
-					/>
+			<View className="flex flex-col gap-4">
+				{settingsSections.map((section) => (
+					<View key={section.title} className="flex flex-col gap-2">
+						<Text className="font-sans-semibold text-xs text-text uppercase">
+							{section.title}
+						</Text>
+
+						{section.items.map((item) => (
+							<SettingsCard
+								key={item.title}
+								title={item.title}
+								icon={item.icon}
+								onPress={item.onPress}
+							/>
+						))}
+					</View>
 				))}
 			</View>
 			<View className="items-center">
