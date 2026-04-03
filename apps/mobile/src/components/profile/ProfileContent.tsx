@@ -10,7 +10,7 @@ export default function ProfileContent({ gameAccounts }: ProfileContentProps) {
 	return (
 		<View className="flex gap-8">
 			<Tabs gameAccounts={gameAccounts ?? []} />
-			<View className="flex flex-col gap-4">
+			<View className="flex flex-col gap-2">
 				<Text className="font-sans-semibold text-xs text-text uppercase">
 					Connected accounts
 				</Text>

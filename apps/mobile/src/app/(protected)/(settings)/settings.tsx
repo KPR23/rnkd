@@ -30,7 +30,7 @@ export default function SettingsScreen() {
 		return null;
 	}
 
-	const settingsCards = [
+	const accountDetailsItems = [
 		{
 			title: "Personal information",
 			icon: <UserIcon />,
@@ -47,11 +47,11 @@ export default function SettingsScreen() {
 				className="w-full"
 				onPress={handleSignOut}
 			/>
-			<View className="flex flex-col gap-4">
+			<View className="flex flex-col gap-2">
 				<Text className="font-sans-semibold text-xs text-text uppercase">
 					Account details
 				</Text>
-				{settingsCards.map((card) => (
+				{accountDetailsItems.map((card) => (
 					<SettingsCard
 						key={card.title}
 						title={card.title}
