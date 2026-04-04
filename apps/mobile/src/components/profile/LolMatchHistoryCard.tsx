@@ -1,9 +1,9 @@
 import Frame from "@/src/components/Frame";
-import { formatLolQueueLabel } from "@/src/lib/constants/lolQueue";
+import { formatLolQueueLabel } from "@/src/lib/helper/lolQueue";
 import {
 	formatGameDuration,
 	formatMatchPlayedAt,
-} from "@/src/lib/constants/matchTime";
+} from "@/src/lib/helper/matchTime";
 import type { LolMatchHistoryRow } from "@repo/types";
 import { Image, Text, View } from "react-native";
 
