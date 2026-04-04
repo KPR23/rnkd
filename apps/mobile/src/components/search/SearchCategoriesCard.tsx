@@ -12,6 +12,7 @@ interface SearchCategoriesCardProps {
 	icon: React.ReactNode;
 	color: string;
 	onPress: () => void;
+	selected: boolean;
 }
 
 export default function SearchCategoriesCard({
@@ -19,6 +20,7 @@ export default function SearchCategoriesCard({
 	icon,
 	color,
 	onPress,
+	selected,
 }: SearchCategoriesCardProps) {
 	const iconContext = {
 		size: 20,
@@ -30,11 +32,21 @@ export default function SearchCategoriesCard({
 		<IconContext.Provider value={iconContext}>
 			<TouchableOpacity
 				activeOpacity={0.7}
-				className="w-full flex flex-row items-center h-11 gap-1.5 border border-border pl-3 pr-3"
+				className="w-full flex flex-row items-center h-11 gap-2 border px-3"
+				style={
+					selected
+						? {
+								borderColor: color,
+								backgroundColor: `${color}1A`,
+							}
+						: { borderColor: colors.border }
+				}
 				onPress={onPress}
 			>
 				{icon}
-				<Text className="text-text-secondary font-sans-medium text-sm">
+				<Text
+					className={`font-sans-medium text-sm ${selected ? "text-text" : "text-text-secondary"}`}
+				>
 					{name}
 				</Text>
 			</TouchableOpacity>

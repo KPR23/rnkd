@@ -3,6 +3,7 @@ import ScreenTitle from "@/src/components/ScreenTitle";
 import SearchCategoriesCard from "@/src/components/search/SearchCategoriesCard";
 import { colors, tagColors } from "@repo/ui/colors";
 import {
+	AsteriskIcon,
 	AtIcon,
 	GameControllerIcon,
 	MagnifyingGlassIcon,
@@ -24,6 +25,11 @@ const SEARCH_HISTORY_KEY = "search_history";
 const MAX_RECENT_SEARCHES = 5;
 
 const categories = [
+	{
+		name: "All",
+		icon: <AsteriskIcon />,
+		color: colors.gray,
+	},
 	{
 		name: "Tags",
 		icon: <AtIcon />,
@@ -49,6 +55,7 @@ const categories = [
 export default function SearchTab() {
 	const [search, setSearch] = useState("");
 	const [recentSearches, setRecentSearches] = useState<string[]>([]);
+	const [activeCategory, setActiveCategory] = useState<string>("All");
 
 	useEffect(() => {
 		const loadSearchHistory = async () => {
@@ -104,6 +111,14 @@ export default function SearchTab() {
 		}
 	};
 
+	const handleSelectCategory = (category: string) => {
+		setActiveCategory(category);
+	};
+
+	const handleClearCategory = () => {
+		setActiveCategory("All");
+	};
+
 	const handleSelectRecentSearch = (value: string) => {
 		setSearch(value);
 	};
@@ -137,9 +152,23 @@ export default function SearchTab() {
 					</View>
 
 					<View className="flex flex-col gap-2">
-						<Text className="text-sm font-sans-medium text-text">
-							Search by category
-						</Text>
+						<View className="flex flex-row items-center gap-2 justify-between">
+							<Text className="text-sm font-sans-medium text-text">
+								Search by category
+							</Text>
+							{activeCategory !== "All" && (
+								<TouchableOpacity
+									activeOpacity={0.7}
+									className="text-sm font-sans-medium text-text-secondary"
+									onPress={handleClearCategory}
+								>
+									<Text className="text-sm font-sans-medium text-primary">
+										Reset
+									</Text>
+								</TouchableOpacity>
+							)}
+						</View>
+
 						{categories.length > 0 && (
 							<ScrollView
 								horizontal
@@ -152,7 +181,8 @@ export default function SearchTab() {
 											name={category.name}
 											icon={category.icon}
 											color={category.color}
-											onPress={() => {}}
+											onPress={() => handleSelectCategory(category.name)}
+											selected={activeCategory === category.name}
 										/>
 									</View>
 								))}
