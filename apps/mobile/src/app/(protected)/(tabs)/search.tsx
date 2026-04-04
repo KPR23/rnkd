@@ -26,6 +26,10 @@ export default function SearchTab() {
 		setSearch(text.trim());
 	};
 
+	const handleClearSearchHistory = () => {
+		setSearch("");
+	};
+
 	const categories = [
 		{
 			name: "Tags",
@@ -112,6 +116,7 @@ export default function SearchTab() {
 											name={category.name}
 											icon={category.icon}
 											color={category.color}
+											onPress={() => {}}
 										/>
 									</View>
 								))}
