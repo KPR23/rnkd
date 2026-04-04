@@ -54,11 +54,21 @@ const categories = [
 	},
 ];
 
+interface SearchResult {
+	id: string;
+	type: string;
+	name: string;
+	description: string;
+	image: string;
+	link: string;
+}
+
 export default function SearchTab() {
 	const [search, setSearch] = useState("");
-	const [searchResults, setSearchResults] = useState<[]>([]);
+	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 	const [recentSearches, setRecentSearches] = useState<string[]>([]);
 	const [activeCategory, setActiveCategory] = useState<string>("All");
+	const [isFiltersCollapsed, setIsFiltersCollapsed] = useState<boolean>(false);
 
 	useEffect(() => {
 		const loadSearchHistory = async () => {
@@ -108,6 +118,8 @@ export default function SearchTab() {
 	const handleClearSearchHistory = async () => {
 		try {
 			setRecentSearches([]);
+			setSearch("");
+			setSearchResults([]);
 			await AsyncStorage.removeItem(SEARCH_HISTORY_KEY);
 		} catch (error) {
 			console.error("Failed to clear search history:", error);
@@ -159,6 +171,8 @@ export default function SearchTab() {
 					onActionPress={
 						activeCategory !== "All" ? handleClearCategory : undefined
 					}
+					collapsed={isFiltersCollapsed}
+					onCollapsePress={() => setIsFiltersCollapsed(!isFiltersCollapsed)}
 				>
 					{categories.length > 0 && (
 						<ScrollView
@@ -211,11 +225,17 @@ export default function SearchTab() {
 						</Text>
 					</View>
 				) : (
-					<View className="">
+					<View className="flex flex-col gap-2">
 						<Text className="text-sm font-sans-medium text-text">
 							Search results
 						</Text>
-						<SearchResultCard title={search} description={search} />
+						{searchResults.map((result) => (
+							<SearchResultCard
+								key={result.id}
+								title={result.name}
+								description={result.description}
+							/>
+						))}
 					</View>
 				)}
 			</View>
