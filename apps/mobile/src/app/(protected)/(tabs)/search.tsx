@@ -10,7 +10,7 @@ import {
 	UserIcon,
 	UsersIcon,
 } from "phosphor-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	ScrollView,
 	Text,
@@ -18,42 +18,95 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const SEARCH_HISTORY_KEY = "search_history";
+const MAX_RECENT_SEARCHES = 5;
+
+const categories = [
+	{
+		name: "Tags",
+		icon: <AtIcon />,
+		color: colors.primary,
+	},
+	{
+		name: "Players",
+		icon: <UserIcon />,
+		color: tagColors.player,
+	},
+	{
+		name: "Teams",
+		icon: <UsersIcon />,
+		color: tagColors.team,
+	},
+	{
+		name: "Games",
+		icon: <GameControllerIcon />,
+		color: tagColors.game,
+	},
+];
 
 export default function SearchTab() {
 	const [search, setSearch] = useState("");
+	const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+	useEffect(() => {
+		const loadSearchHistory = async () => {
+			try {
+				const stored = await AsyncStorage.getItem(SEARCH_HISTORY_KEY);
+
+				if (stored) {
+					const parsed = JSON.parse(stored) as string[];
+					setRecentSearches(parsed);
+				}
+			} catch (error) {
+				console.error("Failed to load search history:", error);
+			}
+		};
+
+		loadSearchHistory();
+	}, []);
 
 	const handleSearch = (text: string) => {
-		setSearch(text.trim());
+		setSearch(text);
 	};
 
-	const handleClearSearchHistory = () => {
-		setSearch("");
+	const saveSearchToHistory = async (value: string) => {
+		const normalized = value.trim();
+
+		if (!normalized) return;
+
+		try {
+			const updated = [
+				normalized,
+				...recentSearches.filter(
+					(item) => item.toLowerCase() !== normalized.toLowerCase(),
+				),
+			].slice(0, MAX_RECENT_SEARCHES);
+
+			setRecentSearches(updated);
+			await AsyncStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+		} catch (error) {
+			console.error("Failed to save search history:", error);
+		}
 	};
 
-	const categories = [
-		{
-			name: "Tags",
-			icon: <AtIcon />,
-			color: colors.primary,
-		},
-		{
-			name: "Players",
-			icon: <UserIcon />,
-			color: tagColors.player,
-		},
-		{
-			name: "Teams",
-			icon: <UsersIcon />,
-			color: tagColors.team,
-		},
-		{
-			name: "Games",
-			icon: <GameControllerIcon />,
-			color: tagColors.game,
-		},
-	];
+	const handleSubmitSearch = async () => {
+		await saveSearchToHistory(search);
+	};
 
-	const recentSearches = ["John Doe", "Jane Smith", "Mike Johnson"];
+	const handleClearSearchHistory = async () => {
+		try {
+			setRecentSearches([]);
+			await AsyncStorage.removeItem(SEARCH_HISTORY_KEY);
+		} catch (error) {
+			console.error("Failed to clear search history:", error);
+		}
+	};
+
+	const handleSelectRecentSearch = (value: string) => {
+		setSearch(value);
+	};
 
 	return (
 		<Screen>
@@ -67,37 +120,20 @@ export default function SearchTab() {
 								placeholder="Search"
 								placeholderTextColor={colors.gray}
 								className="h-12 w-full flex-1 text-text"
-								autoFocus
 								autoCorrect={false}
 								autoCapitalize="none"
 								value={search}
 								onChangeText={handleSearch}
+								onSubmitEditing={handleSubmitSearch}
+								returnKeyType="search"
 							/>
 						</View>
 						<TouchableOpacity
 							activeOpacity={0.7}
 							className="flex justify-center items-center size-12 border border-border"
 						>
-							<QrCodeIcon size={24} color={colors.primary} />
+							<QrCodeIcon size={24} color={colors.text} />
 						</TouchableOpacity>
-					</View>
-
-					<View className="flex flex-col gap-2">
-						<Text className="text-sm font-sans-medium text-text">
-							Your history
-						</Text>
-						{recentSearches.length > 0 && (
-							<View className="flex flex-row gap-2">
-								{recentSearches.map((search) => (
-									<View
-										key={search}
-										className="flex flex-row border border-border p-2"
-									>
-										<Text className="text-text-muted">{search}</Text>
-									</View>
-								))}
-							</View>
-						)}
 					</View>
 
 					<View className="flex flex-col gap-2">
@@ -124,6 +160,39 @@ export default function SearchTab() {
 						)}
 					</View>
 				</View>
+
+				{recentSearches.length > 0 && (
+					<View className="flex flex-col gap-2">
+						<View className="flex flex-row items-center gap-2 justify-between">
+							<Text className="text-sm font-sans-medium text-text">Recent</Text>
+							<TouchableOpacity
+								activeOpacity={0.7}
+								className="text-sm font-sans-medium text-text-secondary"
+								onPress={handleClearSearchHistory}
+							>
+								<Text className="text-sm font-sans-medium text-primary">
+									Clear
+								</Text>
+							</TouchableOpacity>
+						</View>
+
+						<View className="flex flex-row gap-2">
+							{recentSearches.length > 0 && (
+								<View className="flex flex-row gap-2 flex-wrap">
+									{recentSearches.map((item) => (
+										<TouchableOpacity
+											key={item}
+											onPress={() => handleSelectRecentSearch(item)}
+											className="flex flex-row border border-border p-2"
+										>
+											<Text className="text-text-muted">{item}</Text>
+										</TouchableOpacity>
+									))}
+								</View>
+							)}
+						</View>
+					</View>
+				)}
 
 				{search.length === 0 ? (
 					<View className="flex-1 justify-center items-center gap-2 mb-24">
