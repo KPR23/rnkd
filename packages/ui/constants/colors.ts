@@ -11,4 +11,6 @@ export const colors = {
 	gamesLoL: "#c28f2b",
 	gamesCS2: "#2a377e",
 	destructive: "#DC2626",
+	destructiveBorder: "#7F1D1D",
+	destructiveText: "#FCA5A5",
 };

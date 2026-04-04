@@ -11,7 +11,7 @@ interface SettingsCardProps {
 const iconContext = {
 	size: 20,
 	color: colors.gray,
-	weight: "bold" as const,
+	weight: "regular" as const,
 };
 
 export default function SettingsCard({
@@ -23,12 +23,12 @@ export default function SettingsCard({
 		<IconContext.Provider value={iconContext}>
 			<TouchableOpacity
 				activeOpacity={0.7}
-				className="flex flex-row gap-2 justify-between! border border-border bg-card px-4 items-center h-12"
+				className="flex flex-row gap-2 justify-between! border border-border bg-card pl-4 pr-3 items-center h-12"
 				onPress={onPress}
 			>
 				<View className="flex flex-row gap-3 items-center">
 					{icon}
-					<Text className="font-sans-semibold text-sm text-text">{title}</Text>
+					<Text className="font-sans-medium text-sm text-text">{title}</Text>
 				</View>
 				<CaretRightIcon />
 			</TouchableOpacity>

@@ -1,18 +1,24 @@
+import SettingsCard from "@/src/app/(protected)/(settings)/SettingsCard";
 import Button from "@/src/components/Button";
 import UserHeader from "@/src/components/UserHeader";
-import { APP_VERSION } from "@/src/lib/constants/app-version";
 import { authClient } from "@/src/lib/auth/auth-client";
 import { useAuth } from "@/src/lib/auth/use-auth";
+import { APP_VERSION, APP_YEAR } from "@/src/lib/constants/app-version";
 import { useRouter } from "expo-router";
-import { ActivityIndicator, Text, View } from "react-native";
-import Frame from "@/src/components/Frame";
 import {
+	AsteriskIcon,
 	BellIcon,
+	FileTextIcon,
+	GlobeIcon,
+	GlobeSimpleIcon,
+	HeadsetIcon,
 	LinkIcon,
-	SignOutIcon,
+	MegaphoneIcon,
+	PaperPlaneTiltIcon,
+	SunIcon,
 	UserIcon,
 } from "phosphor-react-native";
-import SettingsCard from "@/src/app/(protected)/(settings)/SettingsCard";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 export default function SettingsScreen() {
 	const router = useRouter();
@@ -59,24 +65,51 @@ export default function SettingsScreen() {
 					icon: <BellIcon />,
 					onPress: () => void 0,
 				},
+				{
+					title: "Appearance",
+					icon: <SunIcon />,
+					onPress: () => void 0,
+				},
+				{
+					title: "Language",
+					icon: <GlobeIcon />,
+					onPress: () => void 0,
+				},
+			],
+		},
+		{
+			title: "Support",
+			items: [
+				{
+					title: "Contact support",
+					icon: <HeadsetIcon />,
+					onPress: () => void 0,
+				},
+				{
+					title: "Feedback",
+					icon: <AsteriskIcon />,
+					onPress: () => void 0,
+				},
+				{
+					title: "Terms of service",
+					icon: <FileTextIcon />,
+					onPress: () => void 0,
+				},
 			],
 		},
 	];
 
 	return (
-		<View className="p-5 flex flex-col gap-4">
+		<ScrollView
+			showsVerticalScrollIndicator={false}
+			contentContainerStyle={{ gap: 16, padding: 20 }}
+		>
 			<UserHeader user={session.user} />
-			<Button
-				variant="destructive"
-				actionText="Sign out"
-				icon={<SignOutIcon />}
-				className="w-full"
-				onPress={handleSignOut}
-			/>
+
 			<View className="flex flex-col gap-4">
 				{settingsSections.map((section) => (
 					<View key={section.title} className="flex flex-col gap-2">
-						<Text className="font-sans-semibold text-xs text-text uppercase">
+						<Text className="font-sans-semibold pl-1 text-xs text-text uppercase">
 							{section.title}
 						</Text>
 
@@ -91,14 +124,20 @@ export default function SettingsScreen() {
 					</View>
 				))}
 			</View>
+			<Button
+				variant="destructive"
+				actionText="Sign out"
+				className="w-full"
+				onPress={handleSignOut}
+			/>
 			<View className="items-center">
 				<Text className="text-center text-sm text-text-muted">
 					Version {APP_VERSION}
 				</Text>
 				<Text className="text-center text-sm text-text-muted">
-					© 2026 KPR's Lab. All rights reserved.
+					© {APP_YEAR} KPR's Lab. All rights reserved.
 				</Text>
 			</View>
-		</View>
+		</ScrollView>
 	);
 }
