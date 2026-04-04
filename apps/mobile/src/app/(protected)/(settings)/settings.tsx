@@ -10,11 +10,8 @@ import {
 	BellIcon,
 	FileTextIcon,
 	GlobeIcon,
-	GlobeSimpleIcon,
 	HeadsetIcon,
 	LinkIcon,
-	MegaphoneIcon,
-	PaperPlaneTiltIcon,
 	SunIcon,
 	UserIcon,
 } from "phosphor-react-native";
@@ -135,7 +132,7 @@ export default function SettingsScreen() {
 					Version {APP_VERSION}
 				</Text>
 				<Text className="text-center text-sm text-text-muted">
-					© {APP_YEAR} KPR's Lab. All rights reserved.
+					© {APP_YEAR} KPR&apos;s Lab. All rights reserved.
 				</Text>
 			</View>
 		</ScrollView>

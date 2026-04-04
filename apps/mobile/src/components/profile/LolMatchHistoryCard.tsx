@@ -15,7 +15,7 @@ export default function LolMatchHistoryCard({
 	const kills = matchHistory.match_participants.kills;
 	const deaths = matchHistory.match_participants.deaths;
 	const assists = matchHistory.match_participants.assists;
-	const kda = deaths === 0 ? kills + assists : (kills + assists) / deaths;
+	// const kda = deaths === 0 ? kills + assists : (kills + assists) / deaths;
 	const cs = matchHistory.match_participants.totalMinionsKilled;
 
 	const championIconUrl = matchHistory.match_participants.championIconUrl;
