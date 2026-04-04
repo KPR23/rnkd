@@ -99,7 +99,7 @@ export default function SettingsScreen() {
 	return (
 		<ScrollView
 			showsVerticalScrollIndicator={false}
-			contentContainerStyle={{ gap: 16, padding: 20 }}
+			contentContainerStyle={{ gap: 20, padding: 20 }}
 		>
 			<UserHeader user={session.user} />
 
