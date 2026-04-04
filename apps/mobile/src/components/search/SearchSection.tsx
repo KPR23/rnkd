@@ -33,9 +33,9 @@ export default function SearchSection({
 					>
 						<Text className="text-sm font-sans-medium text-text">{title}</Text>
 						{collapsed ? (
-							<CaretDownIcon size={18} weight="bold" color={colors.textMuted} />
+							<CaretDownIcon size={16} weight="bold" color={colors.textMuted} />
 						) : (
-							<CaretUpIcon size={18} weight="bold" color={colors.textMuted} />
+							<CaretUpIcon size={16} weight="bold" color={colors.textMuted} />
 						)}
 					</TouchableOpacity>
 				)}

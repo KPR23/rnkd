@@ -32,7 +32,7 @@ export default function SearchCategoriesCard({
 		<IconContext.Provider value={iconContext}>
 			<TouchableOpacity
 				activeOpacity={0.7}
-				className="w-full flex flex-row items-center h-11 gap-1.5 border px-3"
+				className="w-full flex flex-row items-center h-11 gap-1.5 border pr-3 pl-2.5"
 				style={
 					selected
 						? {
