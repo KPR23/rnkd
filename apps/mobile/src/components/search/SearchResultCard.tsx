@@ -47,16 +47,21 @@ export default function UserSearchResultCard({
 				</View>
 			)}
 			<View
-				className={`flex-1 h-11 gap-1 items-start ${hasGames ? "justify-between" : "justify-center"}`}
+				className={`flex-1 min-w-0 h-11 gap-1 items-start ${hasGames ? "justify-between" : "justify-center"}`}
 			>
-				<View
-					className={`flex-row flex-wrap items-baseline gap-x-2 gap-y-0.5 ${hasGames ? "" : "justify-center"}`}
-				>
-					<Text className="text-sm leading-none font-sans-medium text-text">
+				<View className="w-full min-w-0 flex-row items-center gap-x-2">
+					<Text
+						className="text-sm leading-none font-sans-medium text-text min-w-0 shrink"
+						numberOfLines={1}
+						ellipsizeMode="tail"
+					>
 						{user.name}
 					</Text>
 					{user.tag ? (
-						<Text className="text-sm leading-none font-mono-medium text-primary">
+						<Text
+							className="text-sm leading-none shrink-0 font-mono-medium text-primary"
+							numberOfLines={1}
+						>
 							@{user.tag}
 						</Text>
 					) : null}
