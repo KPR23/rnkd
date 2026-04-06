@@ -18,6 +18,8 @@ const GAME_LOGO_LAYOUT: Record<LogoKey, { width: number; height: number }> = {
 
 const xmlCache: Partial<Record<LogoKey, string>> = {};
 
+const DEFAULT_LOGO_COLOR = "#F5F2F5";
+
 function logoKeyFromGameId(gameId: string): LogoKey | null {
 	if (gameId === GAMES.LOL || gameId === GAMES.CS2_FACEIT) {
 		return gameId;
@@ -28,9 +30,11 @@ function logoKeyFromGameId(gameId: string): LogoKey | null {
 export default function GameLogo({
 	gameId,
 	maxHeight = 22,
+	color = DEFAULT_LOGO_COLOR,
 }: {
 	gameId: string;
 	maxHeight?: number;
+	color?: string;
 }) {
 	const key = logoKeyFromGameId(gameId);
 	const [xml, setXml] = React.useState<string | null>(null);
@@ -82,5 +86,5 @@ export default function GameLogo({
 	const height = maxHeight;
 	const width = Math.round((vw / vh) * maxHeight);
 
-	return <SvgXml xml={xml} width={width} height={height} />;
+	return <SvgXml xml={xml} width={width} height={height} color={color} />;
 }

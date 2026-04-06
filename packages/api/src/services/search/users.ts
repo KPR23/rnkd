@@ -31,9 +31,9 @@ function displayLabelForGameAccount(account: {
 }): string | null {
 	switch (account.gameId) {
 		case GAMES.LOL: {
-			const { gameName, tagLine } = account.lolProfile ?? {};
-			if (gameName && tagLine) {
-				return `${gameName} #${tagLine}`;
+			const { gameName } = account.lolProfile ?? {};
+			if (gameName) {
+				return gameName;
 			}
 
 			return account.externalId;

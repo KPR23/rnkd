@@ -214,7 +214,7 @@ export default function SearchTab() {
 	return (
 		<Screen>
 			<ScreenTitle title="Search" />
-			<View className="flex flex-1 flex-col gap-4">
+			<View className="flex flex-1 flex-col gap-2">
 				<View className="flex flex-row w-full items-center gap-2 justify-between">
 					<View className="flex-1 w-full h-12 flex-row items-center gap-2 border border-border px-3">
 						<MagnifyingGlassIcon size={20} color={colors.gray} />
@@ -275,13 +275,7 @@ export default function SearchTab() {
 						</Text>
 					</View>
 				) : (
-					<SearchSection
-						title="Search results"
-						actionLabel={activeCategory !== "All" ? "Reset" : undefined}
-						onActionPress={
-							activeCategory !== "All" ? handleClearCategory : undefined
-						}
-					>
+					<View className="flex flex-col gap-4">
 						<ScrollView
 							horizontal
 							showsHorizontalScrollIndicator={false}
@@ -299,29 +293,36 @@ export default function SearchTab() {
 								</View>
 							))}
 						</ScrollView>
-
-						<View className="flex flex-col gap-2">
-							{isLoadingSearchResults ? (
-								// <SearchResultCard title="Loading" isLoading />
-								<ActivityIndicator />
-							) : filteredSearchResults.length > 0 ? (
-								filteredSearchResults.map((result) => (
-									<UserSearchResultCard
-										key={result.user.id}
-										user={result.user}
-										games={result.games}
-										isLoading={isLoadingSearchResults}
-									/>
-								))
-							) : (
-								<View className="py-6 items-center">
-									<Text className="text-sm font-sans-medium text-text-muted">
-										No results found
-									</Text>
-								</View>
-							)}
-						</View>
-					</SearchSection>
+						<SearchSection
+							title="Search results"
+							actionLabel={activeCategory !== "All" ? "Reset" : undefined}
+							onActionPress={
+								activeCategory !== "All" ? handleClearCategory : undefined
+							}
+						>
+							<View className="flex flex-col gap-2">
+								{isLoadingSearchResults ? (
+									// <SearchResultCard title="Loading" isLoading />
+									<ActivityIndicator />
+								) : filteredSearchResults.length > 0 ? (
+									filteredSearchResults.map((result) => (
+										<UserSearchResultCard
+											key={result.user.id}
+											user={result.user}
+											games={result.games}
+											isLoading={isLoadingSearchResults}
+										/>
+									))
+								) : (
+									<View className="py-6 items-center">
+										<Text className="text-sm font-sans-medium text-text-muted">
+											No results found
+										</Text>
+									</View>
+								)}
+							</View>
+						</SearchSection>
+					</View>
 				)}
 			</View>
 		</Screen>
