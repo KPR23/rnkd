@@ -79,6 +79,7 @@ export async function searchUsers(query: string): Promise<SearchUserResult[]> {
 			lolProfile: true,
 			cs2FaceitProfile: true,
 		},
+		limit: 2,
 	});
 
 	const gameAccountsByUserId = new Map<

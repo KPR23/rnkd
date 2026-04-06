@@ -1,7 +1,7 @@
 import Screen from "@/src/components/Screen";
 import ScreenTitle from "@/src/components/ScreenTitle";
 import SearchCategoriesCard from "@/src/components/search/SearchCategoriesCard";
-import SearchResultCard from "@/src/components/search/SearchResultCard";
+import UserSearchResultCard from "@/src/components/search/SearchResultCard";
 import SearchSection from "@/src/components/search/SearchSection";
 import { trpc } from "@/src/utils/trpc";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -16,8 +16,15 @@ import {
 	UserIcon,
 	UsersIcon,
 } from "phosphor-react-native";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+	type ReactNode,
+} from "react";
+import {
+	ActivityIndicator,
 	ScrollView,
 	Text,
 	TextInput,
@@ -58,9 +65,9 @@ const resultCategories: {
 	},
 ];
 
-type SearchUserGame = {
+export type SearchUserGame = {
 	gameId: GameId;
-	username: string;
+	nickname: string;
 };
 
 type UserSearchResult = {
@@ -94,7 +101,7 @@ export default function SearchTab() {
 				},
 				games: result.games.map((game) => ({
 					gameId: game.gameId,
-					username: game.displayLabel,
+					nickname: game.displayLabel,
 				})),
 			})),
 		[searchUsersResults],
@@ -295,14 +302,15 @@ export default function SearchTab() {
 
 						<View className="flex flex-col gap-2">
 							{isLoadingSearchResults ? (
-								<SearchResultCard title="Loading" isLoading />
+								// <SearchResultCard title="Loading" isLoading />
+								<ActivityIndicator />
 							) : filteredSearchResults.length > 0 ? (
 								filteredSearchResults.map((result) => (
-									<SearchResultCard
+									<UserSearchResultCard
 										key={result.user.id}
-										title={result.user.name}
-										subtitle={result.user.tag}
-										imageUrl={result.user.image}
+										user={result.user}
+										games={result.games}
+										isLoading={isLoadingSearchResults}
 									/>
 								))
 							) : (
