@@ -3,7 +3,10 @@ import ScreenTitle from "@/src/components/ScreenTitle";
 import SearchCategoriesCard from "@/src/components/search/SearchCategoriesCard";
 import SearchResultCard from "@/src/components/search/SearchResultCard";
 import SearchSection from "@/src/components/search/SearchSection";
+import { trpc } from "@/src/utils/trpc";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { User } from "@repo/types/auth";
+import { GameId } from "@repo/types/game";
 import { colors, tagColors } from "@repo/ui/colors";
 import {
 	AsteriskIcon,
@@ -54,21 +57,111 @@ const categories = [
 	},
 ];
 
-interface SearchResult {
-	id: string;
-	type: string;
-	name: string;
-	description: string;
-	image: string;
-	link: string;
-}
+type SearchUserGame = {
+	gameId: GameId;
+	username: string;
+};
+
+type UserSearchResult = {
+	type: "user";
+	user: Pick<User, "id" | "name" | "tag" | "image">;
+	games: SearchUserGame[];
+};
+
+type SearchResult = UserSearchResult;
 
 export default function SearchTab() {
 	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 	const [recentSearches, setRecentSearches] = useState<string[]>([]);
 	const [activeCategory, setActiveCategory] = useState<string>("All");
 	const [isFiltersCollapsed, setIsFiltersCollapsed] = useState<boolean>(false);
+
+	const { data: searchResultsFromQuery, isLoading: isLoadingSearchResults } =
+		trpc.search.searchUsers.useQuery(debouncedSearch, {
+			enabled: debouncedSearch.length >= 2,
+		});
+
+	const {
+		data: searchResultsFromTags,
+		isLoading: isLoadingSearchResultsFromTags,
+	} = trpc.search.searchUsersByTag.useQuery(debouncedSearch, {
+		enabled: debouncedSearch.length >= 2,
+	});
+
+	const {
+		data: searchResultsFromPlayers,
+		isLoading: isLoadingSearchResultsFromPlayers,
+	} = trpc.search.searchUsersByName.useQuery(debouncedSearch, {
+		enabled: debouncedSearch.length >= 2,
+	});
+
+	useEffect(() => {
+		const timeout = setTimeout(() => {
+			setDebouncedSearch(search.trim());
+		}, 300);
+
+		return () => clearTimeout(timeout);
+	}, [search]);
+
+	useEffect(() => {
+		if (debouncedSearch.length < 2) {
+			setSearchResults([]);
+			return;
+		}
+
+		if (activeCategory === "Tags") {
+			if (searchResultsFromTags) {
+				setSearchResults(
+					searchResultsFromTags.map((result) => ({
+						type: "user",
+						user: {
+							id: result.id,
+							name: result.name,
+							tag: result.tag ?? "",
+							image: result.image,
+						},
+						games: [],
+					})),
+				);
+				return;
+			}
+		}
+
+		if (activeCategory === "Players") {
+			if (searchResultsFromPlayers) {
+				setSearchResults(
+					searchResultsFromPlayers.map((result) => ({
+						type: "user",
+						user: {
+							id: result.id,
+							name: result.name,
+							tag: result.tag ?? "",
+							image: result.image,
+						},
+						games: [],
+					})),
+				);
+				return;
+			}
+		}
+
+		if (searchResultsFromQuery) {
+			setSearchResults(
+				searchResultsFromQuery.flat().map((result) => ({
+					type: "user",
+					user: {
+						id: result.id,
+						name: result.name,
+						tag: result.tag ?? "",
+						image: result.image,
+					},
+					games: [],
+				})),
+			);
+		}
+	}, [debouncedSearch, searchResultsFromQuery]);
 
 	useEffect(() => {
 		const loadSearchHistory = async () => {
@@ -86,10 +179,6 @@ export default function SearchTab() {
 
 		loadSearchHistory();
 	}, []);
-
-	const handleSearch = (text: string) => {
-		setSearch(text);
-	};
 
 	const saveSearchToHistory = async (value: string) => {
 		const normalized = value.trim();
@@ -136,6 +225,11 @@ export default function SearchTab() {
 
 	const handleSelectRecentSearch = (value: string) => {
 		setSearch(value);
+		setDebouncedSearch(value);
+	};
+
+	const handleSearch = (text: string) => {
+		setSearch(text);
 	};
 
 	return (
@@ -231,9 +325,9 @@ export default function SearchTab() {
 						</Text>
 						{searchResults.map((result) => (
 							<SearchResultCard
-								key={result.id}
-								title={result.name}
-								description={result.description}
+								key={result.user.id}
+								title={result.user.name}
+								isLoading={isLoadingSearchResults}
 							/>
 						))}
 					</View>

@@ -1,10 +1,26 @@
 import z from "zod";
+import {
+	searchUsers,
+	searchUsersByNameOrTag,
+	searchUsersByTag,
+} from "../services/search/users";
 import { protectedProcedure, router } from "../trpc";
-import { searchUsers } from "../services/search/users";
 
 export const searchRouter = router({
-	searchQuery: protectedProcedure.input(z.string()).query(async ({ input }) => {
+	searchUsers: protectedProcedure.input(z.string()).query(async ({ input }) => {
 		const results = await searchUsers(input);
 		return results;
 	}),
+	searchUsersByTag: protectedProcedure
+		.input(z.string())
+		.query(async ({ input }) => {
+			const results = await searchUsersByTag(input);
+			return results;
+		}),
+	searchUsersByName: protectedProcedure
+		.input(z.string())
+		.query(async ({ input }) => {
+			const results = await searchUsersByNameOrTag(input);
+			return results;
+		}),
 });
