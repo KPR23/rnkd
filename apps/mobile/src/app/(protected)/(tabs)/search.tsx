@@ -10,14 +10,13 @@ import { GameId } from "@repo/types/game";
 import { colors, tagColors } from "@repo/ui/colors";
 import {
 	AsteriskIcon,
-	AtIcon,
 	GameControllerIcon,
 	MagnifyingGlassIcon,
 	QrCodeIcon,
 	UserIcon,
 	UsersIcon,
 } from "phosphor-react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
 	ScrollView,
 	Text,
@@ -28,17 +27,19 @@ import {
 
 const SEARCH_HISTORY_KEY = "search_history";
 const MAX_RECENT_SEARCHES = 5;
+const MIN_SEARCH_LENGTH = 2;
 
-const categories = [
+type ResultCategory = "All" | "Players" | "Teams" | "Games";
+
+const resultCategories: {
+	name: ResultCategory;
+	icon: ReactNode;
+	color: string;
+}[] = [
 	{
 		name: "All",
 		icon: <AsteriskIcon />,
 		color: colors.gray,
-	},
-	{
-		name: "Tags",
-		icon: <AtIcon />,
-		color: colors.primary,
 	},
 	{
 		name: "Players",
@@ -73,29 +74,70 @@ type SearchResult = UserSearchResult;
 export default function SearchTab() {
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
-	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 	const [recentSearches, setRecentSearches] = useState<string[]>([]);
-	const [activeCategory, setActiveCategory] = useState<string>("All");
-	const [isFiltersCollapsed, setIsFiltersCollapsed] = useState<boolean>(false);
+	const [activeCategory, setActiveCategory] = useState<ResultCategory>("All");
 
-	const { data: searchResultsFromQuery, isLoading: isLoadingSearchResults } =
+	const { data: searchUsersResults, isLoading: isLoadingSearchResults } =
 		trpc.search.searchUsers.useQuery(debouncedSearch, {
-			enabled: debouncedSearch.length >= 2,
+			enabled: debouncedSearch.length >= MIN_SEARCH_LENGTH,
 		});
 
-	const {
-		data: searchResultsFromTags,
-		isLoading: isLoadingSearchResultsFromTags,
-	} = trpc.search.searchUsersByTag.useQuery(debouncedSearch, {
-		enabled: debouncedSearch.length >= 2,
-	});
+	const searchResults = useMemo<SearchResult[]>(
+		() =>
+			(searchUsersResults ?? []).map((result) => ({
+				type: "user",
+				user: {
+					id: result.id,
+					name: result.name,
+					tag: result.tag ?? "",
+					image: result.image,
+				},
+				games: result.games.map((game) => ({
+					gameId: game.gameId,
+					username: game.displayLabel,
+				})),
+			})),
+		[searchUsersResults],
+	);
 
-	const {
-		data: searchResultsFromPlayers,
-		isLoading: isLoadingSearchResultsFromPlayers,
-	} = trpc.search.searchUsersByName.useQuery(debouncedSearch, {
-		enabled: debouncedSearch.length >= 2,
-	});
+	const filteredSearchResults = useMemo(() => {
+		if (activeCategory === "All") {
+			return searchResults;
+		}
+
+		return searchResults.filter((result) => result.type === "user");
+	}, [activeCategory, searchResults]);
+
+	const hasActiveSearch = debouncedSearch.length >= MIN_SEARCH_LENGTH;
+	const showRecentSearches = recentSearches.length > 0 && !hasActiveSearch;
+
+	const saveSearchToHistory = useCallback(async (value: string) => {
+		const normalized = value.trim();
+
+		if (!normalized) return;
+
+		try {
+			setRecentSearches((prev) => {
+				const updated = [
+					normalized,
+					...prev.filter(
+						(item) => item.toLowerCase() !== normalized.toLowerCase(),
+					),
+				].slice(0, MAX_RECENT_SEARCHES);
+
+				void AsyncStorage.setItem(
+					SEARCH_HISTORY_KEY,
+					JSON.stringify(updated),
+				).catch((error) => {
+					console.error("Failed to save search history:", error);
+				});
+
+				return updated;
+			});
+		} catch (error) {
+			console.error("Failed to save search history:", error);
+		}
+	}, []);
 
 	useEffect(() => {
 		const timeout = setTimeout(() => {
@@ -106,62 +148,12 @@ export default function SearchTab() {
 	}, [search]);
 
 	useEffect(() => {
-		if (debouncedSearch.length < 2) {
-			setSearchResults([]);
+		if (debouncedSearch.length < MIN_SEARCH_LENGTH) {
 			return;
 		}
 
-		if (activeCategory === "Tags") {
-			if (searchResultsFromTags) {
-				setSearchResults(
-					searchResultsFromTags.map((result) => ({
-						type: "user",
-						user: {
-							id: result.id,
-							name: result.name,
-							tag: result.tag ?? "",
-							image: result.image,
-						},
-						games: [],
-					})),
-				);
-				return;
-			}
-		}
-
-		if (activeCategory === "Players") {
-			if (searchResultsFromPlayers) {
-				setSearchResults(
-					searchResultsFromPlayers.map((result) => ({
-						type: "user",
-						user: {
-							id: result.id,
-							name: result.name,
-							tag: result.tag ?? "",
-							image: result.image,
-						},
-						games: [],
-					})),
-				);
-				return;
-			}
-		}
-
-		if (searchResultsFromQuery) {
-			setSearchResults(
-				searchResultsFromQuery.flat().map((result) => ({
-					type: "user",
-					user: {
-						id: result.id,
-						name: result.name,
-						tag: result.tag ?? "",
-						image: result.image,
-					},
-					games: [],
-				})),
-			);
-		}
-	}, [debouncedSearch, searchResultsFromQuery]);
+		void saveSearchToHistory(debouncedSearch);
+	}, [debouncedSearch, saveSearchToHistory]);
 
 	useEffect(() => {
 		const loadSearchHistory = async () => {
@@ -180,26 +172,6 @@ export default function SearchTab() {
 		loadSearchHistory();
 	}, []);
 
-	const saveSearchToHistory = async (value: string) => {
-		const normalized = value.trim();
-
-		if (!normalized) return;
-
-		try {
-			const updated = [
-				normalized,
-				...recentSearches.filter(
-					(item) => item.toLowerCase() !== normalized.toLowerCase(),
-				),
-			].slice(0, MAX_RECENT_SEARCHES);
-
-			setRecentSearches(updated);
-			await AsyncStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
-		} catch (error) {
-			console.error("Failed to save search history:", error);
-		}
-	};
-
 	const handleSubmitSearch = async () => {
 		await saveSearchToHistory(search);
 	};
@@ -208,14 +180,14 @@ export default function SearchTab() {
 		try {
 			setRecentSearches([]);
 			setSearch("");
-			setSearchResults([]);
+			setDebouncedSearch("");
 			await AsyncStorage.removeItem(SEARCH_HISTORY_KEY);
 		} catch (error) {
 			console.error("Failed to clear search history:", error);
 		}
 	};
 
-	const handleSelectCategory = (category: string) => {
+	const handleSelectCategory = (category: ResultCategory) => {
 		setActiveCategory(category);
 	};
 
@@ -225,7 +197,7 @@ export default function SearchTab() {
 
 	const handleSelectRecentSearch = (value: string) => {
 		setSearch(value);
-		setDebouncedSearch(value);
+		setDebouncedSearch(value.trim());
 	};
 
 	const handleSearch = (text: string) => {
@@ -259,37 +231,7 @@ export default function SearchTab() {
 					</TouchableOpacity>
 				</View>
 
-				<SearchSection
-					title="Filter by category"
-					actionLabel={activeCategory !== "All" ? "Reset" : undefined}
-					onActionPress={
-						activeCategory !== "All" ? handleClearCategory : undefined
-					}
-					collapsed={isFiltersCollapsed}
-					onCollapsePress={() => setIsFiltersCollapsed(!isFiltersCollapsed)}
-				>
-					{categories.length > 0 && (
-						<ScrollView
-							horizontal
-							showsHorizontalScrollIndicator={false}
-							contentContainerStyle={{ gap: 10 }}
-						>
-							{categories.map((category) => (
-								<View key={category.name}>
-									<SearchCategoriesCard
-										name={category.name}
-										icon={category.icon}
-										color={category.color}
-										onPress={() => handleSelectCategory(category.name)}
-										selected={activeCategory === category.name}
-									/>
-								</View>
-							))}
-						</ScrollView>
-					)}
-				</SearchSection>
-
-				{recentSearches.length > 0 && (
+				{showRecentSearches && (
 					<SearchSection
 						title="Recent"
 						actionLabel="Clear"
@@ -318,19 +260,60 @@ export default function SearchTab() {
 							Start typing to search
 						</Text>
 					</View>
-				) : (
-					<View className="flex flex-col gap-2">
-						<Text className="text-sm font-sans-medium text-text">
-							Search results
+				) : !hasActiveSearch ? (
+					<View className="flex-1 justify-center items-center gap-2 mb-24">
+						<MagnifyingGlassIcon size={32} color={colors.gray} />
+						<Text className="text-base font-sans-medium text-text-muted">
+							Type at least {MIN_SEARCH_LENGTH} characters to search
 						</Text>
-						{searchResults.map((result) => (
-							<SearchResultCard
-								key={result.user.id}
-								title={result.user.name}
-								isLoading={isLoadingSearchResults}
-							/>
-						))}
 					</View>
+				) : (
+					<SearchSection
+						title="Search results"
+						actionLabel={activeCategory !== "All" ? "Reset" : undefined}
+						onActionPress={
+							activeCategory !== "All" ? handleClearCategory : undefined
+						}
+					>
+						<ScrollView
+							horizontal
+							showsHorizontalScrollIndicator={false}
+							contentContainerStyle={{ gap: 10 }}
+						>
+							{resultCategories.map((category) => (
+								<View key={category.name}>
+									<SearchCategoriesCard
+										name={category.name}
+										icon={category.icon}
+										color={category.color}
+										onPress={() => handleSelectCategory(category.name)}
+										selected={activeCategory === category.name}
+									/>
+								</View>
+							))}
+						</ScrollView>
+
+						<View className="flex flex-col gap-2">
+							{isLoadingSearchResults ? (
+								<SearchResultCard title="Loading" isLoading />
+							) : filteredSearchResults.length > 0 ? (
+								filteredSearchResults.map((result) => (
+									<SearchResultCard
+										key={result.user.id}
+										title={result.user.name}
+										subtitle={result.user.tag}
+										imageUrl={result.user.image}
+									/>
+								))
+							) : (
+								<View className="py-6 items-center">
+									<Text className="text-sm font-sans-medium text-text-muted">
+										No results found
+									</Text>
+								</View>
+							)}
+						</View>
+					</SearchSection>
 				)}
 			</View>
 		</Screen>

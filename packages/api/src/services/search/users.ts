@@ -1,58 +1,127 @@
-import { db, user } from "@repo/db";
-import { ilike, or } from "drizzle-orm";
+import { db, gameAccounts, user } from "@repo/db";
+import { GAMES, type GameId } from "@repo/types";
+import { ilike, inArray, or } from "drizzle-orm";
 
 function normalizeSearchQuery(query: string) {
 	return query.trim().replace(/[%_]/g, "");
 }
 
-export async function searchUsers(query: string) {
-	const safeQuery = normalizeSearchQuery(query);
+export type SearchUserResult = {
+	id: string;
+	name: string;
+	tag: string | null;
+	image: string | null;
+	games: {
+		gameId: GameId;
+		displayLabel: string;
+	}[];
+};
 
-	if (!safeQuery) {
-		return [];
+function displayLabelForGameAccount(account: {
+	gameId: string;
+	externalId: string;
+	lolProfile: {
+		gameName: string;
+		tagLine: string;
+	} | null;
+	cs2FaceitProfile: {
+		faceitNickname: string | null;
+		steamNickname: string | null;
+	} | null;
+}): string | null {
+	switch (account.gameId) {
+		case GAMES.LOL: {
+			const { gameName, tagLine } = account.lolProfile ?? {};
+			if (gameName && tagLine) {
+				return `${gameName} #${tagLine}`;
+			}
+
+			return account.externalId;
+		}
+		case GAMES.CS2_FACEIT: {
+			const { faceitNickname, steamNickname } = account.cs2FaceitProfile ?? {};
+			if (faceitNickname || steamNickname) {
+				return faceitNickname ?? steamNickname ?? account.externalId;
+			}
+
+			return account.externalId;
+		}
+		default:
+			return account.externalId ?? null;
 	}
-
-	const results = await Promise.all([
-		searchUsersByNameOrTag(query),
-		searchUsersByTag(query),
-	]);
-
-	return results;
 }
 
-export async function searchUsersByNameOrTag(query: string) {
+export async function searchUsers(query: string): Promise<SearchUserResult[]> {
 	const safeQuery = normalizeSearchQuery(query);
 
 	if (!safeQuery) {
 		return [];
 	}
-
-	const searchPatterns = [`${safeQuery}%`, `% ${safeQuery}%`];
-	const searchColumns = [user.name, user.tag];
 
 	const results = await db.query.user.findMany({
 		where: or(
-			...searchColumns.flatMap((column) =>
-				searchPatterns.map((pattern) => ilike(column, pattern)),
-			),
+			ilike(user.name, `${safeQuery}%`),
+			ilike(user.name, `% ${safeQuery}%`),
+			ilike(user.tag, `${safeQuery}%`),
 		),
 		limit: 20,
 	});
 
-	return results;
-}
-
-export async function searchUsersByTag(query: string) {
-	const safeQuery = normalizeSearchQuery(query);
-
-	if (!safeQuery) {
+	if (results.length === 0) {
 		return [];
 	}
 
-	const results = await db.query.user.findMany({
-		where: ilike(user.tag, `${safeQuery}%`),
-		limit: 20,
+	const userIds = results.map((row) => row.id);
+
+	const gameAccountsResults = await db.query.gameAccounts.findMany({
+		where: inArray(gameAccounts.userId, userIds),
+		with: {
+			lolProfile: true,
+			cs2FaceitProfile: true,
+		},
 	});
 
-	return results;
+	const gameAccountsByUserId = new Map<
+		string,
+		(typeof gameAccountsResults)[number][]
+	>();
+
+	for (const account of gameAccountsResults) {
+		const userId = account.userId;
+
+		if (!userId) {
+			continue;
+		}
+
+		const list = gameAccountsByUserId.get(userId) ?? [];
+		list.push(account);
+		gameAccountsByUserId.set(userId, list);
+	}
+
+	return results.map((row) => {
+		const accounts = gameAccountsByUserId.get(row.id) ?? [];
+
+		const games = accounts
+			.map((account) => {
+				const displayLabel = displayLabelForGameAccount(account);
+
+				if (!displayLabel) {
+					return null;
+				}
+
+				return {
+					gameId: account.gameId as GameId,
+					displayLabel,
+				};
+			})
+			.filter((item): item is NonNullable<typeof item> => item !== null);
+
+		return {
+			id: row.id,
+			name: row.name,
+			tag: row.tag,
+			image: row.image,
+			games,
+		};
+	});
 }
