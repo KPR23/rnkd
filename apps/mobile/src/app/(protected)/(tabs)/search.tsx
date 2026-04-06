@@ -308,7 +308,6 @@ export default function SearchTab() {
 						</ScrollView>
 						<SearchSection
 							title="Search results"
-							actionLabel={activeCategory !== "All" ? "Reset" : undefined}
 							onActionPress={
 								activeCategory !== "All" ? handleClearCategory : undefined
 							}
