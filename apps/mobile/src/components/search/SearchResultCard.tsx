@@ -1,22 +1,36 @@
 import { SearchUserGame } from "@/src/app/(protected)/(tabs)/search";
 import Frame from "@/src/components/Frame";
 import GameLogo from "@/src/components/games/GameLogo";
-import { User } from "@repo/types";
-import { colors } from "@repo/ui/colors";
+import {
+	type SearchProfileKind,
+	SEARCH_PROFILE_LABELS,
+	User,
+} from "@repo/types";
+import { colors, tagColors } from "@repo/ui/colors";
 import { getInitialsForFallbackPhoto } from "@repo/ui/components/getInitialsForFallbackPhoto";
 import { CaretRightIcon } from "phosphor-react-native";
-import { ActivityIndicator, Image, Text, View } from "react-native";
+import {
+	ActivityIndicator,
+	Image,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 
 interface UserSearchResultCardProps {
 	user: Pick<User, "id" | "name" | "tag" | "image">;
+	type: SearchProfileKind;
 	games: SearchUserGame[];
 	isLoading?: boolean;
+	onPress: () => void;
 }
 
 export default function UserSearchResultCard({
 	user,
+	type: resultType,
 	games,
 	isLoading,
+	onPress,
 }: UserSearchResultCardProps) {
 	if (isLoading) {
 		return (
@@ -26,72 +40,56 @@ export default function UserSearchResultCard({
 		);
 	}
 
-	const USER_ICON_SIZE = 12;
 	const hasGames = games.length > 0;
 
 	return (
-		<Frame className="flex-row items-center h-20! justify-start gap-3! p-4!">
-			{user.image ? (
-				<Image
-					source={{ uri: user.image }}
-					className={`size-${USER_ICON_SIZE} rounded-full`}
-					resizeMode="cover"
-				/>
-			) : (
-				<View
-					className={`size-${USER_ICON_SIZE} rounded-full bg-dark items-center justify-center`}
-				>
-					<Text className="text-sm font-mono-medium text-text">
-						{getInitialsForFallbackPhoto(user.name)}
-					</Text>
-				</View>
-			)}
-			<View
-				className={`flex-1 min-w-0 h-11 gap-1 items-start ${hasGames ? "justify-between" : "justify-center"}`}
-			>
-				<View className="w-full min-w-0 flex-row items-center gap-x-2">
+		<TouchableOpacity activeOpacity={0.7} onPress={onPress}>
+			<View className="border bg-card border-border px-4 py-3 flex-row items-center justify-start gap-3">
+				{user.image ? (
+					<Image
+						source={{ uri: user.image }}
+						className={`size-11 rounded-full`}
+						resizeMode="cover"
+					/>
+				) : (
+					<View
+						className={`size-11 rounded-full bg-dark items-center justify-center`}
+					>
+						<Text className="text-sm font-mono-medium text-text">
+							{getInitialsForFallbackPhoto(user.name)}
+						</Text>
+					</View>
+				)}
+				<View className="flex-1 min-w-0 gap-0.5 items-start justify-center">
+					<View className="w-full min-w-0 flex-row items-center gap-1">
+						<Text
+							className="text-sm leading-none shrink-0 font-mono-semibold text-text"
+							numberOfLines={1}
+						>
+							@{user.tag}
+						</Text>
+						<Text className="text-sm leading-none font-sans-semibold text-text-secondary">
+							·
+						</Text>
+						<Text
+							className={`text-sm leading-none font-sans-semibold text-primary`}
+							style={{ color: tagColors[resultType] }}
+						>
+							{SEARCH_PROFILE_LABELS[resultType]}
+						</Text>
+					</View>
 					<Text
-						className="text-sm leading-none font-sans-medium text-text min-w-0 shrink"
+						className="text-xs leading-none font-sans-medium text-text-secondary min-w-0 shrink"
 						numberOfLines={1}
 						ellipsizeMode="tail"
 					>
 						{user.name}
 					</Text>
-					{user.tag ? (
-						<Text
-							className="text-sm leading-none shrink-0 font-mono-medium text-primary"
-							numberOfLines={1}
-						>
-							@{user.tag}
-						</Text>
-					) : null}
 				</View>
-				{hasGames ? (
-					<View className="flex-row flex-wrap gap-x-2 gap-y-1.5 w-full">
-						{games.map((game, index) => (
-							<View
-								key={`${game.gameId}-${index}-${game.nickname}`}
-								className="flex-row items-center gap-1.5 border border-border bg-card rounded-none pl-2 pr-1.5 py-1 max-w-full"
-							>
-								<GameLogo
-									gameId={game.gameId}
-									maxHeight={12}
-									color={colors.gray}
-								/>
-								<Text
-									className="text-[11px] font-sans-medium text-text shrink min-w-0"
-									numberOfLines={1}
-								>
-									{game.nickname}
-								</Text>
-							</View>
-						))}
-					</View>
-				) : null}
+				<View className="shrink-0 self-center">
+					<CaretRightIcon weight="bold" color={colors.textMuted} size={16} />
+				</View>
 			</View>
-			<View className="shrink-0 self-center">
-				<CaretRightIcon weight="bold" color={colors.textMuted} size={16} />
-			</View>
-		</Frame>
+		</TouchableOpacity>
 	);
 }

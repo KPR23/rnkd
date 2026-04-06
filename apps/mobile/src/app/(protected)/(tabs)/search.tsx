@@ -7,6 +7,7 @@ import { trpc } from "@/src/utils/trpc";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "@repo/types/auth";
 import { GameId } from "@repo/types/game";
+import { type SearchProfileKind } from "@repo/types";
 import { colors, tagColors } from "@repo/ui/colors";
 import {
 	AsteriskIcon,
@@ -71,7 +72,7 @@ export type SearchUserGame = {
 };
 
 type UserSearchResult = {
-	type: "user";
+	type: SearchProfileKind;
 	user: Pick<User, "id" | "name" | "tag" | "image">;
 	games: SearchUserGame[];
 };
@@ -92,7 +93,7 @@ export default function SearchTab() {
 	const searchResults = useMemo<SearchResult[]>(
 		() =>
 			(searchUsersResults ?? []).map((result) => ({
-				type: "user",
+				type: result.type,
 				user: {
 					id: result.id,
 					name: result.name,
@@ -112,7 +113,19 @@ export default function SearchTab() {
 			return searchResults;
 		}
 
-		return searchResults.filter((result) => result.type === "user");
+		if (activeCategory === "Players") {
+			return searchResults.filter((result) => result.type === "player");
+		}
+
+		if (activeCategory === "Teams") {
+			return searchResults.filter((result) => result.type === "team");
+		}
+
+		if (activeCategory === "Games") {
+			return [];
+		}
+
+		return searchResults;
 	}, [activeCategory, searchResults]);
 
 	const hasActiveSearch = debouncedSearch.length >= MIN_SEARCH_LENGTH;
@@ -309,8 +322,10 @@ export default function SearchTab() {
 										<UserSearchResultCard
 											key={result.user.id}
 											user={result.user}
+											type={result.type}
 											games={result.games}
 											isLoading={isLoadingSearchResults}
+											onPress={() => {}}
 										/>
 									))
 								) : (

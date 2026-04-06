@@ -1,5 +1,5 @@
 import { db, gameAccounts, user } from "@repo/db";
-import { GAMES, type GameId } from "@repo/types";
+import { GAMES, type GameId, type SearchProfileKind } from "@repo/types";
 import { ilike, inArray, or } from "drizzle-orm";
 
 function normalizeSearchQuery(query: string) {
@@ -8,6 +8,7 @@ function normalizeSearchQuery(query: string) {
 
 export type SearchUserResult = {
 	id: string;
+	type: SearchProfileKind;
 	name: string;
 	tag: string | null;
 	image: string | null;
@@ -119,6 +120,7 @@ export async function searchUsers(query: string): Promise<SearchUserResult[]> {
 
 		return {
 			id: row.id,
+			type: "player",
 			name: row.name,
 			tag: row.tag,
 			image: row.image,
