@@ -1,21 +1,13 @@
-import Frame from "@/src/components/Frame";
 import GameLogo from "@/src/components/games/GameLogo";
 import { GAMES, SEARCH_PROFILE_LABELS, type SearchResult } from "@repo/types";
 import { colors, tagColors } from "@repo/ui/colors";
 import { getInitialsForFallbackPhoto } from "@repo/ui/components/getInitialsForFallbackPhoto";
 import { CaretRightIcon } from "phosphor-react-native";
 import { type ReactNode } from "react";
-import {
-	ActivityIndicator,
-	Image,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 interface SearchResultCardProps {
 	result: SearchResult;
-	isLoading?: boolean;
 	onPress: () => void;
 }
 
@@ -79,17 +71,8 @@ function getGamePublisher(gameId: string) {
 
 export default function SearchResultCard({
 	result,
-	isLoading,
 	onPress,
 }: SearchResultCardProps) {
-	if (isLoading) {
-		return (
-			<Frame className="flex-row items-center justify-center p-4">
-				<ActivityIndicator />
-			</Frame>
-		);
-	}
-	console.log(result);
 	if (result.type === "game") {
 		return (
 			<SearchCardShell onPress={onPress}>

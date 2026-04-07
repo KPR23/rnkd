@@ -280,14 +280,14 @@ export default function SearchTab() {
 						>
 							<View className="flex flex-col gap-2">
 								{isLoadingSearchResults ? (
-									// <SearchResultCard title="Loading" isLoading />
-									<ActivityIndicator />
+									<View className="py-6 items-center">
+										<ActivityIndicator />
+									</View>
 								) : filteredSearchResults.length > 0 ? (
 									filteredSearchResults.map((result) => (
 										<SearchResultCard
 											key={`${result.type}:${result.id}`}
 											result={result}
-											isLoading={isLoadingSearchResults}
 											onPress={() => {}}
 										/>
 									))
