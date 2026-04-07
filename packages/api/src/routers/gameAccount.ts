@@ -86,12 +86,23 @@ function refreshLolAccountDataInBackground(
 ) {
 	void (async () => {
 		try {
-			const [details, entries] = await Promise.all([
-				getLolAccountDetails(externalId, platformRoute),
-				getLolLeagueEntriesByPuuid(externalId, platformRoute),
-			]);
+			const details = await getLolAccountDetails(externalId, platformRoute);
+			let entries: Awaited<
+				ReturnType<typeof getLolLeagueEntriesByPuuid>
+			> | null = null;
+
+			try {
+				entries = await getLolLeagueEntriesByPuuid(externalId, platformRoute);
+			} catch (error) {
+				console.error("Failed to refresh LoL ranked entries", {
+					accountId,
+					error,
+				});
+			}
 
 			await db.transaction(async (tx) => {
+				const syncedAt = new Date();
+
 				await tx
 					.update(lolGameAccountProfiles)
 					.set({
@@ -103,9 +114,13 @@ function refreshLolAccountDataInBackground(
 				await tx
 					.update(gameAccounts)
 					.set({
-						lastSyncedAt: new Date(),
+						lastSyncedAt: syncedAt,
 					})
 					.where(eq(gameAccounts.id, accountId));
+
+				if (!entries) {
+					return;
+				}
 
 				await tx
 					.delete(lolRankedEntries)
@@ -120,7 +135,6 @@ function refreshLolAccountDataInBackground(
 					return;
 				}
 
-				const syncedAt = new Date();
 				await tx.insert(lolRankedEntries).values(
 					entries.map((entry) => ({
 						gameAccountId: accountId,

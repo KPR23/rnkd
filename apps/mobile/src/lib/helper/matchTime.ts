@@ -9,6 +9,9 @@ export function formatGameDuration(seconds: number | null | undefined): string {
 }
 
 export function formatMatchPlayedAt(playedAt: Date): string {
+	if (Number.isNaN(playedAt.getTime())) {
+		return "—";
+	}
 	return playedAt.toLocaleString("en-GB", {
 		day: "numeric",
 		month: "numeric",

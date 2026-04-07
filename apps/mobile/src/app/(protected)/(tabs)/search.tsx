@@ -159,7 +159,9 @@ export default function SearchTab() {
 	}, []);
 
 	const handleSubmitSearch = async () => {
-		await saveSearchToHistory(search);
+		const normalized = search.trim();
+		if (normalized.length < MIN_SEARCH_LENGTH) return;
+		await saveSearchToHistory(normalized);
 	};
 
 	const handleClearSearchHistory = async () => {
