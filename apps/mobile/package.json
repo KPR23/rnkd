@@ -1,6 +1,6 @@
 {
 	"name": "mobile",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"main": "expo-router/entry",
 	"scripts": {
 		"dev": "expo start",
@@ -15,6 +15,7 @@
 		"@better-auth/expo": "^1.5.4",
 		"@expo-google-fonts/inter": "^0.4.2",
 		"@expo-google-fonts/jetbrains-mono": "^0.4.1",
+		"@react-native-async-storage/async-storage": "2.2.0",
 		"@tanstack/react-query": "^5.90.21",
 		"@trpc/client": "^11.12.0",
 		"@trpc/react-query": "^11.12.0",
@@ -47,6 +48,7 @@
 		"@repo/api": "workspace:*",
 		"@repo/types": "workspace:*",
 		"@repo/typescript-config": "workspace:*",
+		"@repo/ui": "workspace:*",
 		"@tailwindcss/postcss": "^4.2.1",
 		"@types/react": "19.2.14",
 		"eslint-config-expo": "~10.0.0",

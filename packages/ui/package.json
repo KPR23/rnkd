@@ -4,7 +4,9 @@
 	"private": true,
 	"exports": {
 		"./lib/utils": "./lib/utils.ts",
-		"./*": "./components/ui/*.tsx"
+		"./components/getInitialsForFallbackPhoto": "./components/getInitialsForFallbackPhoto.ts",
+		"./*": "./components/ui/*.tsx",
+		"./colors": "./constants/colors.ts"
 	},
 	"scripts": {
 		"lint": "eslint . --max-warnings 0",

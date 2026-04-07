@@ -52,7 +52,7 @@ export function AddRiotAccount() {
 		defaultValues: {
 			gameName: legacyForm.gameName,
 			tagLine: legacyForm.tagLine,
-			region: RIOT_REGIONS[0],
+			region: RIOT_REGIONS[1],
 		},
 		validators: {
 			onChange: ({ value }) => {
@@ -173,9 +173,7 @@ export function AddRiotAccount() {
 										value={field.state.value}
 										onValueChange={(value: string) => {
 											if (isRiotRegion(value)) {
-												field.handleChange(
-													value as typeof field.state.value,
-												);
+												field.handleChange(value as typeof field.state.value);
 											}
 										}}
 									>

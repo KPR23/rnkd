@@ -1,6 +1,7 @@
 import { db, GAMES, matches, matchParticipants } from "@repo/db";
 import { and, eq } from "drizzle-orm";
 import type { MatchParticipantInsert, MatchResponse } from "./types";
+import { getChampionIconUrl, getParticipantCs } from "../helper";
 
 export async function mapRiotMatchToDb(
 	riotMatch: MatchResponse,
@@ -28,9 +29,11 @@ export async function mapRiotMatchToDb(
 				id: crypto.randomUUID(),
 				gameId: GAMES.LOL,
 				externalMatchId: riotMatch.metadata.matchId,
+				queueId: riotMatch.info.queueId,
 				team1Score,
 				team2Score,
 				playedAt: new Date(riotMatch.info.gameCreation),
+				durationSeconds: riotMatch.info.gameDuration,
 			})
 			.returning();
 
@@ -38,30 +41,35 @@ export async function mapRiotMatchToDb(
 			throw new Error("Failed to insert match");
 		}
 
-		const participantsToInsert: (MatchParticipantInsert & {
-			matchId: string;
-		})[] = riotMatch.info.participants.flatMap((participant) => {
-			const gameAccountId = knownAccountsByPuuid[participant.puuid];
+		const participantsToInsert: MatchParticipantInsert[] =
+			riotMatch.info.participants.flatMap((participant) => {
+				const gameAccountId = knownAccountsByPuuid[participant.puuid];
 
-			if (!gameAccountId) return [];
+				if (!gameAccountId) return [];
 
-			return [
-				{
-					matchId: match.id,
-					gameAccountId,
-					team: participant.teamId,
-					// TODO
-					partyId: null,
-					win: participant.win,
-					kills: participant.kills,
-					deaths: participant.deaths,
-					assists: participant.assists,
-					// TODO
-					eloBefore: 0,
-					eloAfter: 0,
-				},
-			];
-		});
+				const totalMinionsKilled = getParticipantCs(participant);
+
+				return [
+					{
+						matchId: match.id,
+						gameAccountId,
+						team: participant.teamId,
+						partyId: null,
+						win: participant.win,
+						kills: participant.kills,
+						deaths: participant.deaths,
+						assists: participant.assists,
+						totalMinionsKilled,
+						championId: participant.championId,
+						championName: participant.championName,
+						championIconUrl: getChampionIconUrl(participant.championName),
+						teamPosition: participant.teamPosition,
+						individualPosition: participant.individualPosition,
+						eloBefore: 0,
+						eloAfter: 0,
+					},
+				];
+			});
 
 		if (participantsToInsert.length > 0) {
 			await tx.insert(matchParticipants).values(participantsToInsert);

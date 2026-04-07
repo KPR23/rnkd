@@ -2,8 +2,10 @@
 
 import { trpc } from "@/src/trpc/client";
 
-export function ListMatchHistory() {
-	const { data: matchHistory } = trpc.riot.getMatchHistory.useQuery();
+export function ListMatchHistory({ gameAccountId }: { gameAccountId: string }) {
+	const { data: matchHistory } = trpc.riot.getMatchHistory.useQuery({
+		gameAccountId: gameAccountId,
+	});
 	return (
 		<div>
 			ListMatchHistory

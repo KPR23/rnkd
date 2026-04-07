@@ -3,6 +3,6 @@ import { protectedProcedure, router } from "../trpc";
 
 export const gameRouter = router({
 	getAllGames: protectedProcedure.query(async () => {
-		return await db.query.games.findMany();
+		return db.query.games.findMany();
 	}),
 });

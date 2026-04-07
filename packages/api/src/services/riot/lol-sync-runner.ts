@@ -13,17 +13,17 @@ export async function syncLolForAccount(
 	gameAccountId: string,
 	maxMatchesToSync: number = MAX_MATCHES_TO_SYNC,
 ) {
-	const [account] = await db
-		.select()
-		.from(gameAccounts)
-		.where(
-			and(
-				eq(gameAccounts.id, gameAccountId),
-				eq(gameAccounts.gameId, GAMES.LOL),
-			),
-		);
+	const account = await db.query.gameAccounts.findFirst({
+		where: and(
+			eq(gameAccounts.id, gameAccountId),
+			eq(gameAccounts.gameId, GAMES.LOL),
+		),
+		with: {
+			lolProfile: true,
+		},
+	});
 
-	if (!account || !account.userId || !account.regionalRoute) {
+	if (!account || !account.userId || !account.lolProfile) {
 		throw new Error("Account not found");
 	}
 
@@ -43,18 +43,22 @@ export async function syncLolForAccount(
 			),
 		);
 
-	assertRiotRegion(account.regionalRoute);
+	assertRiotRegion(account.lolProfile.regionalRoute);
 
 	const matchIds = await getMatchIdsByPuuid(
 		account.externalId,
-		account.regionalRoute,
+		account.lolProfile.regionalRoute,
 		maxMatchesToSync,
 	);
 
 	const riotMatches: Awaited<ReturnType<typeof getMatchById>>[] = [];
+
 	for (const id of matchIds.slice(0, maxMatchesToSync)) {
 		riotMatches.push(
-			await getMatchById(id, account.regionalRoute as RiotRegionalRoute),
+			await getMatchById(
+				id,
+				account.lolProfile.regionalRoute as RiotRegionalRoute,
+			),
 		);
 		await new Promise((r) => setTimeout(r, RIOT_API_DELAY_MS));
 	}
