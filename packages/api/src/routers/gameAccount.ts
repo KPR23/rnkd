@@ -321,6 +321,11 @@ export const gameAccountRouter = router({
 				riotAccount.puuid,
 				activeRegion,
 			);
+			const entries = await getLolLeagueEntriesByPuuid(
+				riotAccount.puuid,
+				activeRegion,
+			);
+			const syncedAt = new Date();
 
 			try {
 				const createdAccount = await db.transaction(async (tx) => {
@@ -331,7 +336,7 @@ export const gameAccountRouter = router({
 							userId: ctx.session.user.id,
 							gameId: GAMES.LOL,
 							externalId: riotAccount.puuid,
-							lastSyncedAt: new Date(),
+							lastSyncedAt: null,
 						})
 						.returning();
 
@@ -357,28 +362,10 @@ export const gameAccountRouter = router({
 						throw new Error("Failed to create LoL account profile");
 					}
 
-					return mapGameAccountRecord({
-						...gameAccount,
-						lolProfile,
-						cs2FaceitProfile: null,
-					});
-				});
-
-				if (!isLolGameAccount(createdAccount)) {
-					throw new Error("Created account is not a LoL account");
-				}
-
-				try {
-					const entries = await getLolLeagueEntriesByPuuid(
-						createdAccount.externalId,
-						createdAccount.profile.platformRoute,
-					);
-
 					if (entries.length > 0) {
-						const syncedAt = new Date();
-						await db.insert(lolRankedEntries).values(
+						await tx.insert(lolRankedEntries).values(
 							entries.map((entry) => ({
-								gameAccountId: createdAccount.id,
+								gameAccountId: gameAccount.id,
 								gameId: GAMES.LOL,
 								queueType: entry.queueType,
 								tier: entry.tier,
@@ -392,8 +379,22 @@ export const gameAccountRouter = router({
 							})),
 						);
 					}
-				} catch (rankedError) {
-					console.error(rankedError);
+
+					await tx
+						.update(gameAccounts)
+						.set({ lastSyncedAt: syncedAt })
+						.where(eq(gameAccounts.id, gameAccount.id));
+
+					return mapGameAccountRecord({
+						...gameAccount,
+						lastSyncedAt: syncedAt,
+						lolProfile,
+						cs2FaceitProfile: null,
+					});
+				});
+
+				if (!isLolGameAccount(createdAccount)) {
+					throw new Error("Created account is not a LoL account");
 				}
 
 				return createdAccount;
