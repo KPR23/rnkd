@@ -28,6 +28,30 @@ export default function ProtectedLayout() {
 						headerTintColor: colors.text,
 					}}
 				/>
+				<Stack.Screen
+					name="player/[id]"
+					options={{
+						headerStyle: { backgroundColor: colors.background },
+						headerTintColor: colors.text,
+						headerBackButtonDisplayMode: "minimal",
+					}}
+				/>
+				<Stack.Screen
+					name="game/[id]"
+					options={{
+						headerStyle: { backgroundColor: colors.background },
+						headerTintColor: colors.text,
+						headerBackButtonDisplayMode: "minimal",
+					}}
+				/>
+				<Stack.Screen
+					name="team/[id]"
+					options={{
+						headerStyle: { backgroundColor: colors.background },
+						headerBackButtonDisplayMode: "minimal",
+						headerTintColor: colors.text,
+					}}
+				/>
 			</Stack>
 		</>
 	);

@@ -18,12 +18,16 @@ export default function ProfileScreen({
 	user,
 	isOwnProfile,
 	gameAccounts,
-	title = "Profile",
+	title,
 	actions,
 }: ProfileScreenProps) {
 	return (
 		<>
-			<ScreenTitle title={title} actions={actions} />
+			{title ? (
+				<ScreenTitle title={title} actions={actions} />
+			) : (
+				<View className="mt-2" />
+			)}
 			<ScrollView
 				style={{ flex: 1 }}
 				contentContainerStyle={{ paddingBottom: 96 }}

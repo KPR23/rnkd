@@ -32,8 +32,8 @@ export default function ProfileTab() {
 		<Screen>
 			<ProfileScreen
 				user={session.user}
-				// TODO: Check if the user is the own profile
 				isOwnProfile
+				title="Profile"
 				gameAccounts={[
 					...(gameAccounts?.lol ?? []),
 					...(gameAccounts?.faceit ?? []),

@@ -175,16 +175,19 @@ function pickPrimaryLolRankedEntry<T extends { queueType: string }>(
 	);
 }
 
-export const gameAccountRouter = router({
-	getGameAccounts: protectedProcedure.query(async ({ ctx }) => {
-		const accounts = await db.query.gameAccounts.findMany({
-			where: eq(gameAccounts.userId, ctx.session.user.id),
-			with: {
-				lolProfile: true,
-				cs2FaceitProfile: true,
-			},
-		});
+async function getNormalizedGameAccountsForUserId(
+	userId: string,
+	options: { refreshStaleLolProfiles: boolean },
+) {
+	const accounts = await db.query.gameAccounts.findMany({
+		where: eq(gameAccounts.userId, userId),
+		with: {
+			lolProfile: true,
+			cs2FaceitProfile: true,
+		},
+	});
 
+	if (options.refreshStaleLolProfiles) {
 		for (const account of accounts) {
 			if (account.gameId !== GAMES.LOL || !account.lolProfile) {
 				continue;
@@ -202,24 +205,39 @@ export const gameAccountRouter = router({
 				account.lolProfile.platformRoute as RiotPlatformRoute,
 			);
 		}
+	}
 
-		const normalizedAccounts = accounts.flatMap((account) => {
-			try {
-				return [mapGameAccountRecord(account)];
-			} catch (error) {
-				console.error("Skipping malformed game account", {
-					accountId: account.id,
-					error,
-				});
-				return [];
-			}
+	const normalizedAccounts = accounts.flatMap((account) => {
+		try {
+			return [mapGameAccountRecord(account)];
+		} catch (error) {
+			console.error("Skipping malformed game account", {
+				accountId: account.id,
+				error,
+			});
+			return [];
+		}
+	});
+
+	return {
+		lol: normalizedAccounts.filter(isLolGameAccount),
+		faceit: normalizedAccounts.filter(isCs2FaceitGameAccount),
+	};
+}
+
+export const gameAccountRouter = router({
+	getGameAccounts: protectedProcedure.query(async ({ ctx }) => {
+		return getNormalizedGameAccountsForUserId(ctx.session.user.id, {
+			refreshStaleLolProfiles: true,
 		});
-
-		return {
-			lol: normalizedAccounts.filter(isLolGameAccount),
-			faceit: normalizedAccounts.filter(isCs2FaceitGameAccount),
-		};
 	}),
+	getGameAccountsByUserId: protectedProcedure
+		.input(z.object({ userId: z.string() }))
+		.query(async ({ input, ctx }) => {
+			return getNormalizedGameAccountsForUserId(input.userId, {
+				refreshStaleLolProfiles: input.userId === ctx.session.user.id,
+			});
+		}),
 	getLolProfileDisplay: protectedProcedure
 		.input(z.object({ gameAccountId: z.uuid() }))
 		.query(async ({ input }) => {
