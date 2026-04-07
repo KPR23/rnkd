@@ -64,7 +64,9 @@ export default function ProfileScreen({
 					</View>
 				</Frame>
 
-				<ProfileContent gameAccounts={gameAccounts} />
+				{gameAccounts && gameAccounts.length > 0 ? (
+					<ProfileContent gameAccounts={gameAccounts} />
+				) : null}
 			</ScrollView>
 		</>
 	);
