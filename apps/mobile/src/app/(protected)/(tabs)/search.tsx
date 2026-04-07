@@ -1,13 +1,10 @@
 import Screen from "@/src/components/Screen";
 import ScreenTitle from "@/src/components/ScreenTitle";
 import SearchCategoriesCard from "@/src/components/search/SearchCategoriesCard";
-import UserSearchResultCard from "@/src/components/search/SearchResultCard";
+import SearchResultCard from "@/src/components/search/SearchResultCard";
 import SearchSection from "@/src/components/search/SearchSection";
 import { trpc } from "@/src/utils/trpc";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { User } from "@repo/types/auth";
-import { GameId } from "@repo/types/game";
-import { type SearchProfileKind } from "@repo/types";
 import { colors, tagColors } from "@repo/ui/colors";
 import {
 	AsteriskIcon,
@@ -66,47 +63,16 @@ const resultCategories: {
 	},
 ];
 
-export type SearchUserGame = {
-	gameId: GameId;
-	nickname: string;
-};
-
-type UserSearchResult = {
-	type: SearchProfileKind;
-	user: Pick<User, "id" | "name" | "tag" | "image">;
-	games: SearchUserGame[];
-};
-
-type SearchResult = UserSearchResult;
-
 export default function SearchTab() {
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [recentSearches, setRecentSearches] = useState<string[]>([]);
 	const [activeCategory, setActiveCategory] = useState<ResultCategory>("All");
 
-	const { data: searchUsersResults, isLoading: isLoadingSearchResults } =
-		trpc.search.searchUsers.useQuery(debouncedSearch, {
+	const { data: searchResults = [], isLoading: isLoadingSearchResults } =
+		trpc.search.searchAll.useQuery(debouncedSearch, {
 			enabled: debouncedSearch.length >= MIN_SEARCH_LENGTH,
 		});
-
-	const searchResults = useMemo<SearchResult[]>(
-		() =>
-			(searchUsersResults ?? []).map((result) => ({
-				type: result.type,
-				user: {
-					id: result.id,
-					name: result.name,
-					tag: result.tag ?? "",
-					image: result.image,
-				},
-				games: result.games.map((game) => ({
-					gameId: game.gameId,
-					nickname: game.displayLabel,
-				})),
-			})),
-		[searchUsersResults],
-	);
 
 	const filteredSearchResults = useMemo(() => {
 		if (activeCategory === "All") {
@@ -122,7 +88,7 @@ export default function SearchTab() {
 		}
 
 		if (activeCategory === "Games") {
-			return [];
+			return searchResults.filter((result) => result.type === "game");
 		}
 
 		return searchResults;
@@ -318,11 +284,9 @@ export default function SearchTab() {
 									<ActivityIndicator />
 								) : filteredSearchResults.length > 0 ? (
 									filteredSearchResults.map((result) => (
-										<UserSearchResultCard
-											key={result.user.id}
-											user={result.user}
-											type={result.type}
-											games={result.games}
+										<SearchResultCard
+											key={`${result.type}:${result.id}`}
+											result={result}
 											isLoading={isLoadingSearchResults}
 											onPress={() => {}}
 										/>

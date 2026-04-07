@@ -1,22 +1,7 @@
 import { db, gameAccounts, user } from "@repo/db";
-import { GAMES, type GameId, type SearchProfileKind } from "@repo/types";
+import { GAMES, type GameId, type SearchPlayerResult } from "@repo/types";
 import { ilike, inArray, or } from "drizzle-orm";
-
-function normalizeSearchQuery(query: string) {
-	return query.trim().replace(/[%_]/g, "");
-}
-
-export type SearchUserResult = {
-	id: string;
-	type: SearchProfileKind;
-	name: string;
-	tag: string | null;
-	image: string | null;
-	games: {
-		gameId: GameId;
-		displayLabel: string;
-	}[];
-};
+import { normalizeSearchQuery } from "./query";
 
 function displayLabelForGameAccount(account: {
 	gameId: string;
@@ -52,7 +37,7 @@ function displayLabelForGameAccount(account: {
 	}
 }
 
-export async function searchUsers(query: string): Promise<SearchUserResult[]> {
+export async function searchUsers(query: string): Promise<SearchPlayerResult[]> {
 	const safeQuery = normalizeSearchQuery(query);
 
 	if (!safeQuery) {
