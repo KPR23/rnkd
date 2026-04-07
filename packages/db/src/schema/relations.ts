@@ -35,15 +35,12 @@ export const gameAccountRelations = relations(
 			references: [games.id],
 		}),
 		lolProfile: one(lolGameAccountProfiles, {
-			fields: [gameAccounts.id, gameAccounts.gameId],
-			references: [lolGameAccountProfiles.gameAccountId, lolGameAccountProfiles.gameId],
+			fields: [gameAccounts.id],
+			references: [lolGameAccountProfiles.gameAccountId],
 		}),
 		cs2FaceitProfile: one(cs2FaceitGameAccountProfiles, {
-			fields: [gameAccounts.id, gameAccounts.gameId],
-			references: [
-				cs2FaceitGameAccountProfiles.gameAccountId,
-				cs2FaceitGameAccountProfiles.gameId,
-			],
+			fields: [gameAccounts.id],
+			references: [cs2FaceitGameAccountProfiles.gameAccountId],
 		}),
 		matchParticipants: many(matchParticipants),
 		eloHistory: many(eloHistory),
@@ -56,8 +53,8 @@ export const lolGameAccountProfileRelations = relations(
 	lolGameAccountProfiles,
 	({ one }) => ({
 		account: one(gameAccounts, {
-			fields: [lolGameAccountProfiles.gameAccountId, lolGameAccountProfiles.gameId],
-			references: [gameAccounts.id, gameAccounts.gameId],
+			fields: [lolGameAccountProfiles.gameAccountId],
+			references: [gameAccounts.id],
 		}),
 	}),
 );
@@ -66,11 +63,8 @@ export const cs2FaceitGameAccountProfileRelations = relations(
 	cs2FaceitGameAccountProfiles,
 	({ one }) => ({
 		account: one(gameAccounts, {
-			fields: [
-				cs2FaceitGameAccountProfiles.gameAccountId,
-				cs2FaceitGameAccountProfiles.gameId,
-			],
-			references: [gameAccounts.id, gameAccounts.gameId],
+			fields: [cs2FaceitGameAccountProfiles.gameAccountId],
+			references: [gameAccounts.id],
 		}),
 	}),
 );
@@ -79,8 +73,8 @@ export const lolRankedEntriesRelations = relations(
 	lolRankedEntries,
 	({ one }) => ({
 		account: one(gameAccounts, {
-			fields: [lolRankedEntries.gameAccountId, lolRankedEntries.gameId],
-			references: [gameAccounts.id, gameAccounts.gameId],
+			fields: [lolRankedEntries.gameAccountId],
+			references: [gameAccounts.id],
 		}),
 	}),
 );
