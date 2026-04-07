@@ -8,18 +8,19 @@ import {
 } from "./games";
 import { leagueMembers, leagueRankings, leagues } from "./leagues";
 import { lolRankedEntries } from "./lol-ranked";
-import {
-	eloHistory,
-	follows,
-	matchParticipants,
-	matches,
-	playerStats,
-} from "./matches";
+import { eloHistory, matchParticipants, matches, playerStats } from "./matches";
+import { friendships } from "./social";
 
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
 	accounts: many(account),
 	gameAccounts: many(gameAccounts),
+	friendshipsInitiated: many(friendships, {
+		relationName: "friendshipsRequester",
+	}),
+	friendshipsReceived: many(friendships, {
+		relationName: "friendshipsAddressee",
+	}),
 }));
 
 export const gameAccountRelations = relations(
@@ -48,7 +49,6 @@ export const gameAccountRelations = relations(
 		eloHistory: many(eloHistory),
 		lolRankedEntries: many(lolRankedEntries),
 		playerStats: one(playerStats),
-		follows: many(follows),
 	}),
 );
 
@@ -125,14 +125,16 @@ export const eloHistoryRelations = relations(eloHistory, ({ one }) => ({
 	}),
 }));
 
-export const followsRelations = relations(follows, ({ one }) => ({
-	account: one(gameAccounts, {
-		fields: [follows.gameAccountId],
-		references: [gameAccounts.id],
-	}),
-	follower: one(user, {
-		fields: [follows.followerUserId],
+export const friendshipsRelations = relations(friendships, ({ one }) => ({
+	requester: one(user, {
+		fields: [friendships.requesterUserId],
 		references: [user.id],
+		relationName: "friendshipsRequester",
+	}),
+	addressee: one(user, {
+		fields: [friendships.addresseeUserId],
+		references: [user.id],
+		relationName: "friendshipsAddressee",
 	}),
 }));
 

@@ -2,9 +2,12 @@ import Button from "@/src/components/Button";
 import Frame from "@/src/components/Frame";
 import ScreenTitle, { ScreenTitleAction } from "@/src/components/ScreenTitle";
 import UserProfileImage from "@/src/components/UserProfileImage";
+import { trpc } from "@/src/utils/trpc";
 import type { GameAccount, User } from "@repo/types";
 import { ScrollView, Text, View } from "react-native";
 import ProfileContent from "./ProfileContent";
+import { useRouter } from "expo-router";
+import { useCallback } from "react";
 
 export type ProfileScreenProps = {
 	user: User;
@@ -21,6 +24,8 @@ export default function ProfileScreen({
 	title,
 	actions,
 }: ProfileScreenProps) {
+	const router = useRouter();
+
 	return (
 		<>
 			{title ? (
@@ -53,13 +58,13 @@ export default function ProfileScreen({
 							variant="primary"
 							actionText={isOwnProfile ? "Edit profile" : "Add friend"}
 							className="flex-1"
-							onPress={() => void 0}
+							onPress={() => (isOwnProfile ? router.push("/settings") : void 0)}
 						/>
 						<Button
 							variant="secondary"
 							actionText={isOwnProfile ? "Accounts" : "Message"}
 							className="flex-1"
-							onPress={() => void 0}
+							onPress={() => (isOwnProfile ? router.push("/settings") : void 0)}
 						/>
 					</View>
 				</Frame>

@@ -9,30 +9,7 @@ import {
 	uuid,
 	uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { user } from "./auth";
 import { gameAccounts, games } from "./games";
-
-export const follows = pgTable(
-	"follows",
-	{
-		id: uuid("id").primaryKey().defaultRandom(),
-		followerUserId: text("follower_user_id")
-			.notNull()
-			.references(() => user.id, { onDelete: "cascade" }),
-		gameAccountId: text("game_account_id")
-			.notNull()
-			.references(() => gameAccounts.id, { onDelete: "cascade" }),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-	},
-	(table) => [
-		uniqueIndex("follows_follower_account_unique").on(
-			table.followerUserId,
-			table.gameAccountId,
-		),
-		index("follows_follower_idx").on(table.followerUserId),
-		index("follows_game_account_idx").on(table.gameAccountId),
-	],
-);
 
 export const matches = pgTable(
 	"matches",

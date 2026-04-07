@@ -1,1 +1,0 @@
-ALTER TABLE "game_accounts" RENAME COLUMN "display_name" TO "game_name";

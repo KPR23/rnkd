@@ -1,13 +1,40 @@
-import { db, follows } from "@repo/db";
-import { eq } from "drizzle-orm";
-import { RiotParticipant } from "./riot/types";
+import { db, friendships, gameAccounts, GAMES } from "@repo/db";
+import { and, eq, inArray, or } from "drizzle-orm";
+import type { RiotParticipant } from "./riot/types";
 
-export async function getFollowedAccounts(userId: string) {
-	const followedAccounts = await db.query.follows.findMany({
-		where: eq(follows.followerUserId, userId),
-	});
+export async function getLolAccountsOfFriends(userId: string) {
+	const accepted = await db
+		.select()
+		.from(friendships)
+		.where(
+			and(
+				eq(friendships.status, "accepted"),
+				or(
+					eq(friendships.requesterUserId, userId),
+					eq(friendships.addresseeUserId, userId),
+				),
+			),
+		);
 
-	return followedAccounts;
+	const otherUserIds = accepted.map((r) =>
+		r.requesterUserId === userId ? r.addresseeUserId : r.requesterUserId,
+	);
+
+	if (otherUserIds.length === 0) {
+		return [];
+	}
+
+	const rows = await db
+		.select({ account: gameAccounts })
+		.from(gameAccounts)
+		.where(
+			and(
+				inArray(gameAccounts.userId, otherUserIds),
+				eq(gameAccounts.gameId, GAMES.LOL),
+			),
+		);
+
+	return rows.map((r) => r.account);
 }
 
 export function getParticipantCs(participant: RiotParticipant) {

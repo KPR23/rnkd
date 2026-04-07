@@ -5,3 +5,4 @@ export * from "./lol-ranked";
 export * from "./matches";
 export * from "./relations";
 export * from "./riot-enums";
+export * from "./social";

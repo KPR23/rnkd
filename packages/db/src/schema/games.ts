@@ -79,7 +79,10 @@ export const lolGameAccountProfiles = pgTable(
 			.notNull(),
 	},
 	(table) => [
-		check("lol_game_account_profiles_game_id_is_lol", sql`${table.gameId} = 'lol'`),
+		check(
+			"lol_game_account_profiles_game_id_is_lol",
+			sql`${table.gameId} = 'lol'`,
+		),
 		foreignKey({
 			columns: [table.gameAccountId, table.gameId],
 			foreignColumns: [gameAccounts.id, gameAccounts.gameId],

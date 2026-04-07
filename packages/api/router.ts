@@ -1,3 +1,4 @@
+import { friendRouter } from "./src/routers/friend";
 import { gameRouter } from "./src/routers/game";
 import { gameAccountRouter } from "./src/routers/gameAccount";
 import { riotRouter } from "./src/routers/riot";
@@ -13,7 +14,7 @@ export const appRouter = router({
 	riot: riotRouter,
 	match: router({}),
 	league: router({}),
-	follow: router({}),
+	friend: friendRouter,
 });
 
 export type AppRouter = typeof appRouter;

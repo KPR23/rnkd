@@ -1,6 +1,6 @@
 import { db, gameAccounts, GAMES } from "@repo/db";
-import { and, eq, inArray } from "drizzle-orm";
-import { getFollowedAccounts } from "../helper";
+import { and, eq } from "drizzle-orm";
+import { getLolAccountsOfFriends } from "../helper";
 import { mapRiotMatchToDb } from "./lol-sync";
 import { getMatchById, getMatchIdsByPuuid } from "./riot";
 import type { RiotRegionalRoute } from "./types";
@@ -27,21 +27,7 @@ export async function syncLolForAccount(
 		throw new Error("Account not found");
 	}
 
-	const followedAccounts = await getFollowedAccounts(account.userId);
-
-	const followedAccountsIds = followedAccounts.map(
-		(follow) => follow.gameAccountId,
-	);
-
-	const followedLolAccounts = await db
-		.select()
-		.from(gameAccounts)
-		.where(
-			and(
-				inArray(gameAccounts.id, followedAccountsIds),
-				eq(gameAccounts.gameId, GAMES.LOL),
-			),
-		);
+	const followedLolAccounts = await getLolAccountsOfFriends(account.userId);
 
 	assertRiotRegion(account.lolProfile.regionalRoute);
 

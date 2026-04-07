@@ -106,7 +106,7 @@ export default function SettingsScreen() {
 			<View className="flex flex-col gap-4">
 				{settingsSections.map((section) => (
 					<View key={section.title} className="flex flex-col gap-2">
-						<Text className="font-sans-semibold pl-1 text-xs text-text uppercase">
+						<Text className="font-sans-semibold text-xs text-text uppercase">
 							{section.title}
 						</Text>
 
