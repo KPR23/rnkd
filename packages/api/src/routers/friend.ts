@@ -81,57 +81,59 @@ export const friendRouter = router({
 
 			await requireUser(input.userId);
 
-			const inversePending = await db.query.friendships.findFirst({
-				where: and(
-					eq(friendships.requesterUserId, input.userId),
-					eq(friendships.addresseeUserId, me),
-					eq(friendships.status, "pending"),
-				),
-			});
-
-			if (inversePending) {
-				await db
-					.update(friendships)
-					.set({ status: "accepted" })
-					.where(eq(friendships.id, inversePending.id));
-
-				return { outcome: "friends" as const };
-			}
-
-			const anyBetween = await db.query.friendships.findFirst({
-				where: or(
-					and(
-						eq(friendships.requesterUserId, me),
-						eq(friendships.addresseeUserId, input.userId),
-					),
-					and(
+			return await db.transaction(async (tx) => {
+				const inversePending = await tx.query.friendships.findFirst({
+					where: and(
 						eq(friendships.requesterUserId, input.userId),
 						eq(friendships.addresseeUserId, me),
+						eq(friendships.status, "pending"),
 					),
-				),
-			});
-
-			if (anyBetween?.status === "accepted") {
-				throw new TRPCError({
-					code: "CONFLICT",
-					message: "Already friends",
 				});
-			}
 
-			if (anyBetween?.status === "pending") {
-				throw new TRPCError({
-					code: "CONFLICT",
-					message: "Friend request already pending",
+				if (inversePending) {
+					await tx
+						.update(friendships)
+						.set({ status: "accepted" })
+						.where(eq(friendships.id, inversePending.id));
+
+					return { outcome: "friends" as const };
+				}
+
+				const anyBetween = await tx.query.friendships.findFirst({
+					where: or(
+						and(
+							eq(friendships.requesterUserId, me),
+							eq(friendships.addresseeUserId, input.userId),
+						),
+						and(
+							eq(friendships.requesterUserId, input.userId),
+							eq(friendships.addresseeUserId, me),
+						),
+					),
 				});
-			}
 
-			await db.insert(friendships).values({
-				requesterUserId: me,
-				addresseeUserId: input.userId,
-				status: "pending",
+				if (anyBetween?.status === "accepted") {
+					throw new TRPCError({
+						code: "CONFLICT",
+						message: "Already friends",
+					});
+				}
+
+				if (anyBetween?.status === "pending") {
+					throw new TRPCError({
+						code: "CONFLICT",
+						message: "Friend request already pending",
+					});
+				}
+
+				await tx.insert(friendships).values({
+					requesterUserId: me,
+					addresseeUserId: input.userId,
+					status: "pending",
+				});
+
+				return { outcome: "pending" as const };
 			});
-
-			return { outcome: "pending" as const };
 		}),
 
 	accept: protectedProcedure

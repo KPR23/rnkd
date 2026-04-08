@@ -2,12 +2,10 @@ import Button from "@/src/components/Button";
 import Frame from "@/src/components/Frame";
 import ScreenTitle, { ScreenTitleAction } from "@/src/components/ScreenTitle";
 import UserProfileImage from "@/src/components/UserProfileImage";
-import { trpc } from "@/src/utils/trpc";
 import type { GameAccount, User } from "@repo/types";
+import { useRouter } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 import ProfileContent from "./ProfileContent";
-import { useRouter } from "expo-router";
-import { useCallback } from "react";
 
 export type ProfileScreenProps = {
 	user: User;

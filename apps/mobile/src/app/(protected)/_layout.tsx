@@ -48,8 +48,8 @@ export default function ProtectedLayout() {
 					name="team/[id]"
 					options={{
 						headerStyle: { backgroundColor: colors.background },
-						headerBackButtonDisplayMode: "minimal",
 						headerTintColor: colors.text,
+						headerBackButtonDisplayMode: "minimal",
 					}}
 				/>
 			</Stack>
