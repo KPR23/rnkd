@@ -8,6 +8,7 @@ const userIdInput = z.object({ userId: z.string() });
 
 async function requireUser(id: string) {
 	const row = await db.query.user.findFirst({
+		columns: { id: true },
 		where: eq(user.id, id),
 	});
 
