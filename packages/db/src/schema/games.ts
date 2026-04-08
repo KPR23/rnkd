@@ -54,7 +54,6 @@ export const gameAccounts = pgTable(
 			table.gameId,
 			table.externalId,
 		),
-		uniqueIndex("game_accounts_id_game_id_unique").on(table.id, table.gameId),
 		index("game_accounts_user_idx").on(table.userId),
 		index("game_accounts_last_synced_idx").on(table.lastSyncedAt),
 	],
@@ -79,10 +78,13 @@ export const lolGameAccountProfiles = pgTable(
 			.notNull(),
 	},
 	(table) => [
-		check("lol_game_account_profiles_game_id_is_lol", sql`${table.gameId} = 'lol'`),
+		check(
+			"lol_game_account_profiles_game_id_is_lol",
+			sql`${table.gameId} = 'lol'`,
+		),
 		foreignKey({
-			columns: [table.gameAccountId, table.gameId],
-			foreignColumns: [gameAccounts.id, gameAccounts.gameId],
+			columns: [table.gameAccountId],
+			foreignColumns: [gameAccounts.id],
 			name: "lol_game_account_profiles_game_account_lol_fk",
 		}).onDelete("cascade"),
 		index("lol_game_account_profiles_platform_idx").on(table.platformRoute),
@@ -108,8 +110,8 @@ export const cs2FaceitGameAccountProfiles = pgTable(
 			sql`${table.gameId} = 'cs2_faceit'`,
 		),
 		foreignKey({
-			columns: [table.gameAccountId, table.gameId],
-			foreignColumns: [gameAccounts.id, gameAccounts.gameId],
+			columns: [table.gameAccountId],
+			foreignColumns: [gameAccounts.id],
 			name: "cs2_faceit_game_account_profiles_game_account_faceit_fk",
 		}).onDelete("cascade"),
 	],

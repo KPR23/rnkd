@@ -1,1 +1,0 @@
-ALTER TABLE "game_accounts" DROP COLUMN "nickname";

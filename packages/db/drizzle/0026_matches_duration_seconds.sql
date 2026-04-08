@@ -1,1 +1,0 @@
-ALTER TABLE "matches" ADD COLUMN "duration_seconds" integer;

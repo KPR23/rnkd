@@ -8,18 +8,19 @@ import {
 } from "./games";
 import { leagueMembers, leagueRankings, leagues } from "./leagues";
 import { lolRankedEntries } from "./lol-ranked";
-import {
-	eloHistory,
-	follows,
-	matchParticipants,
-	matches,
-	playerStats,
-} from "./matches";
+import { eloHistory, matchParticipants, matches, playerStats } from "./matches";
+import { friendships } from "./social";
 
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
 	accounts: many(account),
 	gameAccounts: many(gameAccounts),
+	friendshipsInitiated: many(friendships, {
+		relationName: "friendshipsRequester",
+	}),
+	friendshipsReceived: many(friendships, {
+		relationName: "friendshipsAddressee",
+	}),
 }));
 
 export const gameAccountRelations = relations(
@@ -34,21 +35,17 @@ export const gameAccountRelations = relations(
 			references: [games.id],
 		}),
 		lolProfile: one(lolGameAccountProfiles, {
-			fields: [gameAccounts.id, gameAccounts.gameId],
-			references: [lolGameAccountProfiles.gameAccountId, lolGameAccountProfiles.gameId],
+			fields: [gameAccounts.id],
+			references: [lolGameAccountProfiles.gameAccountId],
 		}),
 		cs2FaceitProfile: one(cs2FaceitGameAccountProfiles, {
-			fields: [gameAccounts.id, gameAccounts.gameId],
-			references: [
-				cs2FaceitGameAccountProfiles.gameAccountId,
-				cs2FaceitGameAccountProfiles.gameId,
-			],
+			fields: [gameAccounts.id],
+			references: [cs2FaceitGameAccountProfiles.gameAccountId],
 		}),
 		matchParticipants: many(matchParticipants),
 		eloHistory: many(eloHistory),
 		lolRankedEntries: many(lolRankedEntries),
 		playerStats: one(playerStats),
-		follows: many(follows),
 	}),
 );
 
@@ -56,8 +53,8 @@ export const lolGameAccountProfileRelations = relations(
 	lolGameAccountProfiles,
 	({ one }) => ({
 		account: one(gameAccounts, {
-			fields: [lolGameAccountProfiles.gameAccountId, lolGameAccountProfiles.gameId],
-			references: [gameAccounts.id, gameAccounts.gameId],
+			fields: [lolGameAccountProfiles.gameAccountId],
+			references: [gameAccounts.id],
 		}),
 	}),
 );
@@ -66,11 +63,8 @@ export const cs2FaceitGameAccountProfileRelations = relations(
 	cs2FaceitGameAccountProfiles,
 	({ one }) => ({
 		account: one(gameAccounts, {
-			fields: [
-				cs2FaceitGameAccountProfiles.gameAccountId,
-				cs2FaceitGameAccountProfiles.gameId,
-			],
-			references: [gameAccounts.id, gameAccounts.gameId],
+			fields: [cs2FaceitGameAccountProfiles.gameAccountId],
+			references: [gameAccounts.id],
 		}),
 	}),
 );
@@ -79,8 +73,8 @@ export const lolRankedEntriesRelations = relations(
 	lolRankedEntries,
 	({ one }) => ({
 		account: one(gameAccounts, {
-			fields: [lolRankedEntries.gameAccountId, lolRankedEntries.gameId],
-			references: [gameAccounts.id, gameAccounts.gameId],
+			fields: [lolRankedEntries.gameAccountId],
+			references: [gameAccounts.id],
 		}),
 	}),
 );
@@ -125,14 +119,16 @@ export const eloHistoryRelations = relations(eloHistory, ({ one }) => ({
 	}),
 }));
 
-export const followsRelations = relations(follows, ({ one }) => ({
-	account: one(gameAccounts, {
-		fields: [follows.gameAccountId],
-		references: [gameAccounts.id],
-	}),
-	follower: one(user, {
-		fields: [follows.followerUserId],
+export const friendshipsRelations = relations(friendships, ({ one }) => ({
+	requester: one(user, {
+		fields: [friendships.requesterUserId],
 		references: [user.id],
+		relationName: "friendshipsRequester",
+	}),
+	addressee: one(user, {
+		fields: [friendships.addresseeUserId],
+		references: [user.id],
+		relationName: "friendshipsAddressee",
 	}),
 }));
 

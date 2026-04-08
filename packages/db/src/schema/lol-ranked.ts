@@ -36,8 +36,8 @@ export const lolRankedEntries = pgTable(
 		primaryKey({ columns: [table.gameAccountId, table.queueType] }),
 		check("lol_ranked_entries_game_id_is_lol", sql`${table.gameId} = 'lol'`),
 		foreignKey({
-			columns: [table.gameAccountId, table.gameId],
-			foreignColumns: [gameAccounts.id, gameAccounts.gameId],
+			columns: [table.gameAccountId],
+			foreignColumns: [gameAccounts.id],
 			name: "lol_ranked_entries_game_account_lol_fk",
 		}).onDelete("cascade"),
 		index("lol_ranked_entries_account_idx").on(table.gameAccountId),

@@ -6,6 +6,7 @@ import SearchSection from "@/src/components/search/SearchSection";
 import { trpc } from "@/src/utils/trpc";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { colors, tagColors } from "@repo/ui/colors";
+import { useRouter } from "expo-router";
 import {
 	AsteriskIcon,
 	GameControllerIcon,
@@ -73,6 +74,8 @@ export default function SearchTab() {
 		trpc.search.searchAll.useQuery(debouncedSearch, {
 			enabled: debouncedSearch.length >= MIN_SEARCH_LENGTH,
 		});
+
+	const router = useRouter();
 
 	const filteredSearchResults = useMemo(() => {
 		if (activeCategory === "All") {
@@ -290,7 +293,9 @@ export default function SearchTab() {
 										<SearchResultCard
 											key={`${result.type}:${result.id}`}
 											result={result}
-											onPress={() => {}}
+											onPress={() => {
+												router.push(`/${result.type}/${result.id}`);
+											}}
 										/>
 									))
 								) : (
