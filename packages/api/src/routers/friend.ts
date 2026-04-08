@@ -1,6 +1,6 @@
 import { db, friendships, user } from "@repo/db";
 import { TRPCError } from "@trpc/server";
-import { and, eq, inArray, or } from "drizzle-orm";
+import { and, asc, eq, inArray, or } from "drizzle-orm";
 import z from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -267,7 +267,8 @@ export const friendRouter = router({
 						eq(friendships.addresseeUserId, me),
 					),
 				),
-			);
+			)
+			.orderBy(asc(friendships.createdAt), asc(friendships.id));
 
 		const otherIds = rows.map((r) =>
 			r.requesterUserId === me ? r.addresseeUserId : r.requesterUserId,
