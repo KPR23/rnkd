@@ -35,8 +35,9 @@
 		"extra": {
 			"router": {},
 			"eas": {
-				"projectId": "44c95782-8843-4105-a012-cb92b992d036"
+				"projectId": "967fbb12-b65e-423a-a314-43f6554a9023"
 			}
-		}
+		},
+		"owner": "kpr23"
 	}
 }
