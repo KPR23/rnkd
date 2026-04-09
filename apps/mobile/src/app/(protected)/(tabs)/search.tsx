@@ -14,6 +14,7 @@ import {
 	QrCodeIcon,
 	UserIcon,
 	UsersIcon,
+	XIcon,
 } from "phosphor-react-native";
 import {
 	useCallback,
@@ -200,7 +201,7 @@ export default function SearchTab() {
 			<ScreenTitle title="Search" />
 			<View className="flex flex-1 flex-col gap-2">
 				<View className="flex flex-row w-full items-center gap-2 justify-between">
-					<View className="flex-1 w-full h-12 flex-row items-center gap-2 border border-border px-3">
+					<View className="flex-1 w-full h-12 flex-row items-center gap-2 border border-border pl-3">
 						<MagnifyingGlassIcon size={20} color={colors.gray} />
 						<TextInput
 							placeholder="Search"
@@ -213,6 +214,15 @@ export default function SearchTab() {
 							onSubmitEditing={handleSubmitSearch}
 							returnKeyType="search"
 						/>
+						{search.length > 0 && (
+							<TouchableOpacity
+								activeOpacity={0.7}
+								className="flex justify-center items-center size-10"
+								onPress={() => setSearch("")}
+							>
+								<XIcon size={20} color={colors.text} />
+							</TouchableOpacity>
+						)}
 					</View>
 					<TouchableOpacity
 						activeOpacity={0.7}
