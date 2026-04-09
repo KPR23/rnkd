@@ -1,4 +1,4 @@
-import SettingsCard from "@/src/app/(protected)/(settings)/SettingsCard";
+import SettingsCard from "@/src/components/settings/SettingsCard";
 import Button from "@/src/components/Button";
 import UserHeader from "@/src/components/UserHeader";
 import { authClient } from "@/src/lib/auth/auth-client";
@@ -50,7 +50,7 @@ export default function SettingsScreen() {
 				{
 					title: "Linked accounts",
 					icon: <LinkIcon />,
-					onPress: () => void 0,
+					onPress: () => router.push("/linked-accounts"),
 				},
 			],
 		},

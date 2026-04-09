@@ -26,6 +26,16 @@ export default function ProtectedLayout() {
 						title: "Settings",
 						headerStyle: { backgroundColor: colors.background },
 						headerTintColor: colors.text,
+						headerBackButtonDisplayMode: "minimal",
+					}}
+				/>
+				<Stack.Screen
+					name="(settings)/linked-accounts"
+					options={{
+						title: "Linked accounts",
+						headerStyle: { backgroundColor: colors.background },
+						headerTintColor: colors.text,
+						headerBackButtonDisplayMode: "minimal",
 					}}
 				/>
 				<Stack.Screen
