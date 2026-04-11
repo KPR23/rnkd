@@ -1,4 +1,5 @@
 import LinkedAccountsList from "@/src/app/(protected)/(settings)/LinkedAccountsList";
+import Button from "@/src/components/Button";
 import Screen from "@/src/components/Screen";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
@@ -35,12 +36,19 @@ export default function LinkedAccountsScreen() {
 		<>
 			<Stack.Screen options={{ title: "Linked accounts" }} />
 			<Screen safeAreaEdges={["bottom", "left", "right"]}>
-				<View className="flex flex-col gap-4">
-					<Text className="font-sans-medium text-text-secondary text-xs">
-						View your accounts, manage them, and connect new games to track
-						stats.
-					</Text>
-					<LinkedAccountsList linkedAccounts={linkedAccounts} />
+				<View className="h-full flex justify-between">
+					<View className="flex flex-col gap-4">
+						<Text className="font-sans-medium text-text-secondary text-xs">
+							View your accounts, manage them, and connect new games to track
+							stats.
+						</Text>
+						<LinkedAccountsList linkedAccounts={linkedAccounts} />
+					</View>
+					<Button
+						variant="primary"
+						actionText="Connect new account"
+						onPress={() => {}}
+					/>
 				</View>
 			</Screen>
 		</>

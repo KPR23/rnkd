@@ -1,3 +1,4 @@
+import Button from "@/src/components/Button";
 import {
 	GameAccount,
 	GAMES,
@@ -41,31 +42,25 @@ export default function LinkedAccountCard({
 	linkedAccount: GameAccount;
 }) {
 	return (
-		<View className="flex flex-row justify-between items-center w-full border bg-card border-border px-4 py-3">
-			<View className="flex-col gap-0.5 w-full flex-1">
+		<View className="flex flex-row items-center w-full h-16">
+			<View className="flex-col w-full gap-0.5 flex-1 border bg-card border-border px-4 h-full items-start justify-center">
 				<Text className="font-sans-medium text-text-secondary text-xs">
 					{GAME_TITLE[linkedAccount.gameId]}
 				</Text>
-
-				<Text className="font-sans-medium text-text text-sm">
+				<Text className="font-sans-semibold text-text text-sm">
 					{accountDisplayName(linkedAccount)}
 				</Text>
 			</View>
-			<View className="flex flex-row items-center gap-2 w-fit shrink-0">
-				<TouchableOpacity
-					className="font-sans-medium text-primary text-sm"
-					onPress={() => {
-						linkedAccount.externalId
-							? handleDisconnect(linkedAccount)
-							: handleConnect(linkedAccount);
-					}}
-					activeOpacity={0.7}
-				>
-					<Text className="font-sans-medium text-primary text-right text-sm">
-						{linkedAccount.externalId ? "Unlink" : "Link"}
-					</Text>
-				</TouchableOpacity>
-			</View>
+			<Button
+				variant="secondary"
+				className="h-full px-4 border-l-0"
+				actionText={linkedAccount.externalId ? "Unlink" : "Link"}
+				onPress={() => {
+					linkedAccount.externalId
+						? handleDisconnect(linkedAccount)
+						: handleConnect(linkedAccount);
+				}}
+			/>
 		</View>
 	);
 }

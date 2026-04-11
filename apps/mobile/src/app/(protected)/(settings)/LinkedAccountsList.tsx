@@ -8,7 +8,7 @@ export default function LinkedAccountsList({
 	linkedAccounts: GameAccount[];
 }) {
 	return (
-		<View className="flex flex-col gap-3">
+		<View className="flex flex-col gap-2">
 			{linkedAccounts.map((linkedAccount) => (
 				<LinkedAccountCard
 					key={linkedAccount.id}
