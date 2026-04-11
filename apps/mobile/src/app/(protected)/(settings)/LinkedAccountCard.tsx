@@ -1,4 +1,5 @@
 import Button from "@/src/components/Button";
+import { trpc } from "@/src/utils/trpc";
 import {
 	GameAccount,
 	GAMES,
@@ -6,7 +7,7 @@ import {
 	isLolGameAccount,
 	type GameId,
 } from "@repo/types";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 
 const GAME_TITLE: Record<GameId, string> = {
 	[GAMES.LOL]: "League of Legends",
@@ -28,19 +29,54 @@ function accountDisplayName(account: GameAccount): string {
 	throw new Error("Unexpected game account type");
 }
 
-const handleDisconnect = (linkedAccount: GameAccount) => {
-	console.log("Disconnect");
-};
-
-const handleConnect = (linkedAccount: GameAccount) => {
-	console.log("Connect");
-};
-
 export default function LinkedAccountCard({
 	linkedAccount,
 }: {
 	linkedAccount: GameAccount;
 }) {
+	const utils = trpc.useUtils();
+	const { mutate: unlinkLolAccount } =
+		trpc.gameAccount.unlinkLolAccount.useMutation({
+			onSuccess: () => {
+				utils.gameAccount.getGameAccounts.invalidate();
+			},
+		});
+	const { mutate: unlinkCS2FaceitAccount } =
+		trpc.gameAccount.unlinkCS2FaceitAccount.useMutation({
+			onSuccess: () => {
+				utils.gameAccount.getGameAccounts.invalidate();
+			},
+		});
+
+	const handleUnlink = (linkedAccount: GameAccount) => {
+		Alert.alert(
+			"Unlink account",
+			"Are you sure you want to unlink this account?",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Unlink",
+					style: "destructive",
+					onPress: () => {
+						try {
+							if (isLolGameAccount(linkedAccount)) {
+								unlinkLolAccount({ gameAccountId: linkedAccount.id });
+							} else if (isCs2FaceitGameAccount(linkedAccount)) {
+								unlinkCS2FaceitAccount({ gameAccountId: linkedAccount.id });
+							}
+						} catch (error) {
+							console.error(error);
+						}
+					},
+				},
+			],
+		);
+	};
+
+	const handleConnect = (linkedAccount: GameAccount) => {
+		console.log("Connect");
+	};
+
 	return (
 		<View className="flex flex-row items-center w-full h-16">
 			<View className="flex-col w-full gap-0.5 flex-1 border bg-card border-border px-4 h-full items-start justify-center">
@@ -57,7 +93,7 @@ export default function LinkedAccountCard({
 				actionText={linkedAccount.externalId ? "Unlink" : "Link"}
 				onPress={() => {
 					linkedAccount.externalId
-						? handleDisconnect(linkedAccount)
+						? handleUnlink(linkedAccount)
 						: handleConnect(linkedAccount);
 				}}
 			/>
