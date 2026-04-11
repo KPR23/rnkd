@@ -1,10 +1,48 @@
+import LinkedAccountsList from "@/src/app/(protected)/(settings)/LinkedAccountsList";
 import Screen from "@/src/components/Screen";
-import { Text } from "react-native";
+import { useAuth } from "@/src/lib/auth/use-auth";
+import { trpc } from "@/src/utils/trpc";
+import { Stack } from "expo-router";
+import { useMemo } from "react";
+import { ActivityIndicator, Text, View } from "react-native";
 
 export default function LinkedAccountsScreen() {
+	const { data: session, isPending: isAuthPending } = useAuth();
+	const { data: gameAccounts, isPending: isAccountsPending } =
+		trpc.gameAccount.getGameAccounts.useQuery(undefined, {
+			enabled: !!session,
+		});
+
+	const linkedAccounts = useMemo(
+		() => [...(gameAccounts?.lol ?? []), ...(gameAccounts?.faceit ?? [])],
+		[gameAccounts],
+	);
+
+	if (isAuthPending || (session && isAccountsPending)) {
+		return (
+			<>
+				<Stack.Screen options={{ title: "Linked accounts" }} />
+				<Screen safeAreaEdges={["bottom", "left", "right"]}>
+					<View className="flex-1 items-center justify-center py-8">
+						<ActivityIndicator />
+					</View>
+				</Screen>
+			</>
+		);
+	}
+
 	return (
-		<Screen safeAreaEdges={["bottom", "left", "right"]}>
-			<Text className="font-sans text-text">Linked accounts</Text>
-		</Screen>
+		<>
+			<Stack.Screen options={{ title: "Linked accounts" }} />
+			<Screen safeAreaEdges={["bottom", "left", "right"]}>
+				<View className="flex flex-col gap-4">
+					<Text className="font-sans-medium text-text-secondary text-xs">
+						View your accounts, manage them, and connect new games to track
+						stats.
+					</Text>
+					<LinkedAccountsList linkedAccounts={linkedAccounts} />
+				</View>
+			</Screen>
+		</>
 	);
 }

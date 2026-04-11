@@ -36,8 +36,6 @@ export default function ProfileScreen({
 		await utils.friend.relationship.invalidate({ userId: user.id });
 	}, [utils.friend.relationship, user.id]);
 
-	console.log(relationship);
-
 	const requestMut = trpc.friend.request.useMutation({
 		onSuccess: invalidateRelationship,
 	});
