@@ -4,8 +4,8 @@ import {
 	GAMES,
 	matches,
 	matchParticipants,
-	RIOT_REGIONAL_ROUTE,
 } from "@repo/db";
+import { RIOT_REGIONAL_ROUTE } from "@repo/types";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { protectedProcedure, router } from "../trpc";

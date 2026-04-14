@@ -5,14 +5,14 @@ import {
 	GAMES,
 	lolGameAccountProfiles,
 	lolRankedEntries,
-	RIOT_REGIONAL_ROUTE,
-	type RiotPlatformRoute,
-	type RiotRegionalRoute,
 } from "@repo/db";
 import {
+	RIOT_REGIONAL_ROUTE,
 	isCs2FaceitGameAccount,
 	isLolGameAccount,
 	type GameAccount,
+	type RiotPlatformRoute,
+	type RiotRegionalRoute,
 } from "@repo/types";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
@@ -506,7 +506,13 @@ export const gameAccountRouter = router({
 
 				await tx
 					.delete(gameAccounts)
-					.where(eq(gameAccounts.id, input.gameAccountId));
+					.where(
+						and(
+							eq(gameAccounts.id, input.gameAccountId),
+							eq(gameAccounts.gameId, GAMES.LOL),
+							eq(gameAccounts.userId, ctx.session.user.id),
+						),
+					);
 
 				return { success: true };
 			});
@@ -532,7 +538,13 @@ export const gameAccountRouter = router({
 
 				await tx
 					.delete(gameAccounts)
-					.where(eq(gameAccounts.id, input.gameAccountId));
+					.where(
+						and(
+							eq(gameAccounts.id, input.gameAccountId),
+							eq(gameAccounts.gameId, GAMES.CS2_FACEIT),
+							eq(gameAccounts.userId, ctx.session.user.id),
+						),
+					);
 
 				return { success: true };
 			});

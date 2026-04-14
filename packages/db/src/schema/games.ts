@@ -5,13 +5,13 @@ import {
 	foreignKey,
 	index,
 	integer,
+	pgEnum,
 	pgTable,
 	text,
 	timestamp,
 	uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
-import { platformRouteEnum, regionalRouteEnum } from "./riot-enums";
 
 export const GAMES = {
 	LOL: "lol",
@@ -21,6 +21,27 @@ export const GAMES = {
 export type GameId = (typeof GAMES)[keyof typeof GAMES];
 
 export const GAME_IDS = Object.values(GAMES) as [GameId, ...GameId[]];
+
+const RIOT_REGIONAL_ROUTE = ["americas", "europe", "asia", "sea"] as const;
+const RIOT_PLATFORM_ROUTE = [
+	"br1",
+	"eun1",
+	"euw1",
+	"jp1",
+	"kr",
+	"la1",
+	"la2",
+	"me1",
+	"na1",
+	"oc1",
+	"ru",
+	"sg2",
+	"tr1",
+	"tw2",
+	"vn2",
+] as const;
+const regionalRouteEnum = pgEnum("regional_route", RIOT_REGIONAL_ROUTE);
+const platformRouteEnum = pgEnum("platform_route", RIOT_PLATFORM_ROUTE);
 
 export const games = pgTable("games", {
 	id: text("id").primaryKey(),

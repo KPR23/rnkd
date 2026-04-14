@@ -2,6 +2,12 @@ import Button from "@/src/components/Button";
 import CustomModal from "@/src/components/Modal";
 import Tabs from "@/src/components/Tabs";
 import { trpc } from "@/src/utils/trpc";
+import {
+	RIOT_PLATFORM_LABEL,
+	RIOT_PLATFORM_ROUTE,
+	RIOT_PLATFORM_TO_REGIONAL_ROUTE,
+	type RiotPlatformRoute,
+} from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import { useState } from "react";
 import {
@@ -11,16 +17,6 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-
-const LOL_REGIONS = ["americas", "europe", "asia", "sea"] as const;
-type LolRegion = (typeof LOL_REGIONS)[number];
-
-const REGION_LABEL: Record<LolRegion, string> = {
-	americas: "Americas",
-	europe: "Europe",
-	asia: "Asia",
-	sea: "SEA",
-};
 
 type GameChoice = "lol" | "faceit";
 
@@ -44,7 +40,7 @@ export default function AddLinkedAccountModal({
 	const [game, setGame] = useState<GameChoice>("lol");
 	const [gameName, setGameName] = useState("");
 	const [tagLine, setTagLine] = useState("");
-	const [region, setRegion] = useState<LolRegion>("europe");
+	const [platform, setPlatform] = useState<RiotPlatformRoute>("euw1");
 	const [faceitId, setFaceitId] = useState("");
 	const [formError, setFormError] = useState<string | null>(null);
 
@@ -52,7 +48,7 @@ export default function AddLinkedAccountModal({
 		setGame("lol");
 		setGameName("");
 		setTagLine("");
-		setRegion("europe");
+		setPlatform("euw1");
 		setFaceitId("");
 		setFormError(null);
 	};
@@ -81,6 +77,7 @@ export default function AddLinkedAccountModal({
 		});
 
 	const isPending = isLolPending || isFaceitPending;
+	const region = RIOT_PLATFORM_TO_REGIONAL_ROUTE[platform];
 
 	const submit = () => {
 		setFormError(null);
@@ -97,7 +94,7 @@ export default function AddLinkedAccountModal({
 
 	const disabledCondition =
 		isPending || formError || game === "lol"
-			? !gameName.trim() || !tagLine.trim() || !region
+			? !gameName.trim() || !tagLine.trim()
 			: !faceitId.trim();
 
 	return (
@@ -190,27 +187,27 @@ export default function AddLinkedAccountModal({
 						</View>
 						<View>
 							<Text className="mb-1.5 text-xs font-sans-medium text-text-secondary">
-								Riot routing region
+								Platform
 							</Text>
 							<View className="flex flex-row flex-wrap gap-2">
-								{LOL_REGIONS.map((r) => (
+								{RIOT_PLATFORM_ROUTE.map((p) => (
 									<TouchableOpacity
-										key={r}
+										key={p}
 										activeOpacity={0.7}
 										disabled={isPending}
-										onPress={() => setRegion(r)}
+										onPress={() => setPlatform(p)}
 										className={`border px-3 py-2 ${
-											region === r
+											platform === p
 												? "border-primary bg-primary/10"
 												: "border-border"
 										}`}
 									>
 										<Text
 											className={`text-xs font-sans-medium ${
-												region === r ? "text-text" : "text-text-secondary"
+												platform === p ? "text-text" : "text-text-secondary"
 											}`}
 										>
-											{REGION_LABEL[r]}
+											{RIOT_PLATFORM_LABEL[p]}
 										</Text>
 									</TouchableOpacity>
 								))}
