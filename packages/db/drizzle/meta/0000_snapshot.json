@@ -110,12 +110,8 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -202,12 +198,8 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -217,9 +209,7 @@
         "session_token_unique": {
           "name": "session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -289,9 +279,7 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -415,12 +403,8 @@
           "name": "cs2_faceit_game_account_profiles_game_account_faceit_fk",
           "tableFrom": "cs2_faceit_game_account_profiles",
           "tableTo": "game_accounts",
-          "columnsFrom": [
-            "game_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["game_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -550,12 +534,8 @@
           "name": "game_accounts_user_id_user_id_fk",
           "tableFrom": "game_accounts",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -563,12 +543,8 @@
           "name": "game_accounts_game_id_games_id_fk",
           "tableFrom": "game_accounts",
           "tableTo": "games",
-          "columnsFrom": [
-            "game_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["game_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -716,12 +692,8 @@
           "name": "lol_game_account_profiles_game_account_lol_fk",
           "tableFrom": "lol_game_account_profiles",
           "tableTo": "game_accounts",
-          "columnsFrom": [
-            "game_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["game_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -833,12 +805,8 @@
           "name": "league_members_league_id_leagues_id_fk",
           "tableFrom": "league_members",
           "tableTo": "leagues",
-          "columnsFrom": [
-            "league_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["league_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -846,12 +814,8 @@
           "name": "league_members_game_account_id_game_accounts_id_fk",
           "tableFrom": "league_members",
           "tableTo": "game_accounts",
-          "columnsFrom": [
-            "game_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["game_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -976,12 +940,8 @@
           "name": "league_rankings_league_id_leagues_id_fk",
           "tableFrom": "league_rankings",
           "tableTo": "leagues",
-          "columnsFrom": [
-            "league_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["league_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -989,12 +949,8 @@
           "name": "league_rankings_game_account_id_game_accounts_id_fk",
           "tableFrom": "league_rankings",
           "tableTo": "game_accounts",
-          "columnsFrom": [
-            "game_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["game_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1048,12 +1004,8 @@
           "name": "leagues_owner_id_user_id_fk",
           "tableFrom": "leagues",
           "tableTo": "user",
-          "columnsFrom": [
-            "owner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1189,12 +1141,8 @@
           "name": "lol_ranked_entries_game_account_lol_fk",
           "tableFrom": "lol_ranked_entries",
           "tableTo": "game_accounts",
-          "columnsFrom": [
-            "game_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["game_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1202,10 +1150,7 @@
       "compositePrimaryKeys": {
         "lol_ranked_entries_game_account_id_queue_type_pk": {
           "name": "lol_ranked_entries_game_account_id_queue_type_pk",
-          "columns": [
-            "game_account_id",
-            "queue_type"
-          ]
+          "columns": ["game_account_id", "queue_type"]
         }
       },
       "uniqueConstraints": {},
@@ -1289,12 +1234,8 @@
           "name": "elo_history_match_id_matches_id_fk",
           "tableFrom": "elo_history",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1302,12 +1243,8 @@
           "name": "elo_history_game_account_id_game_accounts_id_fk",
           "tableFrom": "elo_history",
           "tableTo": "game_accounts",
-          "columnsFrom": [
-            "game_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["game_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1491,12 +1428,8 @@
           "name": "match_participants_match_id_matches_id_fk",
           "tableFrom": "match_participants",
           "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["match_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1504,12 +1437,8 @@
           "name": "match_participants_game_account_id_game_accounts_id_fk",
           "tableFrom": "match_participants",
           "tableTo": "game_accounts",
-          "columnsFrom": [
-            "game_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["game_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1645,12 +1574,8 @@
           "name": "matches_game_id_games_id_fk",
           "tableFrom": "matches",
           "tableTo": "games",
-          "columnsFrom": [
-            "game_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["game_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1749,12 +1674,8 @@
           "name": "player_stats_game_account_id_game_accounts_id_fk",
           "tableFrom": "player_stats",
           "tableTo": "game_accounts",
-          "columnsFrom": [
-            "game_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["game_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1764,9 +1685,7 @@
         "player_stats_game_account_id_unique": {
           "name": "player_stats_game_account_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "game_account_id"
-          ]
+          "columns": ["game_account_id"]
         }
       },
       "policies": {},
@@ -1889,12 +1808,8 @@
           "name": "friendships_requester_user_id_user_id_fk",
           "tableFrom": "friendships",
           "tableTo": "user",
-          "columnsFrom": [
-            "requester_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["requester_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1902,12 +1817,8 @@
           "name": "friendships_addressee_user_id_user_id_fk",
           "tableFrom": "friendships",
           "tableTo": "user",
-          "columnsFrom": [
-            "addressee_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["addressee_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1949,20 +1860,12 @@
     "public.regional_route": {
       "name": "regional_route",
       "schema": "public",
-      "values": [
-        "americas",
-        "europe",
-        "asia",
-        "sea"
-      ]
+      "values": ["americas", "europe", "asia", "sea"]
     },
     "public.friendship_status": {
       "name": "friendship_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "accepted"
-      ]
+      "values": ["pending", "accepted"]
     }
   },
   "schemas": {},

@@ -1,28 +1,29 @@
-import { TRPCError, initTRPC } from "@trpc/server";
-import type { BetterAuthSession } from "@repo/types";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 
+import type { BetterAuthSession } from "@repo/types";
+
 export type TRPCContext = {
-	session: BetterAuthSession | null;
+  session: BetterAuthSession | null;
 };
 
 export const createTRPCContext = (opts: TRPCContext): TRPCContext => opts;
 
 const t = initTRPC.context<TRPCContext>().create({
-	transformer: superjson,
+  transformer: superjson,
 });
 
 const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-	if (!ctx.session) {
-		throw new TRPCError({ code: "UNAUTHORIZED" });
-	}
+  if (!ctx.session) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
 
-	return next({
-		ctx: {
-			...ctx,
-			session: ctx.session,
-		},
-	});
+  return next({
+    ctx: {
+      ...ctx,
+      session: ctx.session,
+    },
+  });
 });
 
 export const router = t.router;
