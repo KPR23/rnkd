@@ -1,13 +1,15 @@
+import AddLinkedAccountModal from "@/src/app/(protected)/(settings)/AddLinkedAccountModal";
 import LinkedAccountsList from "@/src/app/(protected)/(settings)/LinkedAccountsList";
 import Button from "@/src/components/Button";
 import Screen from "@/src/components/Screen";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
 import { Stack } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 export default function LinkedAccountsScreen() {
+	const [isModalVisible, setIsModalVisible] = useState(false);
 	const { data: session, isPending: isAuthPending } = useAuth();
 	const { data: gameAccounts, isPending: isAccountsPending } =
 		trpc.gameAccount.getGameAccounts.useQuery(undefined, {
@@ -47,10 +49,16 @@ export default function LinkedAccountsScreen() {
 					<Button
 						variant="primary"
 						actionText="Connect new account"
-						onPress={() => {}}
+						onPress={() => {
+							setIsModalVisible(true);
+						}}
 					/>
 				</View>
 			</Screen>
+			<AddLinkedAccountModal
+				visible={isModalVisible}
+				onClose={() => setIsModalVisible(false)}
+			/>
 		</>
 	);
 }

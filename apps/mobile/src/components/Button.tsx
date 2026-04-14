@@ -17,7 +17,7 @@ interface Props extends Pick<TouchableOpacityProps, "onPress" | "disabled"> {
 	onPress: () => void;
 }
 
-const baseClassName = "h-11 flex-row items-center justify-center gap-2";
+const baseClassName = "h-12 flex-row items-center justify-center gap-2";
 
 const variantStyles: Record<ButtonVariant, string> = {
 	primary: "bg-primary",

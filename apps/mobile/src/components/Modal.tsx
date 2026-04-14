@@ -22,7 +22,8 @@ export default function CustomModal({
 			presentationStyle="pageSheet"
 			animationType="slide"
 		>
-			<View className="flex-1 bg-card">
+			<Stack.Screen options={{ title }} />
+			<View className="flex-1 bg-sheet">
 				<SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
 					<View className="px-6 py-4 flex flex-row items-center justify-between">
 						<Text className="text-text text-lg font-sans-bold">{title}</Text>

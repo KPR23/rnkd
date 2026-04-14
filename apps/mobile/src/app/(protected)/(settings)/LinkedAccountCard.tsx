@@ -7,7 +7,8 @@ import {
 	isLolGameAccount,
 	type GameId,
 } from "@repo/types";
-import { Alert, Text, View } from "react-native";
+import { useState } from "react";
+import { Alert, Modal, Text, View } from "react-native";
 
 const GAME_TITLE: Record<GameId, string> = {
 	[GAMES.LOL]: "League of Legends",
@@ -34,6 +35,7 @@ export default function LinkedAccountCard({
 }: {
 	linkedAccount: GameAccount;
 }) {
+	const [isModalVisible, setIsModalVisible] = useState(false);
 	const utils = trpc.useUtils();
 	const { mutate: unlinkLolAccount } =
 		trpc.gameAccount.unlinkLolAccount.useMutation({
@@ -73,10 +75,6 @@ export default function LinkedAccountCard({
 		);
 	};
 
-	const handleConnect = (linkedAccount: GameAccount) => {
-		console.log("Connect");
-	};
-
 	return (
 		<View className="flex flex-row items-center w-full h-16">
 			<View className="flex-col w-full gap-0.5 flex-1 border bg-card border-border px-4 h-full items-start justify-center">
@@ -90,11 +88,9 @@ export default function LinkedAccountCard({
 			<Button
 				variant="secondary"
 				className="h-full px-4 border-l-0"
-				actionText={linkedAccount.externalId ? "Unlink" : "Link"}
+				actionText={linkedAccount.externalId && "Unlink"}
 				onPress={() => {
-					linkedAccount.externalId
-						? handleUnlink(linkedAccount)
-						: handleConnect(linkedAccount);
+					linkedAccount.externalId && handleUnlink(linkedAccount);
 				}}
 			/>
 		</View>
