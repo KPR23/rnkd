@@ -38,7 +38,7 @@ export default function LinkedAccountsScreen() {
 		<>
 			<Stack.Screen options={{ title: "Linked accounts" }} />
 			<Screen safeAreaEdges={["bottom", "left", "right"]}>
-				<View className="h-full flex justify-between">
+				<View className="flex-1">
 					<View className="flex flex-col gap-4">
 						<Text className="font-sans-medium text-text-secondary text-xs">
 							View your accounts, manage them, and connect new games to track
@@ -46,13 +46,15 @@ export default function LinkedAccountsScreen() {
 						</Text>
 						<LinkedAccountsList linkedAccounts={linkedAccounts} />
 					</View>
-					<Button
-						variant="primary"
-						actionText="Connect new account"
-						onPress={() => {
-							setIsModalVisible(true);
-						}}
-					/>
+					<View className="mt-auto pt-6">
+						<Button
+							variant="primary"
+							actionText="Connect new account"
+							onPress={() => {
+								setIsModalVisible(true);
+							}}
+						/>
+					</View>
 				</View>
 			</Screen>
 			<AddLinkedAccountModal

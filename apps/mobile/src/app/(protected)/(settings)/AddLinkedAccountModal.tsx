@@ -99,6 +99,20 @@ export default function AddLinkedAccountModal({
 			visible={visible}
 			onClose={handleClose}
 			title="Connect new account"
+			footer={
+				<View className="flex flex-col gap-3">
+					{formError ? (
+						<Text className="text-sm text-destructive">{formError}</Text>
+					) : null}
+					{isPending ? (
+						<View className="items-center py-2">
+							<ActivityIndicator color={colors.text} />
+						</View>
+					) : (
+						<Button variant="primary" actionText="Connect" onPress={submit} />
+					)}
+				</View>
+			}
 		>
 			<View className="flex flex-col gap-6">
 				<View className="flex flex-row gap-2">
@@ -137,6 +151,8 @@ export default function AddLinkedAccountModal({
 								className="border border-border bg-card px-3 py-3 text-text"
 								autoCapitalize="none"
 								autoCorrect={false}
+								spellCheck={false}
+								autoComplete="off"
 								value={gameName}
 								onChangeText={setGameName}
 								editable={!isPending}
@@ -152,6 +168,8 @@ export default function AddLinkedAccountModal({
 								className="border border-border bg-card px-3 py-3 text-text"
 								autoCapitalize="none"
 								autoCorrect={false}
+								spellCheck={false}
+								autoComplete="off"
 								value={tagLine}
 								onChangeText={setTagLine}
 								editable={!isPending}
@@ -197,23 +215,13 @@ export default function AddLinkedAccountModal({
 							className="border border-border bg-card px-3 py-3 text-text"
 							autoCapitalize="none"
 							autoCorrect={false}
+							spellCheck={false}
+							autoComplete="off"
 							value={faceitId}
 							onChangeText={setFaceitId}
 							editable={!isPending}
 						/>
 					</View>
-				)}
-
-				{formError ? (
-					<Text className="text-sm text-destructive">{formError}</Text>
-				) : null}
-
-				{isPending ? (
-					<View className="items-center py-2">
-						<ActivityIndicator color={colors.text} />
-					</View>
-				) : (
-					<Button variant="primary" actionText="Connect" onPress={submit} />
 				)}
 			</View>
 		</CustomModal>
