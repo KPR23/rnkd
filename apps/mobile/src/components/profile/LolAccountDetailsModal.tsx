@@ -79,12 +79,6 @@ export default function LolAccountDetailsModal({
 						className="flex-1 h-9!"
 						onPress={() => void 0}
 					/>
-					<Button
-						variant="secondary"
-						actionText="Follow account"
-						className="flex-1 h-9!"
-						onPress={() => void 0}
-					/>
 				</View>
 			</Frame>
 			<View className="w-full flex flex-col gap-2">

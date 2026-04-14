@@ -36,8 +36,6 @@ export default function ProfileScreen({
 		await utils.friend.relationship.invalidate({ userId: user.id });
 	}, [utils.friend.relationship, user.id]);
 
-	console.log(relationship);
-
 	const requestMut = trpc.friend.request.useMutation({
 		onSuccess: invalidateRelationship,
 	});
@@ -95,7 +93,7 @@ export default function ProfileScreen({
 			variant="secondary"
 			actionText="Accounts"
 			className="flex-1"
-			onPress={() => router.push("/settings")}
+			onPress={() => router.push("/linked-accounts")}
 		/>
 	) : relationship?.status === "friends" ? (
 		<Button

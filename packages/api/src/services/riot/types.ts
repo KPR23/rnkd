@@ -1,11 +1,10 @@
+import { matches, matchParticipants } from "@repo/db";
 import {
-	matches,
-	matchParticipants,
-	RIOT_REGIONAL_ROUTE,
 	RIOT_PLATFORM_ROUTE,
+	RIOT_REGIONAL_ROUTE,
 	type RiotPlatformRoute,
 	type RiotRegionalRoute,
-} from "@repo/db";
+} from "@repo/types";
 
 export {
 	RIOT_REGIONAL_ROUTE,

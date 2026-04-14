@@ -17,7 +17,7 @@ interface Props extends Pick<TouchableOpacityProps, "onPress" | "disabled"> {
 	onPress: () => void;
 }
 
-const baseClassName = "h-11 flex-row items-center justify-center gap-2";
+const baseClassName = "h-12 flex-row items-center justify-center gap-2";
 
 const variantStyles: Record<ButtonVariant, string> = {
 	primary: "bg-primary",
@@ -45,9 +45,10 @@ export default function Button({
 	onPress,
 	...touchableProps
 }: Props) {
+	const isDisabled = !!touchableProps.disabled;
 	const iconContext = {
 		size: 20,
-		color: iconColors[variant],
+		color: isDisabled ? colors.textSecondary : iconColors[variant],
 		weight: "bold" as const,
 	};
 
@@ -55,7 +56,9 @@ export default function Button({
 		<IconContext.Provider value={iconContext}>
 			<TouchableOpacity
 				activeOpacity={0.7}
-				className={`${baseClassName} ${variantStyles[variant]} ${className ?? ""}`}
+				className={`${baseClassName} ${variantStyles[variant]} ${className ?? ""} ${
+					isDisabled ? "bg-transparent border border-text-muted/30" : ""
+				}`}
 				style={
 					variant === "destructive"
 						? { borderColor: colors.destructiveBorder }
@@ -65,7 +68,7 @@ export default function Button({
 				{...touchableProps}
 			>
 				<Text
-					className={`${textColors[variant]} text-sm uppercase`}
+					className={`${isDisabled ? "text-text-muted/50" : textColors[variant]} text-sm uppercase`}
 					style={{ fontFamily: "JetBrainsMono_600SemiBold" }}
 				>
 					{actionText}

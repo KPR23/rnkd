@@ -7,6 +7,7 @@ export const colors = {
 	dark: "#1d1826",
 	border: "#241f2b",
 	background: "#0f0b14",
+	sheet: "#131018",
 	card: "#17121f",
 
 	gamesLoL: "#c28f2b",

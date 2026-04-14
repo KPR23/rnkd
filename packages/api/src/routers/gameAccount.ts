@@ -5,14 +5,14 @@ import {
 	GAMES,
 	lolGameAccountProfiles,
 	lolRankedEntries,
-	RIOT_REGIONAL_ROUTE,
-	type RiotPlatformRoute,
-	type RiotRegionalRoute,
 } from "@repo/db";
 import {
+	RIOT_REGIONAL_ROUTE,
 	isCs2FaceitGameAccount,
 	isLolGameAccount,
 	type GameAccount,
+	type RiotPlatformRoute,
+	type RiotRegionalRoute,
 } from "@repo/types";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
@@ -484,5 +484,69 @@ export const gameAccountRouter = router({
 
 				throw error;
 			}
+		}),
+	unlinkLolAccount: protectedProcedure
+		.input(z.object({ gameAccountId: z.uuid() }))
+		.mutation(async ({ ctx, input }) => {
+			return await db.transaction(async (tx) => {
+				const gameAccount = await tx.query.gameAccounts.findFirst({
+					where: and(
+						eq(gameAccounts.id, input.gameAccountId),
+						eq(gameAccounts.gameId, GAMES.LOL),
+						eq(gameAccounts.userId, ctx.session.user.id),
+					),
+					with: {
+						lolProfile: true,
+					},
+				});
+
+				if (!gameAccount || !gameAccount.lolProfile) {
+					throw new TRPCError({ code: "NOT_FOUND" });
+				}
+
+				await tx
+					.delete(gameAccounts)
+					.where(
+						and(
+							eq(gameAccounts.id, input.gameAccountId),
+							eq(gameAccounts.gameId, GAMES.LOL),
+							eq(gameAccounts.userId, ctx.session.user.id),
+						),
+					);
+
+				return { success: true };
+			});
+		}),
+	unlinkCS2FaceitAccount: protectedProcedure
+		.input(z.object({ gameAccountId: z.uuid() }))
+		.mutation(async ({ ctx, input }) => {
+			return await db.transaction(async (tx) => {
+				const gameAccount = await tx.query.gameAccounts.findFirst({
+					where: and(
+						eq(gameAccounts.id, input.gameAccountId),
+						eq(gameAccounts.gameId, GAMES.CS2_FACEIT),
+						eq(gameAccounts.userId, ctx.session.user.id),
+					),
+					with: {
+						cs2FaceitProfile: true,
+					},
+				});
+
+				if (!gameAccount || !gameAccount.cs2FaceitProfile) {
+					throw new TRPCError({ code: "NOT_FOUND" });
+				}
+
+				await tx
+					.delete(gameAccounts)
+					.where(
+						and(
+							eq(gameAccounts.id, input.gameAccountId),
+							eq(gameAccounts.gameId, GAMES.CS2_FACEIT),
+							eq(gameAccounts.userId, ctx.session.user.id),
+						),
+					);
+
+				return { success: true };
+			});
 		}),
 });
