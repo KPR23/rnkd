@@ -93,7 +93,7 @@ export default function ProfileScreen({
 			variant="secondary"
 			actionText="Accounts"
 			className="flex-1"
-			onPress={() => router.push("/settings")}
+			onPress={() => router.push("/linked-accounts")}
 		/>
 	) : relationship?.status === "friends" ? (
 		<Button

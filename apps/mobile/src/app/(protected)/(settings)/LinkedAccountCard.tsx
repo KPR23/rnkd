@@ -35,15 +35,14 @@ export default function LinkedAccountCard({
 }: {
 	linkedAccount: GameAccount;
 }) {
-	const [isModalVisible, setIsModalVisible] = useState(false);
 	const utils = trpc.useUtils();
-	const { mutate: unlinkLolAccount } =
+	const { mutateAsync: unlinkLolAccount } =
 		trpc.gameAccount.unlinkLolAccount.useMutation({
 			onSuccess: () => {
 				utils.gameAccount.getGameAccounts.invalidate();
 			},
 		});
-	const { mutate: unlinkCS2FaceitAccount } =
+	const { mutateAsync: unlinkCS2FaceitAccount } =
 		trpc.gameAccount.unlinkCS2FaceitAccount.useMutation({
 			onSuccess: () => {
 				utils.gameAccount.getGameAccounts.invalidate();
@@ -59,12 +58,14 @@ export default function LinkedAccountCard({
 				{
 					text: "Unlink",
 					style: "destructive",
-					onPress: () => {
+					onPress: async () => {
 						try {
 							if (isLolGameAccount(linkedAccount)) {
-								unlinkLolAccount({ gameAccountId: linkedAccount.id });
+								await unlinkLolAccount({ gameAccountId: linkedAccount.id });
 							} else if (isCs2FaceitGameAccount(linkedAccount)) {
-								unlinkCS2FaceitAccount({ gameAccountId: linkedAccount.id });
+								await unlinkCS2FaceitAccount({
+									gameAccountId: linkedAccount.id,
+								});
 							}
 						} catch (error) {
 							console.error(error);

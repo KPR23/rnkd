@@ -132,9 +132,11 @@ export default function AddLinkedAccountModal({
 							key={g}
 							activeOpacity={0.7}
 							onPress={() => {
+								if (isPending) return;
 								setGame(g);
 								setFormError(null);
 							}}
+							disabled={isPending}
 							className={`flex-1 border px-3 py-2.5 ${
 								game === g ? "border-primary bg-primary/10" : "border-border"
 							}`}
