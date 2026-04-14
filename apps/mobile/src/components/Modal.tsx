@@ -32,7 +32,6 @@ export default function CustomModal({
 			presentationStyle="pageSheet"
 			animationType="slide"
 		>
-			<Stack.Screen options={{ title }} />
 			<View className="flex-1 bg-sheet">
 				<KeyboardAvoidingView
 					style={{ flex: 1 }}

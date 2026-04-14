@@ -1,5 +1,6 @@
 import Button from "@/src/components/Button";
 import CustomModal from "@/src/components/Modal";
+import Tabs from "@/src/components/Tabs";
 import { trpc } from "@/src/utils/trpc";
 import { colors } from "@repo/ui/colors";
 import { useState } from "react";
@@ -94,6 +95,11 @@ export default function AddLinkedAccountModal({
 		}
 	};
 
+	const disabledCondition =
+		isPending || formError || game === "lol"
+			? !gameName.trim() || !tagLine.trim() || !region
+			: !faceitId.trim();
+
 	return (
 		<CustomModal
 			visible={visible}
@@ -109,7 +115,12 @@ export default function AddLinkedAccountModal({
 							<ActivityIndicator color={colors.text} />
 						</View>
 					) : (
-						<Button variant="primary" actionText="Connect" onPress={submit} />
+						<Button
+							variant="primary"
+							actionText="Connect"
+							onPress={submit}
+							disabled={disabledCondition}
+						/>
 					)}
 				</View>
 			}
