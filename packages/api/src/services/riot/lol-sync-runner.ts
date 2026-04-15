@@ -5,7 +5,7 @@ import { db, gameAccounts, GAMES } from "@repo/db";
 import { getLolAccountsOfFriends } from "../helper";
 import { assertRiotRegion } from "./helper";
 import { mapRiotMatchToDb } from "./lol-sync";
-import { getMatchById, getMatchIdsByPuuid } from "./riot";
+import { getMatchById, getMatchIdsByPuuid } from "./riot-client";
 import type { RiotRegionalRoute } from "./types";
 
 const MAX_MATCHES_TO_SYNC = 100;

@@ -26,7 +26,7 @@ import {
   getLolAccountDetails,
   getLolActiveRegionByPuuid,
   getLolLeagueEntriesByPuuid,
-} from "../services/riot/riot";
+} from "../services/riot/riot-client";
 import { protectedProcedure, router } from "../trpc";
 
 const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);

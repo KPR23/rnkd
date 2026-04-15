@@ -8,7 +8,7 @@ import { RIOT_REGIONAL_ROUTE } from "@repo/types";
 import {
   getLolAccountDetails,
   getLolActiveRegionByPuuid,
-} from "../services/riot/riot";
+} from "../services/riot/riot-client";
 import { protectedProcedure, router } from "../trpc";
 
 const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
