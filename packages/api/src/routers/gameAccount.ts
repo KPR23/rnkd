@@ -20,6 +20,7 @@ import {
 } from "@repo/types";
 
 import { isValidPlatformRoute } from "../services/riot/helper";
+import { syncLatestLolMatchForAccount } from "../services/riot/lol-latest-match-sync";
 import { syncLolForAccount } from "../services/riot/lol-sync-runner";
 import {
   getAccountByRiotId,
@@ -363,16 +364,17 @@ export const gameAccountRouter = router({
 
       try {
         const createdAccount = await db.transaction(async (tx) => {
-          const [gameAccount] = await tx
-            .insert(gameAccounts)
-            .values({
-              id: crypto.randomUUID(),
-              userId: ctx.session.user.id,
-              gameId: GAMES.LOL,
-              externalId: riotAccount.puuid,
-              lastSyncedAt: null,
-            })
-            .returning();
+					const [gameAccount] = await tx
+						.insert(gameAccounts)
+						.values({
+							id: crypto.randomUUID(),
+							userId: ctx.session.user.id,
+							gameId: GAMES.LOL,
+							externalId: riotAccount.puuid,
+							lastSyncedAt: null,
+							isTracked: true,
+						})
+						.returning();
 
           if (!gameAccount) {
             throw new Error("Failed to create LoL game account");
@@ -427,20 +429,26 @@ export const gameAccountRouter = router({
           });
         });
 
-        if (!isLolGameAccount(createdAccount)) {
-          throw new Error("Created account is not a LoL account");
-        }
+				if (!isLolGameAccount(createdAccount)) {
+					throw new Error("Created account is not a LoL account");
+				}
 
-        return createdAccount;
-      } catch (error) {
-        if (isGameAccountUniqueViolation(error)) {
-          throw new TRPCError({ code: "CONFLICT" });
-        }
+				try {
+					await syncLatestLolMatchForAccount(createdAccount.id);
+				} catch (error) {
+					console.error("Failed to seed latest LoL match", { error });
+				}
 
-        throw error;
-      }
-    }),
-  addFaceitAccount: protectedProcedure
+				return createdAccount;
+			} catch (error) {
+				if (isGameAccountUniqueViolation(error)) {
+					throw new TRPCError({ code: "CONFLICT" });
+				}
+
+				throw error;
+			}
+		}),
+	addFaceitAccount: protectedProcedure
     .input(
       z.object({
         externalId: z.string().min(1, "Faceit ID is required"),

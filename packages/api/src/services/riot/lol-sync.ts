@@ -2,8 +2,19 @@ import { and, eq } from "drizzle-orm";
 
 import { db, GAMES, matches, matchParticipants } from "@repo/db";
 
-import { getChampionIconUrl, getParticipantCs } from "../helper";
-import type { MatchParticipantInsert, MatchResponse } from "./types";
+import type { MatchParticipantInsert, MatchResponse, RiotParticipant } from "./types";
+
+function getParticipantCs(participant: RiotParticipant) {
+	return (
+		(participant.totalMinionsKilled ?? 0) +
+		(participant.neutralMinionsKilled ?? 0)
+	);
+}
+
+function getChampionIconUrl(championName: string) {
+	const version = "16.4.1";
+	return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championName}.png`;
+}
 
 export async function mapRiotMatchToDb(
   riotMatch: MatchResponse,
