@@ -1,17 +1,18 @@
-import ConnectedAccountCard from "@/src/components/profile/ConnectedAccountCard";
-import type { GameAccount } from "@repo/types";
 import { View } from "react-native";
 
+import type { GameAccount } from "@repo/types";
+import ConnectedAccountCard from "@/src/components/profile/ConnectedAccountCard";
+
 export default function ConnectedAccounts({
-	gameAccounts,
+  gameAccounts,
 }: {
-	gameAccounts: GameAccount[];
+  gameAccounts: GameAccount[];
 }) {
-	return (
-		<View className="flex flex-col gap-4">
-			{gameAccounts.map((gameAccount) => (
-				<ConnectedAccountCard key={gameAccount.id} gameAccount={gameAccount} />
-			))}
-		</View>
-	);
+  return (
+    <View className="flex flex-col gap-4">
+      {gameAccounts.map((gameAccount) => (
+        <ConnectedAccountCard key={gameAccount.id} gameAccount={gameAccount} />
+      ))}
+    </View>
+  );
 }

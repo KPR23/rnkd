@@ -1,43 +1,43 @@
 {
-	"expo": {
-		"name": "Rnkd",
-		"slug": "rnkd",
-		"orientation": "portrait",
-		"icon": "./assets/rnkd.png",
-		"userInterfaceStyle": "dark",
-		"scheme": "rnkd",
-		"splash": {
-			"image": "./assets/rnkd.png",
-			"resizeMode": "contain",
-			"backgroundColor": "#131013"
-		},
-		"ios": {
-			"supportsTablet": true,
-			"bundleIdentifier": "com.rnkd.mobile",
-			"infoPlist": {
-				"ITSAppUsesNonExemptEncryption": false
-			}
-		},
-		"android": {
-			"adaptiveIcon": {
-				"backgroundColor": "#E6F4FE",
-				"foregroundImage": "./assets/android-icon-foreground.png",
-				"backgroundImage": "./assets/android-icon-background.png",
-				"monochromeImage": "./assets/android-icon-monochrome.png"
-			},
-			"predictiveBackGestureEnabled": false,
-			"package": "com.rnkd.mobile"
-		},
-		"web": {
-			"favicon": "./assets/favicon.png"
-		},
-		"plugins": ["expo-secure-store", "expo-router", "expo-web-browser"],
-		"extra": {
-			"router": {},
-			"eas": {
-				"projectId": "967fbb12-b65e-423a-a314-43f6554a9023"
-			}
-		},
-		"owner": "kpr23"
-	}
+  "expo": {
+    "name": "Rnkd",
+    "slug": "rnkd",
+    "orientation": "portrait",
+    "icon": "./assets/rnkd.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "rnkd",
+    "splash": {
+      "image": "./assets/rnkd.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#131013"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rnkd.mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.rnkd.mobile"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": ["expo-secure-store", "expo-router", "expo-web-browser"],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "967fbb12-b65e-423a-a314-43f6554a9023"
+      }
+    },
+    "owner": "kpr23"
+  }
 }

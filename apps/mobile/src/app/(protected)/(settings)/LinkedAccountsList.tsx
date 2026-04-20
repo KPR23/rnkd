@@ -1,20 +1,21 @@
-import LinkedAccountCard from "@/src/app/(protected)/(settings)/LinkedAccountCard";
-import { GameAccount } from "@repo/types";
 import { Text, View } from "react-native";
 
+import { GameAccount } from "@repo/types";
+import LinkedAccountCard from "@/src/app/(protected)/(settings)/LinkedAccountCard";
+
 export default function LinkedAccountsList({
-	linkedAccounts,
+  linkedAccounts,
 }: {
-	linkedAccounts: GameAccount[];
+  linkedAccounts: GameAccount[];
 }) {
-	return (
-		<View className="flex flex-col gap-2">
-			{linkedAccounts.map((linkedAccount) => (
-				<LinkedAccountCard
-					key={linkedAccount.id}
-					linkedAccount={linkedAccount}
-				/>
-			))}
-		</View>
-	);
+  return (
+    <View className="flex flex-col gap-2">
+      {linkedAccounts.map((linkedAccount) => (
+        <LinkedAccountCard
+          key={linkedAccount.id}
+          linkedAccount={linkedAccount}
+        />
+      ))}
+    </View>
+  );
 }

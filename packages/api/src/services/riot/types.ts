@@ -1,93 +1,93 @@
 import { matches, matchParticipants } from "@repo/db";
 import {
-	RIOT_PLATFORM_ROUTE,
-	RIOT_REGIONAL_ROUTE,
-	type RiotPlatformRoute,
-	type RiotRegionalRoute,
+  RIOT_PLATFORM_ROUTE,
+  RIOT_REGIONAL_ROUTE,
+  type RiotPlatformRoute,
+  type RiotRegionalRoute,
 } from "@repo/types";
 
 export {
-	RIOT_REGIONAL_ROUTE,
-	RIOT_PLATFORM_ROUTE,
-	type RiotRegionalRoute,
-	type RiotPlatformRoute,
+  RIOT_REGIONAL_ROUTE,
+  RIOT_PLATFORM_ROUTE,
+  type RiotRegionalRoute,
+  type RiotPlatformRoute,
 };
 
 export const RIOT_QUEUE_IDS = [
-	400, 420, 430, 440, 450, 700, 720, 900, 1400, 1700, 1900, 2000, 2010, 2020,
+  400, 420, 430, 440, 450, 700, 720, 900, 1400, 1700, 1900, 2000, 2010, 2020,
 ] as const;
 export type QueueType = (typeof RIOT_QUEUE_IDS)[number];
 
 export type MatchResponse = {
-	metadata: {
-		dataVersion: string;
-		matchId: string;
-		participants: string[];
-	};
-	info: {
-		endOfGameResult: string;
-		gameCreation: number;
-		gameDuration: number;
-		gameEndTimestamp: number;
-		gameId: number;
-		gameMode: string;
-		gameName: string;
-		gameStartTimestamp: number;
-		gameType: string;
-		gameVersion: string;
-		mapId: number;
-		platformId: string;
-		queueId: number;
-		tournamentCode: string;
-		participants: RiotParticipant[];
-		teams: RiotTeam[];
-	};
+  metadata: {
+    dataVersion: string;
+    matchId: string;
+    participants: string[];
+  };
+  info: {
+    endOfGameResult: string;
+    gameCreation: number;
+    gameDuration: number;
+    gameEndTimestamp: number;
+    gameId: number;
+    gameMode: string;
+    gameName: string;
+    gameStartTimestamp: number;
+    gameType: string;
+    gameVersion: string;
+    mapId: number;
+    platformId: string;
+    queueId: number;
+    tournamentCode: string;
+    participants: RiotParticipant[];
+    teams: RiotTeam[];
+  };
 };
 
 export type RiotParticipant = {
-	puuid: string;
-	teamId: number;
-	win: boolean;
-	kills: number;
-	deaths: number;
-	assists: number;
-	championId: number;
-	championName: string;
-	teamPosition: string;
-	individualPosition: string;
-	timePlayed: number;
-	totalMinionsKilled?: number;
-	neutralMinionsKilled?: number;
-	[key: string]: unknown;
+  puuid: string;
+  teamId: number;
+  win: boolean;
+  kills: number;
+  deaths: number;
+  assists: number;
+  championId: number;
+  championName: string;
+  teamPosition: string;
+  individualPosition: string;
+  timePlayed: number;
+  totalMinionsKilled?: number;
+  neutralMinionsKilled?: number;
+  [key: string]: unknown;
 };
 
 export type RiotTeam = {
-	teamId: number;
-	win: boolean;
-	bans: {
-		championId: number;
-		pickTurn: number;
-	}[];
-	objectives: {
-		champion?: {
-			first: boolean;
-			kills: number;
-		};
-		dragon?: {
-			first: boolean;
-			kills: number;
-		};
-		tower?: {
-			first: boolean;
-			kills: number;
-		};
-		[key: string]:
-			| {
-					first: boolean;
-					kills: number;
-			  }
-			| undefined;
-	};
+  teamId: number;
+  win: boolean;
+  bans: {
+    championId: number;
+    pickTurn: number;
+  }[];
+  objectives: {
+    champion?: {
+      first: boolean;
+      kills: number;
+    };
+    dragon?: {
+      first: boolean;
+      kills: number;
+    };
+    tower?: {
+      first: boolean;
+      kills: number;
+    };
+    [key: string]:
+      | {
+          first: boolean;
+          kills: number;
+        }
+      | undefined;
+  };
 };
 
 export type Match = typeof matches.$inferSelect;
@@ -97,22 +97,22 @@ export type MatchParticipant = typeof matchParticipants.$inferSelect;
 export type MatchParticipantInsert = typeof matchParticipants.$inferInsert;
 
 export type LeagueEntryDTO = {
-	leagueId: string;
-	puuid: string;
-	queueType: string;
-	tier: string;
-	rank: string;
-	leaguePoints: number;
-	wins: number;
-	losses: number;
-	hotStreak: boolean;
-	veteran: boolean;
-	freshBlood: boolean;
-	inactive: boolean;
-	miniSeries?: {
-		losses: number;
-		progress: string;
-		target: number;
-		wins: number;
-	} | null;
+  leagueId: string;
+  puuid: string;
+  queueType: string;
+  tier: string;
+  rank: string;
+  leaguePoints: number;
+  wins: number;
+  losses: number;
+  hotStreak: boolean;
+  veteran: boolean;
+  freshBlood: boolean;
+  inactive: boolean;
+  miniSeries?: {
+    losses: number;
+    progress: string;
+    target: number;
+    wins: number;
+  } | null;
 };

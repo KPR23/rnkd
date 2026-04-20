@@ -1,6 +1,6 @@
-import { db, friendships, gameAccounts, GAMES } from "@repo/db";
 import { and, eq, inArray, or } from "drizzle-orm";
-import type { RiotParticipant } from "./riot/types";
+
+import { db, friendships, gameAccounts, GAMES } from "@repo/db";
 
 export async function getLolAccountsOfFriends(userId: string) {
 	const accepted = await db
@@ -35,18 +35,4 @@ export async function getLolAccountsOfFriends(userId: string) {
 		);
 
 	return rows.map((r) => r.account);
-}
-
-export function getParticipantCs(participant: RiotParticipant) {
-	return (
-		(participant.totalMinionsKilled ?? 0) +
-		(participant.neutralMinionsKilled ?? 0)
-	);
-}
-
-export function getChampionIconUrl(championName: string) {
-	//TODO
-	const version = "16.4.1";
-
-	return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championName}.png`;
 }

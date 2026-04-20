@@ -1,31 +1,31 @@
 {
-	"$schema": "https://turborepo.dev/schema.json",
-	"ui": "tui",
-	"tasks": {
-		"build": {
-			"dependsOn": ["^build"],
-			"inputs": ["$TURBO_DEFAULT$", ".env*"],
-			"outputs": [".next/**", "!.next/cache/**"],
-			"env": [
-				"BETTER_AUTH_SECRET",
-				"BETTER_AUTH_URL",
-				"DATABASE_URL",
-				"POSTGRES_URL",
-				"OAUTH_GITHUB_CLIENT_ID",
-				"OAUTH_GITHUB_CLIENT_SECRET",
-				"NODE_ENV",
-				"RIOT_API_KEY"
-			]
-		},
-		"lint": {
-			"dependsOn": ["^lint"]
-		},
-		"check-types": {
-			"dependsOn": ["^check-types"]
-		},
-		"dev": {
-			"cache": false,
-			"persistent": true
-		}
-	}
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": [
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "DATABASE_URL",
+        "POSTGRES_URL",
+        "OAUTH_GITHUB_CLIENT_ID",
+        "OAUTH_GITHUB_CLIENT_SECRET",
+        "NODE_ENV",
+        "RIOT_API_KEY"
+      ]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
 }
