@@ -13,7 +13,10 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     OAUTH_GITHUB_CLIENT_ID: z.string(),
     OAUTH_GITHUB_CLIENT_SECRET: z.string(),
+    OAUTH_FACEIT_CLIENT_ID: z.string(),
+    OAUTH_FACEIT_CLIENT_SECRET: z.string(),
     RIOT_API_KEY: z.string(),
+    FACEIT_API_KEY: z.string(),
   },
 
   clientPrefix: "EXPO_PUBLIC_",

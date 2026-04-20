@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 
 import { db, gameAccounts, GAMES } from "@repo/db";
 
-import { getLolAccountsOfFriends } from "../friend-game-accounts";
+import { getLolAccountsOfFriends } from "../social/friend-game-accounts";
 import { assertRiotRegion } from "./helper";
 import { mapRiotMatchToDb } from "./lol-sync";
 import { getMatchById, getMatchIdsByPuuid } from "./riot-client";
