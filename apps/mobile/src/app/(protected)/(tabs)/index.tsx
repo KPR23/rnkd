@@ -25,7 +25,7 @@ export default function HomeTab() {
     <View className="bg-background flex-1 items-center justify-center px-6">
       <Text className="font-sans-semibold mb-2 text-2xl text-white">Rnkd</Text>
       <Text className="text-center font-sans text-slate-200">
-        {JSON.stringify(user.data)}
+        Logged in as {user.data?.name}
       </Text>
     </View>
   );
