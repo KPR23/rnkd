@@ -1,25 +1,19 @@
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 import {
-  RIOT_PLATFORM_LABEL,
-  RIOT_PLATFORM_ROUTE,
   RIOT_PLATFORM_TO_REGIONAL_ROUTE,
   type RiotPlatformRoute,
 } from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import Button from "@/src/components/Button";
 import CustomModal from "@/src/components/Modal";
-import Tabs from "@/src/components/Tabs";
 import { trpc } from "@/src/utils/trpc";
 
-type GameChoice = "lol" | "faceit";
+import FaceitAccountForm from "./FaceitAccountForm";
+import LolAccountForm from "./LolAccountForm";
+
+type GameChoice = "lol" | "cs2_faceit";
 
 function mapMutationError(error: { message: string; data?: unknown }) {
   const data = error.data as { code?: string } | null | undefined;
@@ -125,7 +119,7 @@ export default function AddLinkedAccountModal({
     >
       <View className="flex flex-col gap-6">
         <View className="flex flex-row gap-2">
-          {(["lol", "faceit"] as const).map((g) => (
+          {(["lol", "cs2_faceit"] as const).map((g) => (
             <TouchableOpacity
               key={g}
               activeOpacity={0.7}
@@ -151,89 +145,22 @@ export default function AddLinkedAccountModal({
         </View>
 
         {game === "lol" ? (
-          <View className="flex flex-col gap-3">
-            <View>
-              <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
-                Summoner name
-              </Text>
-              <TextInput
-                placeholder="e.g. Faker"
-                placeholderTextColor={colors.gray}
-                className="border-border bg-card text-text border px-3 py-3"
-                autoCapitalize="none"
-                autoCorrect={false}
-                spellCheck={false}
-                autoComplete="off"
-                value={gameName}
-                onChangeText={setGameName}
-                editable={!isPending}
-              />
-            </View>
-            <View>
-              <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
-                Tag line
-              </Text>
-              <TextInput
-                placeholder="e.g. KR1"
-                placeholderTextColor={colors.gray}
-                className="border-border bg-card text-text border px-3 py-3"
-                autoCapitalize="none"
-                autoCorrect={false}
-                spellCheck={false}
-                autoComplete="off"
-                value={tagLine}
-                onChangeText={setTagLine}
-                editable={!isPending}
-              />
-            </View>
-            <View>
-              <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
-                Platform
-              </Text>
-              <View className="flex flex-row flex-wrap gap-2">
-                {RIOT_PLATFORM_ROUTE.map((p) => (
-                  <TouchableOpacity
-                    key={p}
-                    activeOpacity={0.7}
-                    disabled={isPending}
-                    onPress={() => setPlatform(p)}
-                    className={`border px-3 py-2 ${
-                      platform === p
-                        ? "border-primary bg-primary/10"
-                        : "border-border"
-                    }`}
-                  >
-                    <Text
-                      className={`font-sans-medium text-xs ${
-                        platform === p ? "text-text" : "text-text-secondary"
-                      }`}
-                    >
-                      {RIOT_PLATFORM_LABEL[p]}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </View>
-        ) : (
-          <View>
-            <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
-              Faceit nickname
-            </Text>
-            <TextInput
-              placeholder="e.g. m0NESY"
-              placeholderTextColor={colors.gray}
-              className="border-border bg-card text-text border px-3 py-3"
-              autoCapitalize="none"
-              autoCorrect={false}
-              spellCheck={false}
-              autoComplete="off"
-              value={faceitId}
-              onChangeText={setFaceitId}
-              editable={!isPending}
-            />
-          </View>
-        )}
+          <LolAccountForm
+            gameName={gameName}
+            tagLine={tagLine}
+            platform={platform}
+            isPending={isPending}
+            setGameName={setGameName}
+            setTagLine={setTagLine}
+            setPlatform={setPlatform}
+          />
+        ) : game === "cs2_faceit" ? (
+          <FaceitAccountForm
+            faceitId={faceitId}
+            isPending={isPending}
+            setFaceitId={setFaceitId}
+          />
+        ) : null}
       </View>
     </CustomModal>
   );

@@ -1,4 +1,4 @@
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Button, Text, TextInput, View } from "react-native";
 
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
@@ -8,6 +8,11 @@ export default function HomeTab() {
   const user = trpc.user.getCurrentUser.useQuery(undefined, {
     enabled: !!session,
   });
+  const player = trpc.faceit.getFaceitPlayer.useQuery({
+    nickname: "KPR23",
+  });
+
+  console.log(JSON.stringify(player.data));
 
   if (isPending) {
     return (
