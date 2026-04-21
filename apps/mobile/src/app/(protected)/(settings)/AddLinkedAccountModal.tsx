@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 import {
+  GAMES,
+  type GameId,
   RIOT_PLATFORM_TO_REGIONAL_ROUTE,
   type RiotPlatformRoute,
 } from "@repo/types";
@@ -12,8 +14,6 @@ import { trpc } from "@/src/utils/trpc";
 
 import FaceitAccountForm from "./FaceitAccountForm";
 import LolAccountForm from "./LolAccountForm";
-
-type GameChoice = "lol" | "cs2_faceit";
 
 function mapMutationError(error: { message: string; data?: unknown }) {
   const data = error.data as { code?: string } | null | undefined;
@@ -32,7 +32,7 @@ export default function AddLinkedAccountModal({
   onClose: () => void;
 }) {
   const utils = trpc.useUtils();
-  const [game, setGame] = useState<GameChoice>("lol");
+  const [game, setGame] = useState<GameId>(GAMES.LOL);
   const [gameName, setGameName] = useState("");
   const [tagLine, setTagLine] = useState("");
   const [platform, setPlatform] = useState<RiotPlatformRoute>("euw1");
@@ -40,7 +40,7 @@ export default function AddLinkedAccountModal({
   const [formError, setFormError] = useState<string | null>(null);
 
   const reset = () => {
-    setGame("lol");
+    setGame(GAMES.LOL);
     setGameName("");
     setTagLine("");
     setPlatform("euw1");
@@ -76,7 +76,7 @@ export default function AddLinkedAccountModal({
 
   const submit = () => {
     setFormError(null);
-    if (game === "lol") {
+    if (game === GAMES.LOL) {
       addLol({
         gameName: gameName.trim(),
         tagLine: tagLine.trim(),
@@ -88,7 +88,7 @@ export default function AddLinkedAccountModal({
   };
 
   const disabledCondition =
-    isPending || formError || game === "lol"
+    isPending || formError || game === GAMES.LOL
       ? !gameName.trim() || !tagLine.trim()
       : !faceitId.trim();
 
@@ -119,7 +119,7 @@ export default function AddLinkedAccountModal({
     >
       <View className="flex flex-col gap-6">
         <View className="flex flex-row gap-2">
-          {(["lol", "cs2_faceit"] as const).map((g) => (
+          {([GAMES.LOL, GAMES.CS2_FACEIT] as const).map((g) => (
             <TouchableOpacity
               key={g}
               activeOpacity={0.7}
@@ -138,13 +138,13 @@ export default function AddLinkedAccountModal({
                   game === g ? "text-text" : "text-text-secondary"
                 }`}
               >
-                {g === "lol" ? "League of Legends" : "Counter-Strike 2"}
+                {g === GAMES.LOL ? "League of Legends" : "Counter-Strike 2"}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {game === "lol" ? (
+        {game === GAMES.LOL ? (
           <LolAccountForm
             gameName={gameName}
             tagLine={tagLine}
@@ -154,7 +154,7 @@ export default function AddLinkedAccountModal({
             setTagLine={setTagLine}
             setPlatform={setPlatform}
           />
-        ) : game === "cs2_faceit" ? (
+        ) : game === GAMES.CS2_FACEIT ? (
           <FaceitAccountForm
             faceitId={faceitId}
             isPending={isPending}
