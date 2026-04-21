@@ -8,11 +8,6 @@ export default function HomeTab() {
   const user = trpc.user.getCurrentUser.useQuery(undefined, {
     enabled: !!session,
   });
-  const player = trpc.faceit.getFaceitPlayer.useQuery({
-    nickname: "KPR23",
-  });
-
-  console.log(JSON.stringify(player.data));
 
   if (isPending) {
     return (

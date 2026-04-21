@@ -3,15 +3,15 @@ import { Text, TextInput, View } from "react-native";
 import { colors } from "@repo/ui/colors";
 
 type FaceitAccountFormProps = {
-  faceitId: string;
+  faceitNickname: string;
   isPending: boolean;
-  setFaceitId: (value: string) => void;
+  setFaceitNickname: (value: string) => void;
 };
 
 export default function FaceitAccountForm({
-  faceitId,
+  faceitNickname,
   isPending,
-  setFaceitId,
+  setFaceitNickname,
 }: FaceitAccountFormProps) {
   return (
     <View>
@@ -26,8 +26,8 @@ export default function FaceitAccountForm({
         autoCorrect={false}
         spellCheck={false}
         autoComplete="off"
-        value={faceitId}
-        onChangeText={setFaceitId}
+        value={faceitNickname}
+        onChangeText={setFaceitNickname}
         editable={!isPending}
       />
     </View>

@@ -3,8 +3,8 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 import {
   GAMES,
-  type GameId,
   RIOT_PLATFORM_TO_REGIONAL_ROUTE,
+  type GameId,
   type RiotPlatformRoute,
 } from "@repo/types";
 import { colors } from "@repo/ui/colors";
@@ -36,15 +36,16 @@ export default function AddLinkedAccountModal({
   const [gameName, setGameName] = useState("");
   const [tagLine, setTagLine] = useState("");
   const [platform, setPlatform] = useState<RiotPlatformRoute>("euw1");
-  const [faceitId, setFaceitId] = useState("");
+  const [faceitNickname, setFaceitNickname] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const [step, setStep] = useState<"input" | "confirm">("input");
 
   const reset = () => {
     setGame(GAMES.LOL);
     setGameName("");
     setTagLine("");
     setPlatform("euw1");
-    setFaceitId("");
+    setFaceitNickname("");
     setFormError(null);
   };
 
@@ -52,6 +53,15 @@ export default function AddLinkedAccountModal({
     reset();
     onClose();
   };
+
+  const { data: faceitPlayer } = trpc.faceit.getFaceitPlayer.useQuery(
+    {
+      nickname: faceitNickname,
+    },
+    {
+      enabled: step === "confirm" && !!faceitNickname,
+    },
+  );
 
   const { mutate: addLol, isPending: isLolPending } =
     trpc.gameAccount.addLolAccount.useMutation({
@@ -74,7 +84,7 @@ export default function AddLinkedAccountModal({
   const isPending = isLolPending || isFaceitPending;
   const region = RIOT_PLATFORM_TO_REGIONAL_ROUTE[platform];
 
-  const submit = () => {
+  const handleSubmit = () => {
     setFormError(null);
     if (game === GAMES.LOL) {
       addLol({
@@ -83,14 +93,52 @@ export default function AddLinkedAccountModal({
         region,
       });
     } else {
-      addFaceit({ externalId: faceitId.trim() });
+      addFaceit({ externalId: faceitNickname.trim() });
     }
   };
+
+  const handleContinue = () => {
+    setStep("confirm");
+  };
+
+  const renderInputStep = () => {
+    if (game === GAMES.LOL) {
+      return (
+        <LolAccountForm
+          gameName={gameName}
+          tagLine={tagLine}
+          platform={platform}
+          isPending={isPending}
+          setGameName={setGameName}
+          setTagLine={setTagLine}
+          setPlatform={setPlatform}
+        />
+      );
+    }
+
+    if (game === GAMES.CS2_FACEIT) {
+      return (
+        <FaceitAccountForm
+          faceitNickname={faceitNickname}
+          isPending={isPending}
+          setFaceitNickname={setFaceitNickname}
+        />
+      );
+    }
+
+    return null;
+  };
+
+  const renderConfirmStep = () => {
+    return null;
+  };
+
+  const modalBody = step === "input" ? renderInputStep() : renderConfirmStep();
 
   const disabledCondition =
     isPending || formError || game === GAMES.LOL
       ? !gameName.trim() || !tagLine.trim()
-      : !faceitId.trim();
+      : !faceitNickname.trim();
 
   return (
     <CustomModal
@@ -109,8 +157,8 @@ export default function AddLinkedAccountModal({
           ) : (
             <Button
               variant="primary"
-              actionText="Connect"
-              onPress={submit}
+              actionText={step === "input" ? "Continue" : "Connect"}
+              onPress={step === "input" ? handleContinue : handleSubmit}
               disabled={disabledCondition}
             />
           )}
@@ -118,49 +166,34 @@ export default function AddLinkedAccountModal({
       }
     >
       <View className="flex flex-col gap-6">
-        <View className="flex flex-row gap-2">
-          {([GAMES.LOL, GAMES.CS2_FACEIT] as const).map((g) => (
-            <TouchableOpacity
-              key={g}
-              activeOpacity={0.7}
-              onPress={() => {
-                if (isPending) return;
-                setGame(g);
-                setFormError(null);
-              }}
-              disabled={isPending}
-              className={`flex-1 border px-3 py-2.5 ${
-                game === g ? "border-primary bg-primary/10" : "border-border"
-              }`}
-            >
-              <Text
-                className={`font-sans-medium text-center text-sm ${
-                  game === g ? "text-text" : "text-text-secondary"
+        {step === "input" && (
+          <View className="flex flex-row gap-2">
+            {([GAMES.LOL, GAMES.CS2_FACEIT] as const).map((g) => (
+              <TouchableOpacity
+                key={g}
+                activeOpacity={0.7}
+                onPress={() => {
+                  if (isPending) return;
+                  setGame(g);
+                  setFormError(null);
+                }}
+                disabled={isPending}
+                className={`flex-1 border px-3 py-2.5 ${
+                  game === g ? "border-primary bg-primary/10" : "border-border"
                 }`}
               >
-                {g === GAMES.LOL ? "League of Legends" : "Counter-Strike 2"}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {game === GAMES.LOL ? (
-          <LolAccountForm
-            gameName={gameName}
-            tagLine={tagLine}
-            platform={platform}
-            isPending={isPending}
-            setGameName={setGameName}
-            setTagLine={setTagLine}
-            setPlatform={setPlatform}
-          />
-        ) : game === GAMES.CS2_FACEIT ? (
-          <FaceitAccountForm
-            faceitId={faceitId}
-            isPending={isPending}
-            setFaceitId={setFaceitId}
-          />
-        ) : null}
+                <Text
+                  className={`font-sans-medium text-center text-sm ${
+                    game === g ? "text-text" : "text-text-secondary"
+                  }`}
+                >
+                  {g === GAMES.LOL ? "League of Legends" : "Counter-Strike 2"}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+        {modalBody}
       </View>
     </CustomModal>
   );
