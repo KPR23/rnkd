@@ -3,10 +3,11 @@ export type FaceitPlayer = {
   nickname: string;
   avatar: string;
   country: string;
-  faceit_url: string;
-  skill_level: number;
   games: Record<string, FaceitGameInfo>;
   membership_type: string;
+  steam_nickname?: string;
+  verified: boolean;
+  activated_at?: string;
 };
 
 export type FaceitGameInfo = {

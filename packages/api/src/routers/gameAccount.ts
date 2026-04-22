@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import z from "zod";
 
 import {
+  cs2FaceitRankedEntries,
   cs2FaceitGameAccountProfiles,
   db,
   gameAccounts,
@@ -19,6 +20,7 @@ import {
   type RiotRegionalRoute,
 } from "@repo/types";
 
+import { getFaceitPlayer } from "../services/faceit/faceit-client";
 import { isValidPlatformRoute } from "../services/riot/helper";
 import { syncLatestLolMatchForAccount } from "../services/riot/lol-latest-match-sync";
 import { syncLolForAccount } from "../services/riot/lol-sync-runner";
@@ -364,17 +366,17 @@ export const gameAccountRouter = router({
 
       try {
         const createdAccount = await db.transaction(async (tx) => {
-					const [gameAccount] = await tx
-						.insert(gameAccounts)
-						.values({
-							id: crypto.randomUUID(),
-							userId: ctx.session.user.id,
-							gameId: GAMES.LOL,
-							externalId: riotAccount.puuid,
-							lastSyncedAt: null,
-							isTracked: true,
-						})
-						.returning();
+          const [gameAccount] = await tx
+            .insert(gameAccounts)
+            .values({
+              id: crypto.randomUUID(),
+              userId: ctx.session.user.id,
+              gameId: GAMES.LOL,
+              externalId: riotAccount.puuid,
+              lastSyncedAt: null,
+              isTracked: true,
+            })
+            .returning();
 
           if (!gameAccount) {
             throw new Error("Failed to create LoL game account");
@@ -429,26 +431,26 @@ export const gameAccountRouter = router({
           });
         });
 
-				if (!isLolGameAccount(createdAccount)) {
-					throw new Error("Created account is not a LoL account");
-				}
+        if (!isLolGameAccount(createdAccount)) {
+          throw new Error("Created account is not a LoL account");
+        }
 
-				try {
-					await syncLatestLolMatchForAccount(createdAccount.id);
-				} catch (error) {
-					console.error("Failed to seed latest LoL match", { error });
-				}
+        try {
+          await syncLatestLolMatchForAccount(createdAccount.id);
+        } catch (error) {
+          console.error("Failed to seed latest LoL match", { error });
+        }
 
-				return createdAccount;
-			} catch (error) {
-				if (isGameAccountUniqueViolation(error)) {
-					throw new TRPCError({ code: "CONFLICT" });
-				}
+        return createdAccount;
+      } catch (error) {
+        if (isGameAccountUniqueViolation(error)) {
+          throw new TRPCError({ code: "CONFLICT" });
+        }
 
-				throw error;
-			}
-		}),
-	addFaceitAccount: protectedProcedure
+        throw error;
+      }
+    }),
+  addFaceitAccount: protectedProcedure
     .input(
       z.object({
         externalId: z.string().min(1, "Faceit ID is required"),
@@ -456,6 +458,14 @@ export const gameAccountRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       try {
+        const player = await getFaceitPlayer(input.externalId);
+
+        if (!player) {
+          throw new Error("Failed to get Faceit player");
+        }
+
+        const syncedAt = new Date();
+
         return await db.transaction(async (tx) => {
           const [gameAccount] = await tx
             .insert(gameAccounts)
@@ -463,8 +473,9 @@ export const gameAccountRouter = router({
               id: crypto.randomUUID(),
               userId: ctx.session.user.id,
               gameId: GAMES.CS2_FACEIT,
-              externalId: input.externalId,
-              lastSyncedAt: new Date(),
+              externalId: player.player_id,
+              lastSyncedAt: syncedAt,
+              isTracked: true,
             })
             .returning();
 
@@ -477,12 +488,48 @@ export const gameAccountRouter = router({
             .values({
               gameAccountId: gameAccount.id,
               gameId: GAMES.CS2_FACEIT,
-              faceitNickname: input.externalId,
+              faceitNickname: player.nickname,
+              steamNickname: player.steam_nickname ?? null,
+              avatar: player.avatar ?? null,
+              country: player.country ?? null,
+              membershipType: player.membership_type ?? null,
+              verified: player.verified,
+              activatedAt: player.activated_at
+                ? new Date(player.activated_at)
+                : null,
+              syncedAt,
             })
             .returning();
 
+          const rankedEntries = Object.entries(player.games).flatMap(
+            ([gameKey, game]) => {
+              if (!game) {
+                return [];
+              }
+
+              return [
+                {
+                  gameAccountId: gameAccount.id,
+                  gameId: GAMES.CS2_FACEIT,
+                  gameKey,
+                  faceitElo: game.faceit_elo ?? null,
+                  skillLevel: game.skill_level ?? null,
+                  region: game.region ?? null,
+                  gamePlayerId: game.game_player_id ?? null,
+                  gamePlayerName: game.game_player_name ?? null,
+                  syncedAt,
+                },
+              ];
+            },
+          );
+
+          if (rankedEntries.length > 0) {
+            await tx.insert(cs2FaceitRankedEntries).values(rankedEntries);
+          }
+
           return mapGameAccountRecord({
             ...gameAccount,
+            lastSyncedAt: syncedAt,
             lolProfile: null,
             cs2FaceitProfile: cs2FaceitProfile ?? null,
           });

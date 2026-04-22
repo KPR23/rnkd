@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 
 import { account, session, user } from "./auth";
+import { cs2FaceitRankedEntries } from "./cs2-faceit-ranked";
 import {
   cs2FaceitGameAccountProfiles,
   gameAccounts,
@@ -43,6 +44,7 @@ export const gameAccountRelations = relations(
       fields: [gameAccounts.id],
       references: [cs2FaceitGameAccountProfiles.gameAccountId],
     }),
+    cs2FaceitRankedEntries: many(cs2FaceitRankedEntries),
     matchParticipants: many(matchParticipants),
     eloHistory: many(eloHistory),
     lolRankedEntries: many(lolRankedEntries),
@@ -65,6 +67,16 @@ export const cs2FaceitGameAccountProfileRelations = relations(
   ({ one }) => ({
     account: one(gameAccounts, {
       fields: [cs2FaceitGameAccountProfiles.gameAccountId],
+      references: [gameAccounts.id],
+    }),
+  }),
+);
+
+export const cs2FaceitRankedEntriesRelations = relations(
+  cs2FaceitRankedEntries,
+  ({ one }) => ({
+    account: one(gameAccounts, {
+      fields: [cs2FaceitRankedEntries.gameAccountId],
       references: [gameAccounts.id],
     }),
   }),

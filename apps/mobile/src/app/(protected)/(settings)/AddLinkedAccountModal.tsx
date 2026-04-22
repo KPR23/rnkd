@@ -54,14 +54,15 @@ export default function AddLinkedAccountModal({
     onClose();
   };
 
-  const { data: faceitPlayer } = trpc.faceit.getFaceitPlayer.useQuery(
-    {
-      nickname: faceitNickname,
-    },
-    {
-      enabled: step === "confirm" && !!faceitNickname,
-    },
-  );
+  const { data: faceitPlayer, isPending: isFaceitPlayerPending } =
+    trpc.faceit.getFaceitPlayer.useQuery(
+      {
+        nickname: faceitNickname,
+      },
+      {
+        enabled: step === "confirm" && !!faceitNickname,
+      },
+    );
 
   const { mutate: addLol, isPending: isLolPending } =
     trpc.gameAccount.addLolAccount.useMutation({
@@ -86,13 +87,16 @@ export default function AddLinkedAccountModal({
 
   const handleSubmit = () => {
     setFormError(null);
+
     if (game === GAMES.LOL) {
       addLol({
         gameName: gameName.trim(),
         tagLine: tagLine.trim(),
         region,
       });
-    } else {
+    }
+
+    if (game === GAMES.CS2_FACEIT) {
       addFaceit({ externalId: faceitNickname.trim() });
     }
   };
