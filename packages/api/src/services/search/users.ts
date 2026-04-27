@@ -12,7 +12,7 @@ function displayLabelForGameAccount(account: {
     gameName: string;
     tagLine: string;
   } | null;
-  cs2FaceitProfile?: {
+  cs2FaceitProfile: {
     faceitNickname: string | null;
     steamNickname: string | null;
   } | null;
