@@ -3,8 +3,8 @@ import { and, eq } from "drizzle-orm";
 import z from "zod";
 
 import {
-  cs2FaceitRankedEntries,
   cs2FaceitGameAccountProfiles,
+  cs2FaceitRankedEntries,
   db,
   gameAccounts,
   GAMES,
@@ -58,6 +58,25 @@ type GameAccountRecord = typeof gameAccounts.$inferSelect & {
   lolProfile: typeof lolGameAccountProfiles.$inferSelect | null;
   cs2FaceitProfile: typeof cs2FaceitGameAccountProfiles.$inferSelect | null;
 };
+
+function getEpochMs(
+  value: Date | string | number | null | undefined,
+): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value.getTime();
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? null : parsed;
+}
 
 function mapGameAccountRecord(account: GameAccountRecord): GameAccount {
   const { lolProfile, cs2FaceitProfile, ...baseAccount } = account;
@@ -184,13 +203,25 @@ async function getNormalizedGameAccountsForUserId(
   userId: string,
   options: { refreshStaleLolProfiles: boolean },
 ) {
-  const accounts = await db.query.gameAccounts.findMany({
-    where: eq(gameAccounts.userId, userId),
-    with: {
-      lolProfile: true,
-      cs2FaceitProfile: true,
-    },
-  });
+  let accounts: GameAccountRecord[] = [];
+  try {
+    accounts = await db.query.gameAccounts.findMany({
+      where: eq(gameAccounts.userId, userId),
+      with: {
+        lolProfile: true,
+        cs2FaceitProfile: true,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to load game accounts for user", {
+      userId,
+      error,
+    });
+    return {
+      lol: [],
+      faceit: [],
+    };
+  }
 
   if (options.refreshStaleLolProfiles) {
     for (const account of accounts) {
@@ -198,10 +229,10 @@ async function getNormalizedGameAccountsForUserId(
         continue;
       }
 
+      const lastSyncedAtMs = getEpochMs(account.lastSyncedAt);
       const shouldRefresh =
-        !account.lastSyncedAt ||
-        Date.now() - account.lastSyncedAt.getTime() >
-          LOL_PROFILE_REFRESH_TTL_MS;
+        !lastSyncedAtMs ||
+        Date.now() - lastSyncedAtMs > LOL_PROFILE_REFRESH_TTL_MS;
       if (!shouldRefresh) continue;
 
       refreshLolAccountDataInBackground(
