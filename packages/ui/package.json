@@ -6,7 +6,8 @@
     "./lib/utils": "./lib/utils.ts",
     "./components/getInitialsForFallbackPhoto": "./components/getInitialsForFallbackPhoto.ts",
     "./*": "./components/ui/*.tsx",
-    "./colors": "./constants/colors.ts"
+    "./colors": "./constants/colors.ts",
+    "./faceit-level-badges": "./constants/faceit-level-badges.ts"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
