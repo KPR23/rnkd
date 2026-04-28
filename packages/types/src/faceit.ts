@@ -3,6 +3,7 @@ export type FaceitPlayer = {
   nickname: string;
   avatar: string;
   country: string;
+  friends_ids?: string[];
   games: Record<string, FaceitGameInfo>;
   membership_type: string;
   steam_nickname?: string;
@@ -16,4 +17,13 @@ export type FaceitGameInfo = {
   game_player_id: string;
   game_player_name: string;
   region: string;
+};
+
+export type FaceitSuggestedPlayer = {
+  player_id: string;
+  nickname: string;
+  avatar: string;
+  country: string;
+  steam_nickname?: string;
+  games: Record<string, FaceitGameInfo>;
 };
