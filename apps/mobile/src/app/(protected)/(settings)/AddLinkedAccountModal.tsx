@@ -8,6 +8,7 @@ import {
   type RiotPlatformRoute,
 } from "@repo/types";
 import { colors } from "@repo/ui/colors";
+import FaceitAccountPreviewCard from "@/src/app/(protected)/(settings)/FaceitAccountPreviewCard";
 import Button from "@/src/components/Button";
 import CustomModal from "@/src/components/Modal";
 import { trpc } from "@/src/utils/trpc";
@@ -47,6 +48,7 @@ export default function AddLinkedAccountModal({
     setPlatform("euw1");
     setFaceitNickname("");
     setFormError(null);
+    setStep("input");
   };
 
   const handleClose = () => {
@@ -134,6 +136,37 @@ export default function AddLinkedAccountModal({
   };
 
   const renderConfirmStep = () => {
+    if (game === GAMES.LOL) {
+      return (
+        <Text className="text-text-secondary text-sm">
+          Connect {gameName.trim()}#{tagLine.trim()}?
+        </Text>
+      );
+    }
+    if (game === GAMES.CS2_FACEIT) {
+      if (isFaceitPlayerPending) {
+        return <ActivityIndicator color={colors.text} />;
+      }
+
+      if (!faceitPlayer) {
+        return (
+          <Text className="text-destructive text-sm">
+            Faceit player not found.
+          </Text>
+        );
+      }
+
+      return (
+        <FaceitAccountPreviewCard
+          faceitPlayer={faceitPlayer}
+          onWrongAccountPress={() => {
+            setStep("input");
+            setFormError(null);
+          }}
+          isDisabled={isPending}
+        />
+      );
+    }
     return null;
   };
 
@@ -161,7 +194,9 @@ export default function AddLinkedAccountModal({
           ) : (
             <Button
               variant="primary"
-              actionText={step === "input" ? "Continue" : "Connect"}
+              actionText={
+                step === "input" ? "Continue" : "Connect this account"
+              }
               onPress={step === "input" ? handleContinue : handleSubmit}
               disabled={disabledCondition}
             />

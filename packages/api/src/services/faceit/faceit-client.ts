@@ -14,10 +14,13 @@ export async function getFaceitPlayer(
 ): Promise<FaceitPlayer | null> {
   const url = `${FACEIT_API_BASE}/players?nickname=${encodeURIComponent(nickname)}&game=cs2`;
 
-  const response = await fetch(url, { headers: headers() });
+  const response = await fetch(url, {
+    headers: headers(),
+    signal: AbortSignal.timeout(10_000),
+  });
 
   if (response.status === 404) return null;
-  console.log("LOG" + response.status);
+
   if (!response.ok)
     throw new Error(`FACEIT player lookup failed: ${response.status}`);
 
