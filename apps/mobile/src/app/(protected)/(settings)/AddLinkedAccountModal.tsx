@@ -7,6 +7,8 @@ import {
   View,
 } from "react-native";
 
+import { PlusIcon } from "phosphor-react-native";
+
 import {
   FaceitPlayer,
   FaceitSuggestedPlayer,
@@ -18,7 +20,6 @@ import {
 import { colors } from "@repo/ui/colors";
 import FaceitAccountPreviewCard from "@/src/app/(protected)/(settings)/FaceitAccountPreviewCard";
 import Button from "@/src/components/Button";
-import Frame from "@/src/components/Frame";
 import CustomModal from "@/src/components/Modal";
 import { trpc } from "@/src/utils/trpc";
 
@@ -320,86 +321,54 @@ export default function AddLinkedAccountModal({
   };
 
   const renderSuggestedPlayer = (player: FaceitSuggestedPlayer) => {
-    const playerLevel =
-      player.games.cs2?.skill_level ??
-      Object.values(player.games)[0]?.skill_level;
-    const playerElo =
-      player.games.cs2?.faceit_elo ??
-      Object.values(player.games)[0]?.faceit_elo;
-
     return (
       <View
         key={player.player_id}
-        className="border-border bg-dark/35 flex flex-row items-center gap-3 rounded-2xl border px-3 py-3"
+        className="flex flex-row items-stretch gap-3"
       >
-        <Image
-          source={{ uri: player.avatar }}
-          className="h-10 w-10 rounded-full"
-        />
-        <View className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <Text
-            className="text-text font-sans-semibold text-sm"
-            numberOfLines={1}
-          >
-            {player.nickname}
-          </Text>
-          <Text className="text-text-secondary font-sans-medium text-sm">
-            {player.country.toUpperCase()}
-          </Text>
+        <View className="min-w-0 flex-1">
+          <FaceitAccountPreviewCard faceitPlayer={player as FaceitPlayer} />
         </View>
-        <View className="border-border min-w-20 items-end rounded-xl border px-3 py-2">
-          <Text className="text-text-muted font-mono-medium text-[10px] uppercase">
-            ELO
-          </Text>
-          <Text className="text-text font-sans-semibold text-sm">
-            {playerElo ?? "-"}
-          </Text>
-          <Text className="text-text-secondary font-sans-medium text-xs">
-            Level {playerLevel ?? "-"}
-          </Text>
-        </View>
+        <TouchableOpacity
+          activeOpacity={0.75}
+          accessibilityLabel={`Invite ${player.nickname}`}
+          accessibilityRole="button"
+          className="border-border bg-card w-12 items-center justify-center border"
+          onPress={() => {}}
+        >
+          <PlusIcon size={20} color={colors.text} weight="bold" />
+        </TouchableOpacity>
       </View>
     );
   };
 
   const renderSuccessStep = () => {
     return (
-      <View className="flex flex-col gap-6">
-        <Frame className="items-start gap-4">
-          <View className="border-border bg-dark/40 w-full rounded-2xl border px-4 py-3">
-            <Text className="text-text font-mono-semibold text-xs uppercase">
-              Connected
-            </Text>
-            <Text className="text-text-secondary font-sans-medium mt-1 text-sm">
-              Your account is now linked. You can close this flow or review a
-              few Faceit players from your network.
-            </Text>
-          </View>
-          {linkedFaceitPlayer ? (
-            <FaceitAccountPreviewCard faceitPlayer={linkedFaceitPlayer} />
-          ) : null}
-        </Frame>
+      <View className="flex flex-col gap-8">
+        {linkedFaceitPlayer ? (
+          <FaceitAccountPreviewCard faceitPlayer={linkedFaceitPlayer} />
+        ) : null}
 
-        <Frame className="items-start gap-4">
-          <View className="gap-1">
-            <Text className="text-text font-sans-semibold text-lg">
-              Players worth tracking
+        <View className="gap-5">
+          <View className="gap-2">
+            <Text className="text-text-secondary font-sans-semibold text-xs uppercase">
+              Players worth adding
             </Text>
-            <Text className="text-text-secondary font-sans-medium text-sm">
-              A short shortlist from your Faceit network to help you start with
-              signal, not noise.
+            <Text className="text-text-muted font-sans-medium text-sm leading-5">
+              Suggested players from your Faceit friends list.
             </Text>
           </View>
+
           {isSuggestedPlayersPending ? (
-            <View className="w-full items-center py-8">
+            <View className="border-border bg-card w-full items-center border py-8">
               <ActivityIndicator color={colors.text} />
             </View>
           ) : suggestedPlayers?.length ? (
-            <View className="w-full gap-3">
+            <View className="w-full gap-4">
               {suggestedPlayers.map(renderSuggestedPlayer)}
             </View>
           ) : (
-            <View className="border-border bg-dark/35 w-full rounded-2xl border px-4 py-5">
+            <View className="border-border bg-card w-full border px-4 py-5">
               <Text className="text-text font-sans-semibold text-sm">
                 No suggestions yet
               </Text>
@@ -408,7 +377,7 @@ export default function AddLinkedAccountModal({
               </Text>
             </View>
           )}
-        </Frame>
+        </View>
       </View>
     );
   };

@@ -21,7 +21,7 @@ export default function FaceitAccountForm({
       <TextInput
         placeholder="e.g. m0NESY"
         placeholderTextColor={colors.gray}
-        className="border-border bg-card text-text border px-3 py-3"
+        className="border-border bg-card text-text h-12 border px-3"
         autoCapitalize="none"
         autoCorrect={false}
         spellCheck={false}
