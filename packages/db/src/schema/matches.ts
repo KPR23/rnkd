@@ -101,6 +101,7 @@ export const eloHistory = pgTable(
   "elo_history",
   {
     id: text("id").primaryKey(),
+    // Nullable for rating changes that are not tied to a played match, e.g. initial ratings.
     matchId: text("match_id").references(() => matches.id, {
       onDelete: "cascade",
     }),

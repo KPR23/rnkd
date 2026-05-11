@@ -1,4 +1,4 @@
-import { ilike, inArray, or } from "drizzle-orm";
+import { eq, ilike, or } from "drizzle-orm";
 
 import { db, gameAccounts, user } from "@repo/db";
 import { GAMES, type GameId, type SearchPlayerResult } from "@repo/types";
@@ -63,14 +63,20 @@ export async function searchUsers(
 
   const userIds = results.map((row) => row.id);
 
-  const gameAccountsResults = await db.query.gameAccounts.findMany({
-    where: inArray(gameAccounts.userId, userIds),
-    with: {
-      lolProfile: true,
-      cs2FaceitProfile: true,
-    },
-    limit: 2,
-  });
+  const gameAccountsResults = (
+    await Promise.all(
+      userIds.map((userId) =>
+        db.query.gameAccounts.findMany({
+          where: eq(gameAccounts.userId, userId),
+          with: {
+            lolProfile: true,
+            cs2FaceitProfile: true,
+          },
+          limit: 2,
+        }),
+      ),
+    )
+  ).flat();
 
   const gameAccountsByUserId = new Map<
     string,

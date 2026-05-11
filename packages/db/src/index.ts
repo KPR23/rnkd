@@ -19,3 +19,4 @@ globalForDb.__dbPool ??= pool;
 export const db = drizzle({ client: pool, schema });
 
 export * from "./schema/index";
+export { cs2FaceitRankedEntries } from "./schema/cs2-faceit-ranked";

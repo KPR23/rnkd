@@ -1,22 +1,44 @@
 import { Text, View } from "react-native";
 
-import { isLolGameAccount, type GameAccount } from "@repo/types";
+import {
+  GAMES,
+  isCs2FaceitGameAccount,
+  isLolGameAccount,
+  type GameAccount,
+} from "@repo/types";
 import { trpc } from "@/src/utils/trpc";
 
+import FaceitDisplayCard from "./FaceitDisplayCard";
 import RankDisplayCard from "./RankDisplayCard";
 
 type ProfileGameStatCardProps = {
   gameAccount: GameAccount;
 };
 
+function formatStat(n: number | null | undefined, digits = 2) {
+  if (n === null || n === undefined || Number.isNaN(n)) return "—";
+  return n.toFixed(digits);
+}
+
 export default function ProfileGameStatCard({
   gameAccount,
 }: ProfileGameStatCardProps) {
   const isLolAccount = isLolGameAccount(gameAccount);
-  const { data, isLoading } = trpc.gameAccount.getLolProfileDisplay.useQuery(
+  const isFaceitAccount = isCs2FaceitGameAccount(gameAccount);
+
+  const lolQuery = trpc.gameAccount.getLolProfileDisplay.useQuery(
     { gameAccountId: gameAccount.id },
     { enabled: isLolAccount },
   );
+
+  const faceitQuery = trpc.gameAccount.getCs2FaceitProfileDisplay.useQuery(
+    { gameAccountId: gameAccount.id },
+    { enabled: isFaceitAccount },
+  );
+
+  const data = isLolAccount ? lolQuery.data : undefined;
+  const faceitData = isFaceitAccount ? faceitQuery.data : undefined;
+  const isLoading = isLolAccount ? lolQuery.isLoading : faceitQuery.isLoading;
 
   const ranked = data?.ranked;
   const rankedWinRate = data?.rankedWinRate ?? 0;
@@ -29,13 +51,46 @@ export default function ProfileGameStatCard({
     data?.gameAccount.profile?.gameName &&
     data?.gameAccount.profile?.tagLine
       ? `${data.gameAccount.profile.gameName} #${data.gameAccount.profile.tagLine}`
-      : gameAccount.externalId.slice(0, 10);
+      : isFaceitAccount
+        ? [gameAccount.profile?.faceitNickname?.trim(), gameAccount.profile?.steamNickname?.trim()]
+            .filter(Boolean)
+            .join(" · ") ||
+          gameAccount.externalId.slice(0, 10)
+        : gameAccount.externalId.slice(0, 10);
 
-  const recentPerformanceValues: Record<string, string> = {
-    "avg kda": "—",
-    "avg cs/min": "—",
-    "kp%": "—",
-  };
+  const lolRp = data?.recentPerformance;
+  const lolRecentPerformanceValues: Record<string, string> = lolQuery.isLoading
+    ? { "avg kda": "…", "avg cs/min": "…", "kp%": "…" }
+    : {
+        "avg kda": formatStat(lolRp?.avgKda, 2),
+        "avg cs/min": formatStat(lolRp?.avgCsPerMin, 1),
+        "kp%": formatStat(lolRp?.kpPercent, 1),
+      };
+
+  const faceitRp = faceitData?.recentPerformance;
+  const faceitRecentPerformanceValues: Record<string, string> =
+    faceitQuery.isLoading
+      ? { "avg k/d": "…", "avg hs%": "…", adr: "…" }
+      : {
+          "avg k/d": formatStat(faceitRp?.avgKd, 2),
+          "avg hs%": formatStat(faceitRp?.avgHsPct, 1),
+          adr: formatStat(faceitRp?.avgAdr, 1),
+        };
+
+  const recentPerformanceValues =
+    gameAccount.gameId === GAMES.CS2_FACEIT
+      ? faceitRecentPerformanceValues
+      : lolRecentPerformanceValues;
+
+  const faceitRecent = faceitData?.recentRecord;
+  const faceitWrLine =
+    faceitRecent !== null &&
+    faceitRecent !== undefined &&
+    faceitRecent.played > 0
+      ? `${faceitRecent.winRate.toFixed(0)}%`
+      : faceitQuery.isLoading
+        ? "…"
+        : "—";
 
   return (
     <View className="flex w-full flex-col gap-4 px-3 pt-4 pb-3">
@@ -43,11 +98,29 @@ export default function ProfileGameStatCard({
         <Text className="font-sans-semibold text-text-muted text-[11px] uppercase">
           Overview
         </Text>
-        <RankDisplayCard
-          ranked={ranked}
-          accountLabel={accountLabel}
-          winRateLine={rankedWrLine}
-        />
+        {isFaceitAccount ? (
+          <FaceitDisplayCard
+            skillLevel={faceitData?.primaryRanked?.skillLevel ?? null}
+            faceitElo={faceitData?.primaryRanked?.faceitElo ?? null}
+            accountLabel={accountLabel}
+            recentWinRateLine={faceitWrLine}
+            recentRecord={
+              faceitRecent && faceitRecent.played > 0
+                ? {
+                    wins: faceitRecent.wins,
+                    losses: faceitRecent.losses,
+                  }
+                : null
+            }
+            isLoading={faceitQuery.isLoading}
+          />
+        ) : (
+          <RankDisplayCard
+            ranked={ranked}
+            accountLabel={accountLabel}
+            winRateLine={rankedWrLine}
+          />
+        )}
       </View>
       <View className="gap-2">
         <Text className="font-sans-semibold text-text-muted text-[11px] uppercase">

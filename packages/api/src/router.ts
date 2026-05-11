@@ -1,3 +1,4 @@
+import { faceitRouter } from "./routers/faceit";
 import { friendRouter } from "./routers/friend";
 import { gameRouter } from "./routers/game";
 import { gameAccountRouter } from "./routers/gameAccount";
@@ -12,6 +13,7 @@ export const appRouter = router({
   game: gameRouter,
   gameAccount: gameAccountRouter,
   riot: riotRouter,
+  faceit: faceitRouter,
   match: router({}),
   league: router({}),
   friend: friendRouter,

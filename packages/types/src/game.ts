@@ -1,5 +1,6 @@
 import type {
   cs2FaceitGameAccountProfiles,
+  cs2FaceitMatchPlayers,
   gameAccounts,
   games,
   lolGameAccountProfiles,
@@ -64,3 +65,10 @@ export type LolMatchHistoryRow = {
 };
 
 export type LolMatchHistory = LolMatchHistoryRow[];
+
+export type Cs2FaceitMatchHistoryRow = {
+  matches: typeof matches.$inferSelect;
+  cs2_faceit_match_players: typeof cs2FaceitMatchPlayers.$inferSelect;
+};
+
+export type Cs2FaceitMatchHistory = Cs2FaceitMatchHistoryRow[];

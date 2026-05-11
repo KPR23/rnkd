@@ -9,7 +9,6 @@ import {
   View,
 } from "react-native";
 
-import { Stack } from "expo-router";
 import { XIcon } from "phosphor-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -20,11 +19,13 @@ export default function CustomModal({
   visible,
   onClose,
   title,
+  headerCenter,
   footer,
 }: PropsWithChildren<{
   visible: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
+  headerCenter?: ReactNode;
   footer?: ReactNode;
 }>) {
   return (
@@ -41,9 +42,28 @@ export default function CustomModal({
           keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
         >
           <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
-            <View className="flex flex-row items-center justify-between px-6 py-4">
-              <Text className="text-text font-sans-bold text-lg">{title}</Text>
-              <TouchableOpacity activeOpacity={0.7} onPress={onClose}>
+            <View className="relative flex flex-row items-center justify-between px-6 py-4">
+              {title ? (
+                <Text className="text-text font-sans-bold z-10 text-lg">
+                  {title}
+                </Text>
+              ) : (
+                <View className="h-6 w-6" />
+              )}
+              {headerCenter ? (
+                <View className="absolute right-0 left-0 items-center">
+                  {headerCenter}
+                </View>
+              ) : null}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={onClose}
+                accessibilityLabel="Close modal"
+                accessibilityRole="button"
+                accessible
+                importantForAccessibility="yes"
+                className="z-10"
+              >
                 <XIcon size={24} color={colors.textMuted} weight="bold" />
               </TouchableOpacity>
             </View>

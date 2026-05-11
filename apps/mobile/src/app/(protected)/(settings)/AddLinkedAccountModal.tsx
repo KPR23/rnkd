@@ -1,25 +1,32 @@
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
+import { PlusIcon } from "phosphor-react-native";
+
 import {
-  RIOT_PLATFORM_LABEL,
-  RIOT_PLATFORM_ROUTE,
+  FaceitPlayer,
+  FaceitSuggestedPlayer,
+  GAMES,
   RIOT_PLATFORM_TO_REGIONAL_ROUTE,
+  type GameId,
   type RiotPlatformRoute,
 } from "@repo/types";
 import { colors } from "@repo/ui/colors";
+import FaceitAccountPreviewCard from "@/src/app/(protected)/(settings)/FaceitAccountPreviewCard";
 import Button from "@/src/components/Button";
 import CustomModal from "@/src/components/Modal";
-import Tabs from "@/src/components/Tabs";
 import { trpc } from "@/src/utils/trpc";
 
-type GameChoice = "lol" | "faceit";
+import FaceitAccountForm from "./FaceitAccountForm";
+import LolAccountForm from "./LolAccountForm";
+
+type ModalStep = "game" | "input" | "confirm" | "success";
 
 function mapMutationError(error: { message: string; data?: unknown }) {
   const data = error.data as { code?: string } | null | undefined;
@@ -30,6 +37,21 @@ function mapMutationError(error: { message: string; data?: unknown }) {
   return error.message;
 }
 
+function StepDots({ current, total }: { current: number; total: number }) {
+  return (
+    <View className="flex flex-row items-center justify-center gap-2">
+      {Array.from({ length: total }).map((_, index) => (
+        <View
+          key={index}
+          className={`h-2 rounded-full ${
+            index === current ? "bg-text w-2" : "bg-border w-2"
+          }`}
+        />
+      ))}
+    </View>
+  );
+}
+
 export default function AddLinkedAccountModal({
   visible,
   onClose,
@@ -38,26 +60,55 @@ export default function AddLinkedAccountModal({
   onClose: () => void;
 }) {
   const utils = trpc.useUtils();
-  const [game, setGame] = useState<GameChoice>("lol");
+  const [game, setGame] = useState<GameId>(GAMES.LOL);
   const [gameName, setGameName] = useState("");
   const [tagLine, setTagLine] = useState("");
   const [platform, setPlatform] = useState<RiotPlatformRoute>("euw1");
-  const [faceitId, setFaceitId] = useState("");
+  const [faceitNickname, setFaceitNickname] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const [step, setStep] = useState<ModalStep>("game");
+  const [linkedFaceitPlayer, setLinkedFaceitPlayer] =
+    useState<FaceitPlayer | null>(null);
 
   const reset = () => {
-    setGame("lol");
+    setGame(GAMES.LOL);
     setGameName("");
     setTagLine("");
     setPlatform("euw1");
-    setFaceitId("");
+    setFaceitNickname("");
     setFormError(null);
+    setStep("game");
+    setLinkedFaceitPlayer(null);
   };
 
   const handleClose = () => {
     reset();
     onClose();
   };
+
+  const { data: faceitPlayer, isPending: isFaceitPlayerPending } =
+    trpc.faceit.getFaceitPlayer.useQuery(
+      {
+        nickname: faceitNickname,
+      },
+      {
+        enabled: step === "confirm" && !!faceitNickname,
+      },
+    );
+
+  const { data: suggestedPlayers, isPending: isSuggestedPlayersPending } =
+    trpc.faceit.getSuggestedPlayers.useQuery(
+      {
+        playerId: linkedFaceitPlayer?.player_id ?? "",
+        limit: 3,
+      },
+      {
+        enabled:
+          step === "success" &&
+          game === GAMES.CS2_FACEIT &&
+          !!linkedFaceitPlayer?.player_id,
+      },
+    );
 
   const { mutate: addLol, isPending: isLolPending } =
     trpc.gameAccount.addLolAccount.useMutation({
@@ -72,168 +123,380 @@ export default function AddLinkedAccountModal({
     trpc.gameAccount.addFaceitAccount.useMutation({
       onSuccess: () => {
         void utils.gameAccount.getGameAccounts.invalidate();
-        handleClose();
+        setStep("success");
       },
       onError: (err) => setFormError(mapMutationError(err)),
     });
 
-  const isPending = isLolPending || isFaceitPending;
+  const isSubmitting = isLolPending || isFaceitPending;
   const region = RIOT_PLATFORM_TO_REGIONAL_ROUTE[platform];
+  const stepIndex =
+    step === "game" ? 0 : step === "input" ? 1 : step === "confirm" ? 2 : 3;
+  const stepCount = game === GAMES.CS2_FACEIT ? 4 : 3;
+  const stepCopy =
+    step === "game"
+      ? {
+          title: "Which account do you want to connect?",
+          description: "Start by choosing the game account you want to add.",
+        }
+      : step === "input"
+        ? {
+            title:
+              game === GAMES.CS2_FACEIT
+                ? "What is your Faceit nickname?"
+                : "What is your Riot ID?",
+            description:
+              game === GAMES.CS2_FACEIT
+                ? "Enter your Faceit nickname so we can find the right CS2 profile."
+                : "Enter the account details you want to track on RNKD.",
+          }
+        : step === "confirm"
+          ? game === GAMES.CS2_FACEIT
+            ? {
+                title: "Is this your Faceit account?",
+                description:
+                  "Review the profile below before we attach it to your RNKD identity.",
+              }
+            : {
+                title: "Ready to connect this account?",
+                description:
+                  "Review the details one last time before adding it to your profile.",
+              }
+          : {
+              title: "Your Faceit account is connected.",
+              description:
+                "Your account is ready to track. Discover players worth following to get started.",
+            };
 
-  const submit = () => {
+  const handleSubmit = () => {
     setFormError(null);
-    if (game === "lol") {
+
+    if (game === GAMES.LOL) {
+      const trimmedGameName = gameName.trim();
+      const trimmedTagLine = tagLine.trim();
+
+      if (trimmedGameName.length < 3 || trimmedGameName.length > 16) {
+        setFormError("Summoner name must be 3 to 16 characters.");
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9]{3,5}$/.test(trimmedTagLine)) {
+        setFormError("Tag line must be 3 to 5 letters or numbers.");
+        return;
+      }
+
       addLol({
-        gameName: gameName.trim(),
-        tagLine: tagLine.trim(),
+        gameName: trimmedGameName,
+        tagLine: trimmedTagLine,
         region,
       });
-    } else {
-      addFaceit({ externalId: faceitId.trim() });
+    }
+
+    if (game === GAMES.CS2_FACEIT) {
+      if (!faceitPlayer) {
+        setFormError("We couldn't verify this Faceit account.");
+        return;
+      }
+
+      setLinkedFaceitPlayer(faceitPlayer);
+      addFaceit({ externalId: faceitNickname.trim() });
     }
   };
 
-  const disabledCondition =
-    isPending || formError || game === "lol"
-      ? !gameName.trim() || !tagLine.trim()
-      : !faceitId.trim();
+  const handleContinue = () => {
+    setFormError(null);
+    setStep(step === "game" ? "input" : "confirm");
+  };
+
+  const handleSecondaryAction = () => {
+    setFormError(null);
+
+    if (step === "game") {
+      handleClose();
+      return;
+    }
+
+    if (step === "input") {
+      setStep("game");
+      return;
+    }
+
+    if (step === "confirm") {
+      setStep("input");
+      return;
+    }
+
+    reset();
+  };
+
+  const renderGameStep = () => {
+    return (
+      <View className="flex flex-col gap-3">
+        {([GAMES.LOL, GAMES.CS2_FACEIT] as const).map((g) => {
+          const isSelected = game === g;
+
+          return (
+            <TouchableOpacity
+              key={g}
+              activeOpacity={0.7}
+              onPress={() => {
+                if (isSubmitting) return;
+                setGame(g);
+                setFormError(null);
+              }}
+              disabled={isSubmitting}
+              className={`border px-4 py-4 ${
+                isSelected
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card"
+              }`}
+            >
+              <View className="flex flex-row items-center justify-between gap-3">
+                <View className="flex-1 gap-1">
+                  <Text
+                    className={`font-sans-semibold text-base ${
+                      isSelected ? "text-text" : "text-text-secondary"
+                    }`}
+                  >
+                    {g === GAMES.LOL ? "League of Legends" : "Counter-Strike 2"}
+                  </Text>
+                  <Text className="text-text-muted font-sans-medium text-sm">
+                    {g === GAMES.LOL
+                      ? "Connect your Riot account."
+                      : "Connect your Faceit profile."}
+                  </Text>
+                </View>
+                <View
+                  className={`h-3 w-3 rounded-full ${
+                    isSelected ? "bg-primary" : "bg-border"
+                  }`}
+                />
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  };
+
+  const renderInputStep = () => {
+    if (game === GAMES.LOL) {
+      return (
+        <LolAccountForm
+          gameName={gameName}
+          tagLine={tagLine}
+          platform={platform}
+          isPending={isSubmitting}
+          setGameName={setGameName}
+          setTagLine={setTagLine}
+          setPlatform={setPlatform}
+        />
+      );
+    }
+
+    if (game === GAMES.CS2_FACEIT) {
+      return (
+        <FaceitAccountForm
+          faceitNickname={faceitNickname}
+          isPending={isSubmitting}
+          setFaceitNickname={setFaceitNickname}
+        />
+      );
+    }
+
+    return null;
+  };
+
+  const renderConfirmStep = () => {
+    if (game === GAMES.LOL) {
+      return (
+        <Text className="text-text-secondary text-sm">
+          Connect {gameName.trim()}#{tagLine.trim()}?
+        </Text>
+      );
+    }
+    if (game === GAMES.CS2_FACEIT) {
+      if (isFaceitPlayerPending) {
+        return <ActivityIndicator color={colors.text} />;
+      }
+
+      if (!faceitPlayer) {
+        return (
+          <Text className="text-destructive text-sm">
+            Faceit player not found.
+          </Text>
+        );
+      }
+
+      return <FaceitAccountPreviewCard faceitPlayer={faceitPlayer} />;
+    }
+    return null;
+  };
+
+  const renderSuggestedPlayer = (player: FaceitSuggestedPlayer) => {
+    return (
+      <View
+        key={player.player_id}
+        className="flex flex-row items-stretch gap-3"
+      >
+        <View className="min-w-0 flex-1">
+          <FaceitAccountPreviewCard faceitPlayer={player as FaceitPlayer} />
+        </View>
+        <TouchableOpacity
+          activeOpacity={0.75}
+          accessibilityLabel={`Invite ${player.nickname}`}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: true }}
+          disabled
+          // TODO: Wire this to the invite player flow once friend invites are available.
+          className="border-border bg-card/60 w-12 items-center justify-center border opacity-50"
+        >
+          <PlusIcon size={20} color={colors.text} weight="bold" />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderSuccessStep = () => {
+    return (
+      <View className="flex flex-col gap-8">
+        {linkedFaceitPlayer ? (
+          <FaceitAccountPreviewCard faceitPlayer={linkedFaceitPlayer} />
+        ) : null}
+
+        <View className="gap-5">
+          <View className="gap-2">
+            <Text className="text-text-secondary font-sans-semibold text-xs uppercase">
+              Players worth adding
+            </Text>
+            <Text className="text-text-muted font-sans-medium text-sm leading-5">
+              Suggested players from your Faceit friends list.
+            </Text>
+          </View>
+
+          {isSuggestedPlayersPending ? (
+            <View className="border-border bg-card w-full items-center border py-8">
+              <ActivityIndicator color={colors.text} />
+            </View>
+          ) : suggestedPlayers?.length ? (
+            <View className="w-full gap-4">
+              {suggestedPlayers.map(renderSuggestedPlayer)}
+            </View>
+          ) : (
+            <View className="border-border bg-card w-full border px-4 py-5">
+              <Text className="text-text font-sans-semibold text-sm">
+                No suggestions yet
+              </Text>
+              <Text className="text-text-secondary font-sans-medium mt-1 text-sm">
+                {"We couldn't find any suggestions yet."}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const modalBody =
+    step === "game"
+      ? renderGameStep()
+      : step === "input"
+        ? renderInputStep()
+        : step === "confirm"
+          ? renderConfirmStep()
+          : renderSuccessStep();
+
+  const isInputInvalid =
+    game === GAMES.LOL
+      ? gameName.trim().length < 3 ||
+        gameName.trim().length > 16 ||
+        !/^[a-zA-Z0-9]{3,5}$/.test(tagLine.trim())
+      : !faceitNickname.trim();
+
+  const isConfirmDisabled =
+    isSubmitting ||
+    !!formError ||
+    (game === GAMES.LOL
+      ? gameName.trim().length < 3 ||
+        gameName.trim().length > 16 ||
+        !/^[a-zA-Z0-9]{3,5}$/.test(tagLine.trim())
+      : !faceitNickname.trim() || !faceitPlayer || isFaceitPlayerPending);
+
+  const primaryActionText =
+    step === "success"
+      ? "Close"
+      : step === "confirm"
+        ? "Connect this account"
+        : "Continue";
+
+  const secondaryActionText =
+    step === "game"
+      ? "Cancel"
+      : step === "input"
+        ? "Change game"
+        : step === "confirm"
+          ? game === GAMES.CS2_FACEIT
+            ? "This isn't my account"
+            : "Edit details"
+          : "Connect another account";
+
+  const footer = isSubmitting ? (
+    <View className="flex flex-col gap-3">
+      <View className="items-center py-2">
+        <ActivityIndicator color={colors.text} />
+      </View>
+    </View>
+  ) : (
+    <View className="flex flex-col gap-3">
+      {formError ? (
+        <Text className="text-destructive text-sm">{formError}</Text>
+      ) : null}
+      <View className="flex flex-col gap-3">
+        <Button
+          variant="primary"
+          actionText={primaryActionText}
+          onPress={
+            step === "success"
+              ? handleClose
+              : step === "confirm"
+                ? handleSubmit
+                : handleContinue
+          }
+          disabled={
+            step === "success" || step === "game"
+              ? false
+              : step === "input"
+                ? isInputInvalid
+                : isConfirmDisabled
+          }
+        />
+        <Button
+          variant="secondary"
+          actionText={secondaryActionText}
+          onPress={handleSecondaryAction}
+        />
+      </View>
+    </View>
+  );
 
   return (
     <CustomModal
       visible={visible}
       onClose={handleClose}
-      title="Connect new account"
-      footer={
-        <View className="flex flex-col gap-3">
-          {formError ? (
-            <Text className="text-destructive text-sm">{formError}</Text>
-          ) : null}
-          {isPending ? (
-            <View className="items-center py-2">
-              <ActivityIndicator color={colors.text} />
-            </View>
-          ) : (
-            <Button
-              variant="primary"
-              actionText="Connect"
-              onPress={submit}
-              disabled={disabledCondition}
-            />
-          )}
-        </View>
-      }
+      headerCenter={<StepDots current={stepIndex} total={stepCount} />}
+      footer={footer}
     >
-      <View className="flex flex-col gap-6">
-        <View className="flex flex-row gap-2">
-          {(["lol", "faceit"] as const).map((g) => (
-            <TouchableOpacity
-              key={g}
-              activeOpacity={0.7}
-              onPress={() => {
-                if (isPending) return;
-                setGame(g);
-                setFormError(null);
-              }}
-              disabled={isPending}
-              className={`flex-1 border px-3 py-2.5 ${
-                game === g ? "border-primary bg-primary/10" : "border-border"
-              }`}
-            >
-              <Text
-                className={`font-sans-medium text-center text-sm ${
-                  game === g ? "text-text" : "text-text-secondary"
-                }`}
-              >
-                {g === "lol" ? "League of Legends" : "Counter-Strike 2"}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      <View className="flex flex-col gap-8 pt-1">
+        <View className="gap-3">
+          <Text className="text-text font-sans-bold text-3xl leading-tight">
+            {stepCopy.title}
+          </Text>
+          <Text className="text-text-secondary font-sans-medium text-base leading-6">
+            {stepCopy.description}
+          </Text>
         </View>
 
-        {game === "lol" ? (
-          <View className="flex flex-col gap-3">
-            <View>
-              <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
-                Summoner name
-              </Text>
-              <TextInput
-                placeholder="e.g. Faker"
-                placeholderTextColor={colors.gray}
-                className="border-border bg-card text-text border px-3 py-3"
-                autoCapitalize="none"
-                autoCorrect={false}
-                spellCheck={false}
-                autoComplete="off"
-                value={gameName}
-                onChangeText={setGameName}
-                editable={!isPending}
-              />
-            </View>
-            <View>
-              <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
-                Tag line
-              </Text>
-              <TextInput
-                placeholder="e.g. KR1"
-                placeholderTextColor={colors.gray}
-                className="border-border bg-card text-text border px-3 py-3"
-                autoCapitalize="none"
-                autoCorrect={false}
-                spellCheck={false}
-                autoComplete="off"
-                value={tagLine}
-                onChangeText={setTagLine}
-                editable={!isPending}
-              />
-            </View>
-            <View>
-              <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
-                Platform
-              </Text>
-              <View className="flex flex-row flex-wrap gap-2">
-                {RIOT_PLATFORM_ROUTE.map((p) => (
-                  <TouchableOpacity
-                    key={p}
-                    activeOpacity={0.7}
-                    disabled={isPending}
-                    onPress={() => setPlatform(p)}
-                    className={`border px-3 py-2 ${
-                      platform === p
-                        ? "border-primary bg-primary/10"
-                        : "border-border"
-                    }`}
-                  >
-                    <Text
-                      className={`font-sans-medium text-xs ${
-                        platform === p ? "text-text" : "text-text-secondary"
-                      }`}
-                    >
-                      {RIOT_PLATFORM_LABEL[p]}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </View>
-        ) : (
-          <View>
-            <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
-              Faceit nickname
-            </Text>
-            <TextInput
-              placeholder="e.g. m0NESY"
-              placeholderTextColor={colors.gray}
-              className="border-border bg-card text-text border px-3 py-3"
-              autoCapitalize="none"
-              autoCorrect={false}
-              spellCheck={false}
-              autoComplete="off"
-              value={faceitId}
-              onChangeText={setFaceitId}
-              editable={!isPending}
-            />
-          </View>
-        )}
+        <View className="pt-1">{modalBody}</View>
       </View>
     </CustomModal>
   );

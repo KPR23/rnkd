@@ -15,6 +15,34 @@
       "when": 1775586000000,
       "tag": "0001_backfill_lol_tracked",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775586900000,
+      "tag": "0002_add_faceit_avatar",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777276937213,
+      "tag": "0003_bizarre_mattie_franklin",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778508466079,
+      "tag": "0004_faceit_match_players",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778508560000,
+      "tag": "0005_seed_cs2_faceit_game",
+      "breakpoints": true
     }
   ]
 }

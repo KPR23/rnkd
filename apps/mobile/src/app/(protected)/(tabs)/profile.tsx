@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 import { useRouter } from "expo-router";
@@ -10,13 +11,28 @@ import { trpc } from "@/src/utils/trpc";
 
 export default function ProfileTab() {
   const router = useRouter();
+  const utils = trpc.useUtils();
+  const syncPull = trpc.gameAccount.syncMyTrackedLatestMatches.useMutation();
+
   const { data: session, isPending } = useAuth();
-  const { data: gameAccounts } = trpc.gameAccount.getGameAccounts.useQuery(
-    undefined,
-    {
-      enabled: !!session,
-    },
-  );
+
+  const {
+    data: gameAccounts,
+    refetch: refetchGameAccounts,
+    isFetching: gameAccountsFetching,
+  } = trpc.gameAccount.getGameAccounts.useQuery(undefined, {
+    enabled: !!session,
+  });
+
+  const handlePullRefresh = useCallback(async () => {
+    try {
+      await syncPull.mutateAsync();
+      await utils.gameAccount.invalidate();
+      await refetchGameAccounts();
+    } catch (error) {
+      console.error("Profile pull-to-refresh failed", error);
+    }
+  }, [refetchGameAccounts, syncPull, utils.gameAccount]);
 
   if (isPending) {
     return (
@@ -36,6 +52,10 @@ export default function ProfileTab() {
         user={session.user}
         isOwnProfile
         title="Profile"
+        pullToRefresh={{
+          refreshing: syncPull.isPending || gameAccountsFetching,
+          onRefresh: handlePullRefresh,
+        }}
         gameAccounts={[
           ...(gameAccounts?.lol ?? []),
           ...(gameAccounts?.faceit ?? []),

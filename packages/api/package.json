@@ -13,7 +13,9 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "lol-sync:latest": "tsx src/jobs/run-lol-latest-match-sync.ts"
+    "lol-sync:latest": "tsx src/jobs/run-lol-latest-match-sync.ts",
+    "faceit-sync:latest": "tsx src/jobs/run-faceit-latest-match-sync.ts",
+    "match-sync:latest": "tsx src/jobs/run-lol-latest-match-sync.ts && tsx src/jobs/run-faceit-latest-match-sync.ts"
   },
   "dependencies": {
     "@trpc/server": "^11.12.0",

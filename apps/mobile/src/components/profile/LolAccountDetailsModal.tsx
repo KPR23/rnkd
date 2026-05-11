@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { ActivityIndicator, Image, Text, View } from "react-native";
 
 import { LolGameAccount } from "@repo/types";
@@ -6,6 +7,7 @@ import Frame from "@/src/components/Frame";
 import LolMatchHistoryCard from "@/src/components/profile/LolMatchHistoryCard";
 import RankDisplayCard from "@/src/components/RankDisplayCard";
 import { DRAGON_CDN_VERSION } from "@/src/lib/constants/riotApiUrl";
+import { useLinkedAccountRefresh } from "@/src/lib/hooks/useLinkedAccountRefresh";
 import { trpc } from "@/src/utils/trpc";
 
 function queueWinRateLine(
@@ -27,6 +29,19 @@ export default function LolAccountDetailsModal({
 }: {
   gameAccount: LolGameAccount;
 }) {
+  const utils = trpc.useUtils();
+
+  const lolRefetchLocal = useCallback(async () => {
+    await Promise.all([
+      utils.gameAccount.getLolProfileDisplay.refetch({
+        gameAccountId: gameAccount.id,
+      }),
+      utils.riot.getMatchHistory.refetch({
+        gameAccountId: gameAccount.id,
+      }),
+    ]);
+  }, [gameAccount.id, utils]);
+
   const { data, isLoading } = trpc.gameAccount.getLolProfileDisplay.useQuery({
     gameAccountId: gameAccount.id,
   });
@@ -34,6 +49,10 @@ export default function LolAccountDetailsModal({
     trpc.riot.getMatchHistory.useQuery({
       gameAccountId: gameAccount.id,
     });
+
+  const { refresh, isRefreshing } = useLinkedAccountRefresh(gameAccount.id, {
+    refetchLocal: lolRefetchLocal,
+  });
 
   const soloWr = queueWinRateLine(data?.rankedSoloDuo, isLoading);
   const flexWr = queueWinRateLine(data?.rankedFlex, isLoading);
@@ -78,7 +97,8 @@ export default function LolAccountDetailsModal({
             variant="primary"
             actionText="Refresh"
             className="h-9! flex-1"
-            onPress={() => void 0}
+            disabled={isRefreshing}
+            onPress={() => void refresh()}
           />
         </View>
       </Frame>

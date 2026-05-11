@@ -14,7 +14,10 @@
         "OAUTH_GITHUB_CLIENT_ID",
         "OAUTH_GITHUB_CLIENT_SECRET",
         "NODE_ENV",
-        "RIOT_API_KEY"
+        "RIOT_API_KEY",
+        "FACEIT_API_KEY",
+        "OAUTH_FACEIT_CLIENT_ID",
+        "OAUTH_FACEIT_CLIENT_SECRET"
       ]
     },
     "lint": {

@@ -9,6 +9,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["src", "lib", "components"],
+  "include": ["src", "lib", "components", "constants"],
   "exclude": ["node_modules", "dist"]
 }

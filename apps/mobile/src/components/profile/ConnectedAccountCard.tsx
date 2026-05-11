@@ -61,33 +61,39 @@ function Cs2FaceitAccountBody({
   const faceitNick =
     gameAccount.profile?.faceitNickname?.trim() || gameAccount.externalId;
   const steamNick = gameAccount.profile?.steamNickname?.trim();
+  const avatarUri = gameAccount.profile?.avatar?.trim();
 
   return (
-    <View className="flex min-w-0 flex-1 flex-row items-center gap-3">
-      <View className="flex min-w-0 flex-1 flex-col gap-2">
-        <View className="flex flex-col gap-0.5">
-          <Text className="font-mono-medium text-text-secondary text-xs uppercase">
-            Faceit
-          </Text>
+    <View className="flex flex-row items-center gap-3">
+      {avatarUri ? (
+        <Image
+          source={{ uri: avatarUri }}
+          className="h-12 w-12 rounded-full"
+        />
+      ) : (
+        <View className="bg-border flex h-12 w-12 items-center justify-center rounded-full">
           <Text
-            className="font-sans-semibold text-text text-base"
+            className="font-mono-semibold text-text-muted text-[11px] uppercase"
             numberOfLines={1}
           >
-            {faceitNick}
+            {faceitNick.slice(0, 2)}
           </Text>
         </View>
+      )}
+      <View className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <Text
+          className="font-sans-semibold text-text text-base"
+          numberOfLines={1}
+        >
+          {faceitNick}
+        </Text>
         {steamNick ? (
-          <View className="flex flex-col gap-0.5">
-            <Text className="font-mono-medium text-text-secondary text-xs uppercase">
-              Steam
-            </Text>
-            <Text
-              className="font-sans-semibold text-text-secondary text-sm"
-              numberOfLines={1}
-            >
-              {steamNick}
-            </Text>
-          </View>
+          <Text
+            className="font-mono-semibold text-text-secondary text-xs"
+            numberOfLines={1}
+          >
+            {steamNick}
+          </Text>
         ) : null}
       </View>
     </View>

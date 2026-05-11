@@ -120,6 +120,13 @@ export const cs2FaceitGameAccountProfiles = pgTable(
     gameId: text("game_id").notNull().default(GAMES.CS2_FACEIT),
     faceitNickname: text("faceit_nickname"),
     steamNickname: text("steam_nickname"),
+    avatar: text("avatar"),
+    country: text("country"),
+    membershipType: text("membership_type"),
+    verified: boolean("verified"),
+    activatedAt: timestamp("activated_at"),
+    syncedAt: timestamp("synced_at"),
+    lastFaceitMatchId: text("last_faceit_match_id"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

@@ -4,6 +4,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
+      "@repo/ui/faceit-level-badges": [
+        "../../packages/ui/constants/faceit-level-badges.ts"
+      ],
       "@repo/ui/*": ["../../packages/ui/components/ui/*"]
     },
     "plugins": [
