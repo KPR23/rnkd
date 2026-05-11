@@ -4,20 +4,49 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export function normalizeFaceitStatKey(rawKey: string): string {
+  return rawKey.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+export function coerceFaceitNumericValue(
+  rawVal: string | number | null | undefined,
+): number | null {
+  if (rawVal === null || rawVal === undefined || rawVal === "") return null;
+  if (typeof rawVal === "number" && Number.isFinite(rawVal)) {
+    return rawVal;
+  }
+  const s = String(rawVal).replace("%", "").trim();
+  const n = Number(s.replace(/,/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+
+export function numericFromPlayerStatsPreferredKeys(
+  stats: Record<string, string | number | null | undefined>,
+  preferredKeysInOrder: readonly string[],
+): number | null {
+  const valueByNormalizedKey = new Map<string, number>();
+  for (const [rawKey, rawVal] of Object.entries(stats)) {
+    const n = coerceFaceitNumericValue(rawVal);
+    if (n === null) continue;
+    const nk = normalizeFaceitStatKey(rawKey);
+    if (!valueByNormalizedKey.has(nk)) valueByNormalizedKey.set(nk, n);
+  }
+  for (const desired of preferredKeysInOrder) {
+    const candidate = valueByNormalizedKey.get(normalizeFaceitStatKey(desired));
+    if (candidate !== undefined && Number.isFinite(candidate)) return candidate;
+  }
+  return null;
+}
+
 export function parseNumericStat(
   stats: Record<string, string | number | null | undefined>,
   keyMatchers: RegExp[],
 ): number | null {
   for (const [rawKey, rawVal] of Object.entries(stats)) {
     if (rawVal === null || rawVal === undefined || rawVal === "") continue;
-    const key = rawKey.toLowerCase().replace(/\s+/g, " ").trim();
+    const key = normalizeFaceitStatKey(rawKey);
     if (!keyMatchers.some((re) => re.test(key))) continue;
-    if (typeof rawVal === "number" && Number.isFinite(rawVal)) {
-      return rawVal;
-    }
-    const s = String(rawVal).replace("%", "").trim();
-    const n = Number(s.replace(/,/g, ""));
-    return Number.isFinite(n) ? n : null;
+    return coerceFaceitNumericValue(rawVal);
   }
   return null;
 }
@@ -70,26 +99,43 @@ export function mergePlayerStatsFromRounds(
         }
 
         const kills =
-          parseNumericStat(stats, [/kills$/i, /^kills$/i, /total kills/i]) ?? 0;
-        const deaths = parseNumericStat(stats, [/deaths$/i, /^deaths$/i]) ?? 0;
+          numericFromPlayerStatsPreferredKeys(stats, [
+            "Kills",
+            "Enemy kills",
+            "Total kills",
+          ]) ?? 0;
+        const deaths =
+          numericFromPlayerStatsPreferredKeys(stats, [
+            "Deaths",
+            "Total deaths",
+          ]) ?? 0;
         const assists =
-          parseNumericStat(stats, [/assists$/i, /^assists$/i]) ?? 0;
+          numericFromPlayerStatsPreferredKeys(stats, [
+            "Assists",
+            "Total assists",
+          ]) ?? 0;
 
         const adr =
-          parseNumericStat(stats, [
-            /^adr$/i,
-            /average damage/i,
-            /dmg\/round/i,
-          ]) ?? parseNumericStat(stats, [/damage per round/i]);
+          numericFromPlayerStatsPreferredKeys(stats, [
+            "ADR",
+            "Average damage per round",
+            "Avg damage",
+            "Damage / Round",
+            "Damage per round",
+          ]) ??
+          parseNumericStat(stats, [/^dmg\/round$/i]) ??
+          null;
         if (adr !== null && adr > 0) {
           entry.adrSamples.push(adr);
         }
 
-        const hsPct = parseNumericStat(stats, [
-          /headshots?/i,
-          /hs%/i,
-          /headshot%/i,
-        ]);
+        const hsPct =
+          numericFromPlayerStatsPreferredKeys(stats, [
+            "Headshots %",
+            "Headshots percentage",
+            "Headshot %",
+            "HS %",
+          ]) ?? parseNumericStat(stats, [/hs %$/i, /^hs$/i]);
         if (hsPct !== null) {
           entry.headshotPctSamples.push(hsPct);
         }

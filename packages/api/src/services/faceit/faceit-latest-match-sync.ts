@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import {
   cs2FaceitGameAccountProfiles,
@@ -155,11 +155,23 @@ export async function mapFaceitMatchToDb(
       await tx
         .insert(cs2FaceitMatchPlayers)
         .values(rows)
-        .onConflictDoNothing({
+        .onConflictDoUpdate({
           target: [
             cs2FaceitMatchPlayers.matchId,
             cs2FaceitMatchPlayers.gameAccountId,
           ],
+          set: {
+            team: sql.raw(`excluded.${cs2FaceitMatchPlayers.team.name}`),
+            win: sql.raw(`excluded.${cs2FaceitMatchPlayers.win.name}`),
+            kills: sql.raw(`excluded.${cs2FaceitMatchPlayers.kills.name}`),
+            deaths: sql.raw(`excluded.${cs2FaceitMatchPlayers.deaths.name}`),
+            assists: sql.raw(`excluded.${cs2FaceitMatchPlayers.assists.name}`),
+            adr: sql.raw(`excluded.${cs2FaceitMatchPlayers.adr.name}`),
+            headshotPct: sql.raw(
+              `excluded.${cs2FaceitMatchPlayers.headshotPct.name}`,
+            ),
+            rawStats: sql.raw(`excluded.${cs2FaceitMatchPlayers.rawStats.name}`),
+          },
         });
     }
 
@@ -167,7 +179,6 @@ export async function mapFaceitMatchToDb(
   });
 }
 
-/** Fill `matches` + `cs2_faceit_match_players` for this account for every CS2 page item that is still missing a participant row. */
 async function syncMissingFaceitMatchesFromHistoryPage(params: {
   gameAccountId: string;
   historyItemsNewestFirst: { match_id: string }[];

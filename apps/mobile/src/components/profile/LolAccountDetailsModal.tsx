@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { ActivityIndicator, Image, Text, View } from "react-native";
 
 import { LolGameAccount } from "@repo/types";
@@ -28,6 +29,19 @@ export default function LolAccountDetailsModal({
 }: {
   gameAccount: LolGameAccount;
 }) {
+  const utils = trpc.useUtils();
+
+  const lolRefetchLocal = useCallback(async () => {
+    await Promise.all([
+      utils.gameAccount.getLolProfileDisplay.refetch({
+        gameAccountId: gameAccount.id,
+      }),
+      utils.riot.getMatchHistory.refetch({
+        gameAccountId: gameAccount.id,
+      }),
+    ]);
+  }, [gameAccount.id, utils]);
+
   const { data, isLoading } = trpc.gameAccount.getLolProfileDisplay.useQuery({
     gameAccountId: gameAccount.id,
   });
@@ -38,6 +52,7 @@ export default function LolAccountDetailsModal({
 
   const { refresh, isRefreshing } = useLinkedAccountRefresh(
     gameAccount.userId,
+    { refetchLocal: lolRefetchLocal },
   );
 
   const soloWr = queueWinRateLine(data?.rankedSoloDuo, isLoading);

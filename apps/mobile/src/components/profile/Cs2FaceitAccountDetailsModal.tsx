@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { ActivityIndicator, Image, Text, View } from "react-native";
 
 import { Cs2FaceitGameAccount } from "@repo/types";
@@ -13,6 +14,19 @@ export default function Cs2FaceitAccountDetailsModal({
 }: {
   gameAccount: Cs2FaceitGameAccount;
 }) {
+  const utils = trpc.useUtils();
+
+  const faceitRefetchLocal = useCallback(async () => {
+    await Promise.all([
+      utils.gameAccount.getCs2FaceitProfileDisplay.refetch({
+        gameAccountId: gameAccount.id,
+      }),
+      utils.gameAccount.getCs2FaceitMatchHistory.refetch({
+        gameAccountId: gameAccount.id,
+      }),
+    ]);
+  }, [gameAccount.id, utils]);
+
   const { data: display, isLoading: isDisplayLoading } =
     trpc.gameAccount.getCs2FaceitProfileDisplay.useQuery({
       gameAccountId: gameAccount.id,
@@ -26,6 +40,7 @@ export default function Cs2FaceitAccountDetailsModal({
 
   const { refresh, isRefreshing } = useLinkedAccountRefresh(
     gameAccount.userId,
+    { refetchLocal: faceitRefetchLocal },
   );
 
   const faceitNick =
