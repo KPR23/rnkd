@@ -21,7 +21,7 @@ export async function persistFaceitSnapshotInTx(
 ) {
   const { gameAccountId, player, syncedAt } = params;
 
-  await tx
+  const updatedProfiles = await tx
     .update(cs2FaceitGameAccountProfiles)
     .set({
       faceitNickname: player.nickname,
@@ -33,7 +33,14 @@ export async function persistFaceitSnapshotInTx(
       activatedAt: player.activated_at ? new Date(player.activated_at) : null,
       syncedAt,
     })
-    .where(eq(cs2FaceitGameAccountProfiles.gameAccountId, gameAccountId));
+    .where(eq(cs2FaceitGameAccountProfiles.gameAccountId, gameAccountId))
+    .returning({ gameAccountId: cs2FaceitGameAccountProfiles.gameAccountId });
+
+  if (updatedProfiles.length === 0) {
+    throw new Error(
+      `FACEIT profile not found for game account ${gameAccountId}`,
+    );
+  }
 
   await tx
     .delete(cs2FaceitRankedEntries)
@@ -67,8 +74,13 @@ export async function persistFaceitSnapshotInTx(
     await tx.insert(cs2FaceitRankedEntries).values(rankedEntries);
   }
 
-  await tx
+  const updatedAccounts = await tx
     .update(gameAccounts)
     .set({ lastSyncedAt: syncedAt })
-    .where(eq(gameAccounts.id, gameAccountId));
+    .where(eq(gameAccounts.id, gameAccountId))
+    .returning({ id: gameAccounts.id });
+
+  if (updatedAccounts.length === 0) {
+    throw new Error(`Game account not found for FACEIT sync ${gameAccountId}`);
+  }
 }

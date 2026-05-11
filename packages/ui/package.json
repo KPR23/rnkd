@@ -5,9 +5,9 @@
   "exports": {
     "./lib/utils": "./lib/utils.ts",
     "./components/getInitialsForFallbackPhoto": "./components/getInitialsForFallbackPhoto.ts",
-    "./*": "./components/ui/*.tsx",
     "./colors": "./constants/colors.ts",
-    "./faceit-level-badges": "./constants/faceit-level-badges.ts"
+    "./faceit-level-badges": "./constants/faceit-level-badges.ts",
+    "./*": "./components/ui/*.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",

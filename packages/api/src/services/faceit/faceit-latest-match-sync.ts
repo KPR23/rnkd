@@ -1,16 +1,16 @@
 import { and, eq } from "drizzle-orm";
 
 import {
+  cs2FaceitGameAccountProfiles,
   cs2FaceitMatchPlayers,
   db,
   gameAccounts,
   GAMES,
   matches,
-  cs2FaceitGameAccountProfiles,
 } from "@repo/db";
-
 import type { FaceitMatchDetail, FaceitMatchStatsPayload } from "@repo/types";
 
+import { getCs2FaceitAccountsOfFriends } from "../social/friend-game-accounts";
 import {
   getFaceitMatch,
   getFaceitMatchStats,
@@ -19,11 +19,10 @@ import {
 } from "./faceit-client";
 import { persistFaceitSnapshotInTx } from "./faceit-profile-persist";
 import {
-  mergePlayerStatsFromRounds,
   buildFaceitPlayerTeamIndex,
   didPlayerWin,
+  mergePlayerStatsFromRounds,
 } from "./faceit-stats";
-import { getCs2FaceitAccountsOfFriends } from "../social/friend-game-accounts";
 
 const FACEIT_POLL_DELAY_MS = 200;
 
@@ -46,12 +45,22 @@ function matchScoresFromDetail(detail: FaceitMatchDetail): {
   team1Score: number;
   team2Score: number;
 } {
-  const scoreVals = Object.values(detail.results?.score ?? {}).filter(
-    (v): v is number => typeof v === "number" && Number.isFinite(v),
-  );
+  const score = detail.results?.score ?? {};
+  const teamKeys = Object.keys(detail.teams ?? {});
+  const team1Key = score.faction1 !== undefined ? "faction1" : teamKeys[0];
+  const team2Key = score.faction2 !== undefined ? "faction2" : teamKeys[1];
+  const team1Score = team1Key ? score[team1Key] : undefined;
+  const team2Score = team2Key ? score[team2Key] : undefined;
+
   return {
-    team1Score: scoreVals[0] ?? 0,
-    team2Score: scoreVals[1] ?? 0,
+    team1Score:
+      typeof team1Score === "number" && Number.isFinite(team1Score)
+        ? team1Score
+        : 0,
+    team2Score:
+      typeof team2Score === "number" && Number.isFinite(team2Score)
+        ? team2Score
+        : 0,
   };
 }
 
@@ -113,19 +122,17 @@ export async function mapFaceitMatchToDb(
     for (const [faceitPlayerId, gameAccountId] of Object.entries(
       knownPlayersByFaceitId,
     )) {
-      const agg = merged.get(faceitPlayerId);
-      if (!agg) continue;
-
       const team = teamByPlayerId[faceitPlayerId];
       if (team === undefined) continue;
 
+      const agg = merged.get(faceitPlayerId);
       const win = didPlayerWin(detail, team);
       const adrAvg =
-        agg.adrSamples.length > 0
+        agg && agg.adrSamples.length > 0
           ? agg.adrSamples.reduce((a, b) => a + b, 0) / agg.adrSamples.length
           : null;
       const hsAvg =
-        agg.headshotPctSamples.length > 0
+        agg && agg.headshotPctSamples.length > 0
           ? agg.headshotPctSamples.reduce((a, b) => a + b, 0) /
             agg.headshotPctSamples.length
           : null;
@@ -135,12 +142,12 @@ export async function mapFaceitMatchToDb(
         gameAccountId,
         team,
         win,
-        kills: agg.kills,
-        deaths: agg.deaths,
-        assists: agg.assists,
+        kills: agg?.kills ?? null,
+        deaths: agg?.deaths ?? null,
+        assists: agg?.assists ?? null,
         adr: adrAvg,
         headshotPct: hsAvg,
-        rawStats: agg.rawMerged,
+        rawStats: agg?.rawMerged ?? undefined,
       });
     }
 
@@ -158,6 +165,62 @@ export async function mapFaceitMatchToDb(
 
     return { match: matchRow, newMatchInDb: !existingMatch };
   });
+}
+
+/** Fill `matches` + `cs2_faceit_match_players` for this account for every CS2 page item that is still missing a participant row. */
+async function syncMissingFaceitMatchesFromHistoryPage(params: {
+  gameAccountId: string;
+  historyItemsNewestFirst: { match_id: string }[];
+  knownPlayersByFaceitId: Record<string, string>;
+}): Promise<boolean> {
+  const { gameAccountId, historyItemsNewestFirst, knownPlayersByFaceitId } =
+    params;
+
+  let anyWork = false;
+
+  for (const h of historyItemsNewestFirst) {
+    const mid = h.match_id;
+
+    const matchRow = await db.query.matches.findFirst({
+      where: and(
+        eq(matches.externalMatchId, mid),
+        eq(matches.gameId, GAMES.CS2_FACEIT),
+      ),
+      columns: { id: true },
+    });
+
+    if (matchRow) {
+      const participant = await db.query.cs2FaceitMatchPlayers.findFirst({
+        where: and(
+          eq(cs2FaceitMatchPlayers.matchId, matchRow.id),
+          eq(cs2FaceitMatchPlayers.gameAccountId, gameAccountId),
+        ),
+        columns: { id: true },
+      });
+      if (participant) continue;
+    }
+
+    const detail = await getFaceitMatch(mid);
+    if (!detail) continue;
+
+    let statsPayload: FaceitMatchStatsPayload | null = null;
+    try {
+      statsPayload = await getFaceitMatchStats(mid);
+    } catch {
+      statsPayload = null;
+    }
+
+    try {
+      await mapFaceitMatchToDb(detail, statsPayload, knownPlayersByFaceitId);
+      anyWork = true;
+    } catch {
+      continue;
+    }
+
+    await new Promise((r) => setTimeout(r, FACEIT_POLL_DELAY_MS));
+  }
+
+  return anyWork;
 }
 
 async function refreshFaceitRankedForAccount(gameAccountId: string) {
@@ -224,24 +287,13 @@ export async function syncLatestFaceitMatchForAccount(
 
   items.sort((a, b) => sortKey(b) - sortKey(a));
 
-  const head = items[0];
-  const headId = head?.match_id;
+  const headId = items[0]?.match_id;
   if (headId === undefined) {
     await refreshFaceitRankedForAccount(gameAccountId);
     return { ok: true, kind: "no_match_history" };
   }
 
-  if (headId === account.cs2FaceitProfile.lastFaceitMatchId) {
-    await refreshFaceitRankedForAccount(gameAccountId);
-    return { ok: true, kind: "unchanged" };
-  }
-
-  const existedBefore = await db.query.matches.findFirst({
-    where: and(
-      eq(matches.externalMatchId, headId),
-      eq(matches.gameId, GAMES.CS2_FACEIT),
-    ),
-  });
+  const watermark = account.cs2FaceitProfile.lastFaceitMatchId ?? null;
 
   const followedAccounts = account.userId
     ? await getCs2FaceitAccountsOfFriends(account.userId)
@@ -258,26 +310,29 @@ export async function syncLatestFaceitMatchForAccount(
     ),
   };
 
-  const detail = await getFaceitMatch(headId);
-  if (!detail) {
-    await refreshFaceitRankedForAccount(gameAccountId);
-    return { ok: false, error: "FACEIT match detail not found" };
+  let anyWork = false;
+  try {
+    anyWork = await syncMissingFaceitMatchesFromHistoryPage({
+      gameAccountId,
+      historyItemsNewestFirst: items,
+      knownPlayersByFaceitId,
+    });
+  } catch {
+    anyWork = false;
   }
 
-  const statsPayload = await getFaceitMatchStats(headId);
+  await refreshFaceitRankedForAccount(gameAccountId);
 
-  await mapFaceitMatchToDb(detail, statsPayload, knownPlayersByFaceitId);
-
-  const newMatchInDb = !existedBefore;
+  if (!anyWork && watermark === headId) {
+    return { ok: true, kind: "unchanged" };
+  }
 
   await db
     .update(cs2FaceitGameAccountProfiles)
     .set({ lastFaceitMatchId: headId })
     .where(eq(cs2FaceitGameAccountProfiles.gameAccountId, gameAccountId));
 
-  await refreshFaceitRankedForAccount(gameAccountId);
-
-  return { ok: true, kind: "synced", newMatchInDb };
+  return { ok: true, kind: "synced", newMatchInDb: anyWork };
 }
 
 export async function syncLatestFaceitMatchForAllTrackedAccounts(): Promise<SyncLatestFaceitMatchBatchSummary> {
@@ -303,22 +358,22 @@ export async function syncLatestFaceitMatchForAllTrackedAccounts(): Promise<Sync
       const result = await syncLatestFaceitMatchForAccount(id);
       if (!result.ok) {
         summary.errors.push({ gameAccountId: id, message: result.error });
-        } else {
-          switch (result.kind) {
-            case "unchanged":
-              summary.unchanged += 1;
-              break;
-            case "no_match_history":
-              summary.noMatchHistory += 1;
-              break;
-            case "synced":
-              summary.synced += 1;
-              if (result.newMatchInDb) {
-                summary.newMatchesInDb += 1;
-              }
-              break;
-          }
+      } else {
+        switch (result.kind) {
+          case "unchanged":
+            summary.unchanged += 1;
+            break;
+          case "no_match_history":
+            summary.noMatchHistory += 1;
+            break;
+          case "synced":
+            summary.synced += 1;
+            if (result.newMatchInDb) {
+              summary.newMatchesInDb += 1;
+            }
+            break;
         }
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       summary.errors.push({ gameAccountId: id, message });

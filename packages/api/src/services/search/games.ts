@@ -8,28 +8,23 @@ import { normalizeSearchQuery } from "./query";
 const SEARCH_GAMES_LIMIT = 8;
 
 export async function searchGames(query: string): Promise<SearchGameResult[]> {
-  try {
-    const safeQuery = normalizeSearchQuery(query);
+  const safeQuery = normalizeSearchQuery(query);
 
-    if (!safeQuery) {
-      return [];
-    }
-
-    const results = await db.query.games.findMany({
-      where: or(
-        ilike(games.name, `${safeQuery}%`),
-        ilike(games.name, `%${safeQuery}%`),
-      ),
-      limit: SEARCH_GAMES_LIMIT,
-    });
-
-    return results.map((game) => ({
-      id: game.id as SearchGameResult["id"],
-      name: game.name,
-      type: "game",
-    }));
-  } catch (error) {
-    console.error("searchGames failed", { query, error });
+  if (!safeQuery) {
     return [];
   }
+
+  const results = await db.query.games.findMany({
+    where: or(
+      ilike(games.name, `${safeQuery}%`),
+      ilike(games.name, `%${safeQuery}%`),
+    ),
+    limit: SEARCH_GAMES_LIMIT,
+  });
+
+  return results.map((game) => ({
+    id: game.id as SearchGameResult["id"],
+    name: game.name,
+    type: "game",
+  }));
 }

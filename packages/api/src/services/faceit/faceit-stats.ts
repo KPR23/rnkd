@@ -16,7 +16,7 @@ export function parseNumericStat(
       return rawVal;
     }
     const s = String(rawVal).replace("%", "").trim();
-    const n = Number(s.replace(",", "."));
+    const n = Number(s.replace(/,/g, ""));
     return Number.isFinite(n) ? n : null;
   }
   return null;
@@ -118,12 +118,13 @@ export function buildFaceitPlayerTeamIndex(
   const out: Record<string, number> = {};
   keys.forEach((k, idx) => {
     const block = teams[k];
-    const roster = [
-      ...(block?.roster ?? []),
-      ...(block?.roster_v1 ?? []),
-    ];
+    const roster = [...(block?.roster ?? []), ...(block?.roster_v1 ?? [])];
     for (const r of roster) {
       if (r.player_id) {
+        if (out[r.player_id] !== undefined) {
+          // Preserve the first team assignment when FACEIT returns duplicate roster entries.
+          continue;
+        }
         out[r.player_id] = idx + 1;
       }
     }

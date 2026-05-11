@@ -51,16 +51,17 @@ export default function CustomModal({
                 <View className="h-6 w-6" />
               )}
               {headerCenter ? (
-                <View
-                  pointerEvents="none"
-                  className="absolute right-0 left-0 items-center"
-                >
+                <View className="absolute right-0 left-0 items-center">
                   {headerCenter}
                 </View>
               ) : null}
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={onClose}
+                accessibilityLabel="Close modal"
+                accessibilityRole="button"
+                accessible
+                importantForAccessibility="yes"
                 className="z-10"
               >
                 <XIcon size={24} color={colors.textMuted} weight="bold" />

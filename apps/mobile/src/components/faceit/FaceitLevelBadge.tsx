@@ -13,5 +13,13 @@ export default function FaceitLevelBadge({
 
   if (!xml) return null;
 
-  return <SvgXml xml={xml} width={size} height={size} />;
+  return (
+    <SvgXml
+      xml={xml}
+      width={size}
+      height={size}
+      accessibilityRole="image"
+      accessibilityLabel={`Faceit level ${level}`}
+    />
+  );
 }

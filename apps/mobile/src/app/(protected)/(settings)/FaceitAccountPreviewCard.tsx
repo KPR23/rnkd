@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { Image, Text, View } from "react-native";
 
 import { SvgUri } from "react-native-svg";
@@ -13,14 +14,25 @@ export default function FaceitAccountPreviewCard({
 }) {
   const faceitLevel =
     faceitPlayer.games.cs2?.skill_level ??
-    Object.values(faceitPlayer.games)[0]?.skill_level;
+    Object.values(faceitPlayer.games)[0]?.skill_level ??
+    0;
   const steamNickname = faceitPlayer.steam_nickname?.trim();
+  const countryCode = useMemo(() => {
+    const code = faceitPlayer.country?.trim().toLowerCase();
+    return code && /^[a-z]{2}$/.test(code) ? code : null;
+  }, [faceitPlayer.country]);
+  const [flagFailed, setFlagFailed] = useState(false);
+
+  useEffect(() => {
+    setFlagFailed(false);
+  }, [countryCode]);
 
   return (
     <Frame className="flex w-full flex-col items-start gap-4 p-4">
       <View className="flex w-full flex-row items-center justify-between gap-3">
         <Image
           source={{ uri: faceitPlayer.avatar }}
+          accessibilityLabel={`Avatar of ${faceitPlayer.nickname || faceitPlayer.player_id || "player"}`}
           className="h-12 w-12 rounded-full"
         />
         <View className="flex min-w-0 flex-1 flex-col">
@@ -31,11 +43,20 @@ export default function FaceitAccountPreviewCard({
             >
               {faceitPlayer.nickname}
             </Text>
-            <SvgUri
-              width={16}
-              height={12}
-              uri={`https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/${faceitPlayer.country.toLowerCase()}.svg`}
-            />
+            {countryCode && !flagFailed ? (
+              <SvgUri
+                width={16}
+                height={12}
+                uri={`https://cdn.jsdelivr.net/gh/lipis/flag-icons/flags/4x3/${countryCode}.svg`}
+                onError={() => setFlagFailed(true)}
+                accessibilityLabel={`${countryCode.toUpperCase()} flag`}
+                accessibilityRole="image"
+              />
+            ) : (
+              <Text className="text-text-muted font-sans-semibold text-xs uppercase">
+                --
+              </Text>
+            )}
           </View>
           {steamNickname ? (
             <Text

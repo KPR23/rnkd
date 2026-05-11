@@ -8,6 +8,7 @@ import {
 } from "@repo/types";
 import { trpc } from "@/src/utils/trpc";
 
+import FaceitDisplayCard from "./FaceitDisplayCard";
 import RankDisplayCard from "./RankDisplayCard";
 
 type ProfileGameStatCardProps = {
@@ -51,15 +52,20 @@ export default function ProfileGameStatCard({
     data?.gameAccount.profile?.tagLine
       ? `${data.gameAccount.profile.gameName} #${data.gameAccount.profile.tagLine}`
       : isFaceitAccount
-        ? gameAccount.profile?.faceitNickname?.trim() ??
+        ? [gameAccount.profile?.faceitNickname?.trim(), gameAccount.profile?.steamNickname?.trim()]
+            .filter(Boolean)
+            .join(" · ") ||
           gameAccount.externalId.slice(0, 10)
         : gameAccount.externalId.slice(0, 10);
 
-  const lolRecentPerformanceValues: Record<string, string> = {
-    "avg kda": "—",
-    "avg cs/min": "—",
-    "kp%": "—",
-  };
+  const lolRp = data?.recentPerformance;
+  const lolRecentPerformanceValues: Record<string, string> = lolQuery.isLoading
+    ? { "avg kda": "…", "avg cs/min": "…", "kp%": "…" }
+    : {
+        "avg kda": formatStat(lolRp?.avgKda, 2),
+        "avg cs/min": formatStat(lolRp?.avgCsPerMin, 1),
+        "kp%": formatStat(lolRp?.kpPercent, 1),
+      };
 
   const faceitRp = faceitData?.recentPerformance;
   const faceitRecentPerformanceValues: Record<string, string> =
@@ -76,16 +82,15 @@ export default function ProfileGameStatCard({
       ? faceitRecentPerformanceValues
       : lolRecentPerformanceValues;
 
-  const eloLine = faceitQuery.isLoading
-    ? "…"
-    : faceitData?.primaryRanked?.faceitElo != null
-      ? String(faceitData.primaryRanked.faceitElo)
-      : "—";
-  const lvlLine = faceitQuery.isLoading
-    ? ""
-    : faceitData?.primaryRanked?.skillLevel != null
-      ? `Lvl ${faceitData.primaryRanked.skillLevel}`
-      : "";
+  const faceitRecent = faceitData?.recentRecord;
+  const faceitWrLine =
+    faceitRecent !== null &&
+    faceitRecent !== undefined &&
+    faceitRecent.played > 0
+      ? `${faceitRecent.winRate.toFixed(0)}%`
+      : faceitQuery.isLoading
+        ? "…"
+        : "—";
 
   return (
     <View className="flex w-full flex-col gap-4 px-3 pt-4 pb-3">
@@ -94,15 +99,21 @@ export default function ProfileGameStatCard({
           Overview
         </Text>
         {isFaceitAccount ? (
-          <View className="border-border bg-card flex w-full flex-col gap-1 border px-4 py-3">
-            <Text className="font-sans-semibold text-text text-base">
-              CS2 · FACEIT {lvlLine ? `· ${lvlLine}` : ""}
-            </Text>
-            <Text className="font-mono-semibold text-text text-lg">{eloLine}</Text>
-            <Text className="font-sans-medium text-text-secondary text-xs">
-              {accountLabel}
-            </Text>
-          </View>
+          <FaceitDisplayCard
+            skillLevel={faceitData?.primaryRanked?.skillLevel ?? null}
+            faceitElo={faceitData?.primaryRanked?.faceitElo ?? null}
+            accountLabel={accountLabel}
+            recentWinRateLine={faceitWrLine}
+            recentRecord={
+              faceitRecent && faceitRecent.played > 0
+                ? {
+                    wins: faceitRecent.wins,
+                    losses: faceitRecent.losses,
+                  }
+                : null
+            }
+            isLoading={faceitQuery.isLoading}
+          />
         ) : (
           <RankDisplayCard
             ranked={ranked}

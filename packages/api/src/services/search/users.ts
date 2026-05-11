@@ -1,4 +1,4 @@
-import { ilike, inArray, or } from "drizzle-orm";
+import { eq, ilike, or } from "drizzle-orm";
 
 import { db, gameAccounts, user } from "@repo/db";
 import { GAMES, type GameId, type SearchPlayerResult } from "@repo/types";
@@ -42,83 +42,84 @@ function displayLabelForGameAccount(account: {
 export async function searchUsers(
   query: string,
 ): Promise<SearchPlayerResult[]> {
-  try {
-    const safeQuery = normalizeSearchQuery(query);
+  const safeQuery = normalizeSearchQuery(query);
 
-    if (!safeQuery) {
-      return [];
-    }
-
-    const results = await db.query.user.findMany({
-      where: or(
-        ilike(user.name, `${safeQuery}%`),
-        ilike(user.name, `% ${safeQuery}%`),
-        ilike(user.tag, `${safeQuery}%`),
-      ),
-      limit: 20,
-    });
-
-    if (results.length === 0) {
-      return [];
-    }
-
-    const userIds = results.map((row) => row.id);
-
-    const gameAccountsResults = await db.query.gameAccounts.findMany({
-      where: inArray(gameAccounts.userId, userIds),
-      with: {
-        lolProfile: true,
-        cs2FaceitProfile: true,
-      },
-      limit: 2,
-    });
-
-    const gameAccountsByUserId = new Map<
-      string,
-      (typeof gameAccountsResults)[number][]
-    >();
-
-    for (const account of gameAccountsResults) {
-      const userId = account.userId;
-
-      if (!userId) {
-        continue;
-      }
-
-      const list = gameAccountsByUserId.get(userId) ?? [];
-      list.push(account);
-      gameAccountsByUserId.set(userId, list);
-    }
-
-    return results.map((row) => {
-      const accounts = gameAccountsByUserId.get(row.id) ?? [];
-
-      const games = accounts
-        .map((account) => {
-          const displayLabel = displayLabelForGameAccount(account);
-
-          if (!displayLabel) {
-            return null;
-          }
-
-          return {
-            gameId: account.gameId as GameId,
-            displayLabel,
-          };
-        })
-        .filter((item): item is NonNullable<typeof item> => item !== null);
-
-      return {
-        id: row.id,
-        type: "player",
-        name: row.name,
-        tag: row.tag,
-        image: row.image,
-        games,
-      };
-    });
-  } catch (error) {
-    console.error("searchUsers failed", { query, error });
+  if (!safeQuery) {
     return [];
   }
+
+  const results = await db.query.user.findMany({
+    where: or(
+      ilike(user.name, `${safeQuery}%`),
+      ilike(user.name, `% ${safeQuery}%`),
+      ilike(user.tag, `${safeQuery}%`),
+    ),
+    limit: 20,
+  });
+
+  if (results.length === 0) {
+    return [];
+  }
+
+  const userIds = results.map((row) => row.id);
+
+  const gameAccountsResults = (
+    await Promise.all(
+      userIds.map((userId) =>
+        db.query.gameAccounts.findMany({
+          where: eq(gameAccounts.userId, userId),
+          with: {
+            lolProfile: true,
+            cs2FaceitProfile: true,
+          },
+          limit: 2,
+        }),
+      ),
+    )
+  ).flat();
+
+  const gameAccountsByUserId = new Map<
+    string,
+    (typeof gameAccountsResults)[number][]
+  >();
+
+  for (const account of gameAccountsResults) {
+    const userId = account.userId;
+
+    if (!userId) {
+      continue;
+    }
+
+    const list = gameAccountsByUserId.get(userId) ?? [];
+    list.push(account);
+    gameAccountsByUserId.set(userId, list);
+  }
+
+  return results.map((row) => {
+    const accounts = gameAccountsByUserId.get(row.id) ?? [];
+
+    const games = accounts
+      .map((account) => {
+        const displayLabel = displayLabelForGameAccount(account);
+
+        if (!displayLabel) {
+          return null;
+        }
+
+        return {
+          gameId: account.gameId as GameId,
+          displayLabel,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
+    return {
+      id: row.id,
+      type: "player",
+      name: row.name,
+      tag: row.tag,
+      image: row.image,
+      games,
+    };
+  });
 }

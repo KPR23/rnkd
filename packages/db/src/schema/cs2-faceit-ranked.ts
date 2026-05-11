@@ -23,7 +23,7 @@ export const cs2FaceitRankedEntries = pgTable(
     region: text("region"),
     gamePlayerId: text("game_player_id"),
     gamePlayerName: text("game_player_name"),
-    syncedAt: timestamp("synced_at").notNull(),
+    syncedAt: timestamp("synced_at").defaultNow().notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -34,7 +34,7 @@ export const cs2FaceitRankedEntries = pgTable(
     primaryKey({ columns: [table.gameAccountId, table.gameKey] }),
     check(
       "cs2_faceit_ranked_entries_game_id_is_cs2_faceit",
-      sql`${table.gameId} = 'cs2_faceit'`,
+      sql`${table.gameId} = ${GAMES.CS2_FACEIT}`,
     ),
     foreignKey({
       columns: [table.gameAccountId],

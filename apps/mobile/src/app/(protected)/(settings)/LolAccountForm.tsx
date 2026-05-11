@@ -40,6 +40,11 @@ export default function LolAccountForm({
           autoCorrect={false}
           spellCheck={false}
           autoComplete="off"
+          accessibilityLabel="Summoner name"
+          accessibilityHint="Enter your Riot summoner name, 3 to 16 characters"
+          accessibilityRole="text"
+          maxLength={16}
+          returnKeyType="next"
           value={gameName}
           onChangeText={setGameName}
           editable={!isPending}
@@ -57,8 +62,15 @@ export default function LolAccountForm({
           autoCorrect={false}
           spellCheck={false}
           autoComplete="off"
+          accessibilityLabel="Riot tag line"
+          accessibilityHint="Enter your Riot tag line, 3 to 5 letters or numbers"
+          accessibilityRole="text"
+          maxLength={5}
+          returnKeyType="done"
           value={tagLine}
-          onChangeText={setTagLine}
+          onChangeText={(value) =>
+            setTagLine(value.trim().replace(/[^a-zA-Z0-9]/g, ""))
+          }
           editable={!isPending}
         />
       </View>
@@ -73,8 +85,17 @@ export default function LolAccountForm({
               activeOpacity={0.7}
               disabled={isPending}
               onPress={() => setPlatform(p)}
+              accessibilityRole="button"
+              accessibilityState={{
+                selected: platform === p,
+                disabled: isPending,
+              }}
+              accessibilityLabel={RIOT_PLATFORM_LABEL[p]}
+              accessibilityHint="Select platform"
               className={`border px-3 py-2 ${
-                platform === p ? "border-primary bg-primary/10" : "border-border"
+                platform === p
+                  ? "border-primary bg-primary/10"
+                  : "border-border"
               }`}
             >
               <Text

@@ -10,7 +10,12 @@ CREATE TABLE "cs2_faceit_match_players" (
 	"adr" real,
 	"headshot_pct" real,
 	"raw_stats" jsonb,
-	"created_at" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "cs2_faceit_match_players_kills_nonnegative" CHECK ("cs2_faceit_match_players"."kills" >= 0),
+	CONSTRAINT "cs2_faceit_match_players_deaths_nonnegative" CHECK ("cs2_faceit_match_players"."deaths" >= 0),
+	CONSTRAINT "cs2_faceit_match_players_assists_nonnegative" CHECK ("cs2_faceit_match_players"."assists" >= 0),
+	CONSTRAINT "cs2_faceit_match_players_adr_nonnegative" CHECK ("cs2_faceit_match_players"."adr" >= 0),
+	CONSTRAINT "cs2_faceit_match_players_headshot_pct_range" CHECK ("cs2_faceit_match_players"."headshot_pct" BETWEEN 0 AND 100)
 );
 --> statement-breakpoint
 ALTER TABLE "cs2_faceit_game_account_profiles" ADD COLUMN "last_faceit_match_id" text;--> statement-breakpoint

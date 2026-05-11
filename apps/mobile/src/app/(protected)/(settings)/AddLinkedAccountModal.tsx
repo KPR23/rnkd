@@ -172,9 +172,22 @@ export default function AddLinkedAccountModal({
     setFormError(null);
 
     if (game === GAMES.LOL) {
+      const trimmedGameName = gameName.trim();
+      const trimmedTagLine = tagLine.trim();
+
+      if (trimmedGameName.length < 3 || trimmedGameName.length > 16) {
+        setFormError("Summoner name must be 3 to 16 characters.");
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9]{3,5}$/.test(trimmedTagLine)) {
+        setFormError("Tag line must be 3 to 5 letters or numbers.");
+        return;
+      }
+
       addLol({
-        gameName: gameName.trim(),
-        tagLine: tagLine.trim(),
+        gameName: trimmedGameName,
+        tagLine: trimmedTagLine,
         region,
       });
     }
@@ -333,8 +346,10 @@ export default function AddLinkedAccountModal({
           activeOpacity={0.75}
           accessibilityLabel={`Invite ${player.nickname}`}
           accessibilityRole="button"
-          className="border-border bg-card w-12 items-center justify-center border"
-          onPress={() => {}}
+          accessibilityState={{ disabled: true }}
+          disabled
+          // TODO: Wire this to the invite player flow once friend invites are available.
+          className="border-border bg-card/60 w-12 items-center justify-center border opacity-50"
         >
           <PlusIcon size={20} color={colors.text} weight="bold" />
         </TouchableOpacity>
@@ -393,14 +408,18 @@ export default function AddLinkedAccountModal({
 
   const isInputInvalid =
     game === GAMES.LOL
-      ? !gameName.trim() || !tagLine.trim()
+      ? gameName.trim().length < 3 ||
+        gameName.trim().length > 16 ||
+        !/^[a-zA-Z0-9]{3,5}$/.test(tagLine.trim())
       : !faceitNickname.trim();
 
   const isConfirmDisabled =
     isSubmitting ||
     !!formError ||
     (game === GAMES.LOL
-      ? !gameName.trim() || !tagLine.trim()
+      ? gameName.trim().length < 3 ||
+        gameName.trim().length > 16 ||
+        !/^[a-zA-Z0-9]{3,5}$/.test(tagLine.trim())
       : !faceitNickname.trim() || !faceitPlayer || isFaceitPlayerPending);
 
   const primaryActionText =

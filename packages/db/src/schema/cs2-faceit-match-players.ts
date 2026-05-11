@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -42,5 +44,22 @@ export const cs2FaceitMatchPlayers = pgTable(
     ),
     index("cs2_faceit_match_players_match_idx").on(table.matchId),
     index("cs2_faceit_match_players_account_idx").on(table.gameAccountId),
+    check(
+      "cs2_faceit_match_players_kills_nonnegative",
+      sql`${table.kills} >= 0`,
+    ),
+    check(
+      "cs2_faceit_match_players_deaths_nonnegative",
+      sql`${table.deaths} >= 0`,
+    ),
+    check(
+      "cs2_faceit_match_players_assists_nonnegative",
+      sql`${table.assists} >= 0`,
+    ),
+    check("cs2_faceit_match_players_adr_nonnegative", sql`${table.adr} >= 0`),
+    check(
+      "cs2_faceit_match_players_headshot_pct_range",
+      sql`${table.headshotPct} between 0 and 100`,
+    ),
   ],
 );

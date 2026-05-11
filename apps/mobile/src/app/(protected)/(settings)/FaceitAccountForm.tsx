@@ -26,6 +26,9 @@ export default function FaceitAccountForm({
         autoCorrect={false}
         spellCheck={false}
         autoComplete="off"
+        accessibilityLabel="Faceit nickname"
+        accessibilityHint="Enter your Faceit username"
+        accessibilityRole="text"
         value={faceitNickname}
         onChangeText={setFaceitNickname}
         editable={!isPending}

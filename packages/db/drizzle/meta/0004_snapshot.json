@@ -123,7 +123,28 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "cs2_faceit_match_players_kills_nonnegative": {
+          "name": "cs2_faceit_match_players_kills_nonnegative",
+          "value": "\"cs2_faceit_match_players\".\"kills\" >= 0"
+        },
+        "cs2_faceit_match_players_deaths_nonnegative": {
+          "name": "cs2_faceit_match_players_deaths_nonnegative",
+          "value": "\"cs2_faceit_match_players\".\"deaths\" >= 0"
+        },
+        "cs2_faceit_match_players_assists_nonnegative": {
+          "name": "cs2_faceit_match_players_assists_nonnegative",
+          "value": "\"cs2_faceit_match_players\".\"assists\" >= 0"
+        },
+        "cs2_faceit_match_players_adr_nonnegative": {
+          "name": "cs2_faceit_match_players_adr_nonnegative",
+          "value": "\"cs2_faceit_match_players\".\"adr\" >= 0"
+        },
+        "cs2_faceit_match_players_headshot_pct_range": {
+          "name": "cs2_faceit_match_players_headshot_pct_range",
+          "value": "\"cs2_faceit_match_players\".\"headshot_pct\" between 0 and 100"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.session": {
@@ -588,7 +609,8 @@
           "name": "synced_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
         "created_at": {
           "name": "created_at",
@@ -2279,6 +2301,37 @@
       "values": [
         "pending",
         "accepted"
+      ]
+    },
+    "public.regional_route": {
+      "name": "regional_route",
+      "schema": "public",
+      "values": [
+        "americas",
+        "europe",
+        "asia",
+        "sea"
+      ]
+    },
+    "public.platform_route": {
+      "name": "platform_route",
+      "schema": "public",
+      "values": [
+        "br1",
+        "eun1",
+        "euw1",
+        "jp1",
+        "kr",
+        "la1",
+        "la2",
+        "me1",
+        "na1",
+        "oc1",
+        "ru",
+        "sg2",
+        "tr1",
+        "tw2",
+        "vn2"
       ]
     }
   },

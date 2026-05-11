@@ -10,7 +10,7 @@ export const faceitRouter = router({
   getFaceitPlayer: protectedProcedure
     .input(
       z.object({
-        nickname: z.string(),
+        nickname: z.string().min(1, "Nickname is required"),
       }),
     )
     .query(async ({ input }) => {

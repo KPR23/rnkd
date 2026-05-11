@@ -7,7 +7,7 @@ CREATE TABLE "cs2_faceit_ranked_entries" (
 	"region" text,
 	"game_player_id" text,
 	"game_player_name" text,
-	"synced_at" timestamp NOT NULL,
+	"synced_at" timestamp DEFAULT now() NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "cs2_faceit_ranked_entries_game_account_id_game_key_pk" PRIMARY KEY("game_account_id","game_key"),

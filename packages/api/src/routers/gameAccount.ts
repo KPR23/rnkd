@@ -12,11 +12,13 @@ import {
   lolGameAccountProfiles,
   lolRankedEntries,
   matches,
+  matchParticipants,
 } from "@repo/db";
 import {
   isCs2FaceitGameAccount,
   isLolGameAccount,
   RIOT_REGIONAL_ROUTE,
+  type Cs2FaceitMatchHistoryRow,
   type GameAccount,
   type RiotPlatformRoute,
   type RiotRegionalRoute,
@@ -221,10 +223,7 @@ async function getNormalizedGameAccountsForUserId(
       userId,
       error,
     });
-    return {
-      lol: [],
-      faceit: [],
-    };
+    throw error;
   }
 
   if (options.refreshStaleLolProfiles) {
@@ -359,6 +358,28 @@ export const gameAccountRouter = router({
         where: eq(lolRankedEntries.gameAccountId, input.gameAccountId),
       });
 
+      const perfRows = await db
+        .select({
+          kills: matchParticipants.kills,
+          deaths: matchParticipants.deaths,
+          assists: matchParticipants.assists,
+          totalMinionsKilled: matchParticipants.totalMinionsKilled,
+          team: matchParticipants.team,
+          team1Score: matches.team1Score,
+          team2Score: matches.team2Score,
+          durationSeconds: matches.durationSeconds,
+        })
+        .from(matchParticipants)
+        .innerJoin(matches, eq(matchParticipants.matchId, matches.id))
+        .where(
+          and(
+            eq(matchParticipants.gameAccountId, input.gameAccountId),
+            eq(matches.gameId, GAMES.LOL),
+          ),
+        )
+        .orderBy(desc(matches.playedAt))
+        .limit(20);
+
       const primaryRanked = pickPrimaryLolRankedEntry(rankedRows);
 
       const rankedSoloDuo =
@@ -372,17 +393,52 @@ export const gameAccountRouter = router({
         rankedWinRate = played > 0 ? (primaryRanked.wins / played) * 100 : 0;
       }
 
+      const kdaValues: number[] = [];
+      const csPerMinValues: number[] = [];
+      const kpValues: number[] = [];
+
+      for (const row of perfRows) {
+        kdaValues.push((row.kills + row.assists) / Math.max(1, row.deaths));
+
+        const durationMinutes =
+          row.durationSeconds && row.durationSeconds > 0
+            ? row.durationSeconds / 60
+            : null;
+        if (
+          durationMinutes &&
+          row.totalMinionsKilled !== null &&
+          row.totalMinionsKilled !== undefined
+        ) {
+          csPerMinValues.push(row.totalMinionsKilled / durationMinutes);
+        }
+
+        const teamKills = row.team === 100 ? row.team1Score : row.team2Score;
+        if (teamKills > 0) {
+          kpValues.push(((row.kills + row.assists) / teamKills) * 100);
+        }
+      }
+
+      const average = (values: number[]) =>
+        values.length > 0
+          ? values.reduce((sum, value) => sum + value, 0) / values.length
+          : null;
+
       return {
         gameAccount: account,
         ranked: primaryRanked,
         rankedSoloDuo,
         rankedFlex,
         rankedWinRate,
+        recentPerformance: {
+          avgKda: average(kdaValues),
+          avgCsPerMin: average(csPerMinValues),
+          kpPercent: average(kpValues),
+        },
       };
     }),
   getCs2FaceitProfileDisplay: protectedProcedure
     .input(z.object({ gameAccountId: z.uuid() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const accountRecord = await db.query.gameAccounts.findFirst({
         where: eq(gameAccounts.id, input.gameAccountId),
         with: {
@@ -393,6 +449,10 @@ export const gameAccountRouter = router({
 
       if (!accountRecord) {
         throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      if (accountRecord.userId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN" });
       }
 
       const account = mapGameAccountRecord(accountRecord);
@@ -419,6 +479,7 @@ export const gameAccountRouter = router({
           deaths: cs2FaceitMatchPlayers.deaths,
           adr: cs2FaceitMatchPlayers.adr,
           headshotPct: cs2FaceitMatchPlayers.headshotPct,
+          win: cs2FaceitMatchPlayers.win,
         })
         .from(cs2FaceitMatchPlayers)
         .innerJoin(matches, eq(cs2FaceitMatchPlayers.matchId, matches.id))
@@ -436,8 +497,12 @@ export const gameAccountRouter = router({
       let hsCount = 0;
       let adrSum = 0;
       let adrCount = 0;
+      let recentWins = 0;
 
       for (const row of perfRows) {
+        if (row.win === true) {
+          recentWins += 1;
+        }
         const kills = row.kills ?? null;
         const deaths = row.deaths ?? null;
         if (
@@ -470,15 +535,83 @@ export const gameAccountRouter = router({
       const avgHsPct = hsCount > 0 ? hsSum / hsCount : null;
       const avgAdr = adrCount > 0 ? adrSum / adrCount : null;
 
+      const recentPlayed = perfRows.length;
+      const recentLosses = recentPlayed > 0 ? recentPlayed - recentWins : 0;
+      let recentWinRate: number | null = null;
+      if (recentPlayed > 0) {
+        recentWinRate = (recentWins / recentPlayed) * 100;
+      }
+
       return {
         gameAccount: account,
         primaryRanked,
+        recentRecord:
+          recentPlayed > 0
+            ? {
+                wins: recentWins,
+                losses: recentLosses,
+                played: recentPlayed,
+                winRate: recentWinRate ?? 0,
+              }
+            : null,
         recentPerformance: {
           avgKd,
           avgHsPct,
           avgAdr,
         },
       };
+    }),
+  getCs2FaceitMatchHistory: protectedProcedure
+    .input(z.object({ gameAccountId: z.uuid() }))
+    .query(async ({ input }) => {
+      const [gameAccount] = await db
+        .select()
+        .from(gameAccounts)
+        .where(
+          and(
+            eq(gameAccounts.id, input.gameAccountId),
+            eq(gameAccounts.gameId, GAMES.CS2_FACEIT),
+          ),
+        );
+
+      if (!gameAccount) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      const joined = await db
+        .select()
+        .from(matches)
+        .innerJoin(
+          cs2FaceitMatchPlayers,
+          eq(matches.id, cs2FaceitMatchPlayers.matchId),
+        )
+        .where(
+          and(
+            eq(matches.gameId, GAMES.CS2_FACEIT),
+            eq(cs2FaceitMatchPlayers.gameAccountId, gameAccount.id),
+          ),
+        )
+        .orderBy(desc(matches.playedAt))
+        .limit(40);
+
+      return joined.map((row): Cs2FaceitMatchHistoryRow => {
+        const r = row as Record<string, unknown>;
+        const m = r.matches;
+        const p = r.cs2_faceit_match_players ?? r.cs2FaceitMatchPlayers;
+        if (
+          typeof m !== "object" ||
+          m === null ||
+          typeof p !== "object" ||
+          p === null
+        ) {
+          throw new Error("Unexpected CS2 FACEIT match history row shape");
+        }
+        return {
+          matches: m as Cs2FaceitMatchHistoryRow["matches"],
+          cs2_faceit_match_players:
+            p as Cs2FaceitMatchHistoryRow["cs2_faceit_match_players"],
+        };
+      });
     }),
   getLolDetailsDemo: protectedProcedure
     .input(

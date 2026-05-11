@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Text, View } from "react-native";
 
 import { Stack, useLocalSearchParams } from "expo-router";
 
@@ -57,13 +57,10 @@ export default function PlayerProfileScreen() {
       await refetchGameAccounts();
     } catch (error) {
       console.error("Player profile pull-to-refresh failed", error);
+      const message = error instanceof Error ? error.message : undefined;
+      Alert.alert("Refresh failed", message);
     }
-  }, [
-    refetchGameAccounts,
-    isOwnRoute,
-    syncPull,
-    utils.gameAccount,
-  ]);
+  }, [refetchGameAccounts, isOwnRoute, syncPull, utils.gameAccount]);
 
   if (!id) {
     return null;
@@ -102,8 +99,7 @@ export default function PlayerProfileScreen() {
         user={toProfileUser(publicUser)}
         isOwnProfile={isOwnProfile}
         pullToRefresh={{
-          refreshing:
-            syncPull.isPending || gameAccountsFetching,
+          refreshing: syncPull.isPending || gameAccountsFetching,
           onRefresh: handlePullRefresh,
         }}
         gameAccounts={[
