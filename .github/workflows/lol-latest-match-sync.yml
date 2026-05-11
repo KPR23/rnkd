@@ -1,4 +1,5 @@
-name: LoL Latest Match Sync
+
+name: Scheduled match sync (LoL + Faceit)
 
 on:
   schedule:
@@ -6,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: lol-latest-match-sync
+  group: scheduled-match-sync
   cancel-in-progress: false
 
 jobs:
@@ -42,11 +43,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run LoL latest match sync
-        run: pnpm --filter @repo/api run lol-sync:latest
+      - name: Run latest match syncs (LoL + Faceit)
+        run: pnpm --filter @repo/api run match-sync:latest
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+          FACEIT_API_KEY: ${{ secrets.FACEIT_API_KEY }}
           NODE_ENV: production
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}

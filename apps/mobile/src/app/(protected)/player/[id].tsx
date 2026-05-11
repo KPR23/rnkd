@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 import { Stack, useLocalSearchParams } from "expo-router";
@@ -26,6 +27,8 @@ function toProfileUser(u: {
 export default function PlayerProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: session } = useAuth();
+  const utils = trpc.useUtils();
+  const syncPull = trpc.gameAccount.syncMyTrackedLatestMatches.useMutation();
 
   const {
     data: publicUser,
@@ -33,11 +36,34 @@ export default function PlayerProfileScreen() {
     isError: isUserError,
   } = trpc.user.getPublicById.useQuery({ id: id ?? "" }, { enabled: !!id });
 
-  const { data: gameAccounts, isLoading: isLoadingAccounts } =
-    trpc.gameAccount.getGameAccountsByUserId.useQuery(
-      { userId: id ?? "" },
-      { enabled: !!id },
-    );
+  const {
+    data: gameAccounts,
+    isLoading: isLoadingAccounts,
+    refetch: refetchGameAccounts,
+    isFetching: gameAccountsFetching,
+  } = trpc.gameAccount.getGameAccountsByUserId.useQuery(
+    { userId: id ?? "" },
+    { enabled: !!id },
+  );
+
+  const isOwnRoute = !!(session?.user?.id && id && session.user.id === id);
+
+  const handlePullRefresh = useCallback(async () => {
+    try {
+      if (isOwnRoute) {
+        await syncPull.mutateAsync();
+      }
+      await utils.gameAccount.invalidate();
+      await refetchGameAccounts();
+    } catch (error) {
+      console.error("Player profile pull-to-refresh failed", error);
+    }
+  }, [
+    refetchGameAccounts,
+    isOwnRoute,
+    syncPull,
+    utils.gameAccount,
+  ]);
 
   if (!id) {
     return null;
@@ -75,6 +101,11 @@ export default function PlayerProfileScreen() {
       <ProfileScreen
         user={toProfileUser(publicUser)}
         isOwnProfile={isOwnProfile}
+        pullToRefresh={{
+          refreshing:
+            syncPull.isPending || gameAccountsFetching,
+          onRefresh: handlePullRefresh,
+        }}
         gameAccounts={[
           ...(gameAccounts?.lol ?? []),
           ...(gameAccounts?.faceit ?? []),

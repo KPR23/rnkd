@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 
 import { account, session, user } from "./auth";
+import { cs2FaceitMatchPlayers } from "./cs2-faceit-match-players";
 import { cs2FaceitRankedEntries } from "./cs2-faceit-ranked";
 import {
   cs2FaceitGameAccountProfiles,
@@ -10,7 +11,12 @@ import {
 } from "./games";
 import { leagueMembers, leagueRankings, leagues } from "./leagues";
 import { lolRankedEntries } from "./lol-ranked";
-import { eloHistory, matches, matchParticipants, playerStats } from "./matches";
+import {
+  eloHistory,
+  matches,
+  matchParticipants,
+  playerStats,
+} from "./matches";
 import { friendships } from "./social";
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -46,6 +52,7 @@ export const gameAccountRelations = relations(
     }),
     cs2FaceitRankedEntries: many(cs2FaceitRankedEntries),
     matchParticipants: many(matchParticipants),
+    cs2FaceitMatchPlayers: many(cs2FaceitMatchPlayers),
     eloHistory: many(eloHistory),
     lolRankedEntries: many(lolRankedEntries),
     playerStats: one(playerStats),
@@ -98,6 +105,7 @@ export const matchRelations = relations(matches, ({ one, many }) => ({
     references: [games.id],
   }),
   participants: many(matchParticipants),
+  cs2FaceitMatchPlayers: many(cs2FaceitMatchPlayers),
 }));
 
 export const matchParticipantRelations = relations(
@@ -109,6 +117,20 @@ export const matchParticipantRelations = relations(
     }),
     account: one(gameAccounts, {
       fields: [matchParticipants.gameAccountId],
+      references: [gameAccounts.id],
+    }),
+  }),
+);
+
+export const cs2FaceitMatchPlayersRelations = relations(
+  cs2FaceitMatchPlayers,
+  ({ one }) => ({
+    match: one(matches, {
+      fields: [cs2FaceitMatchPlayers.matchId],
+      references: [matches.id],
+    }),
+    account: one(gameAccounts, {
+      fields: [cs2FaceitMatchPlayers.gameAccountId],
       references: [gameAccounts.id],
     }),
   }),

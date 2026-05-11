@@ -27,3 +27,60 @@ export type FaceitSuggestedPlayer = {
   steam_nickname?: string;
   games: Record<string, FaceitGameInfo>;
 };
+
+export type FaceitHistoryItem = {
+  match_id: string;
+  game_id?: string;
+  started_at?: number;
+  finished_at?: number;
+};
+
+export type FaceitHistoryResponse = {
+  items: FaceitHistoryItem[];
+  start?: number;
+  end?: number;
+  from?: number;
+  to?: number;
+};
+
+export type FaceitMatchRosterPlayer = {
+  player_id: string;
+  nickname?: string;
+  game_player_name?: string;
+};
+
+export type FaceitMatchTeamBlock = {
+  roster?: FaceitMatchRosterPlayer[];
+  roster_v1?: FaceitMatchRosterPlayer[] | null;
+};
+
+export type FaceitMatchDetail = {
+  match_id: string;
+  game?: string;
+  started_at?: number;
+  finished_at?: number;
+  results?: {
+    winner?: string;
+    score?: Record<string, number>;
+  };
+  teams?: Record<string, FaceitMatchTeamBlock>;
+};
+
+export type FaceitRoundPlayer = {
+  nickname?: string | null;
+  player_id?: string | null;
+  player_stats?: Record<string, string | number | null | undefined> | null;
+};
+
+export type FaceitRoundTeam = {
+  team_id?: string | null;
+  players?: FaceitRoundPlayer[] | null;
+};
+
+export type FaceitRoundStats = {
+  teams?: FaceitRoundTeam[] | null;
+};
+
+export type FaceitMatchStatsPayload = {
+  rounds?: FaceitRoundStats[] | null;
+};

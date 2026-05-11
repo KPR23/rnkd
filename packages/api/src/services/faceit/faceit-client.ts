@@ -1,30 +1,76 @@
 import { env } from "@repo/env";
-import { FaceitPlayer, FaceitSuggestedPlayer } from "@repo/types";
+import type {
+  FaceitHistoryResponse,
+  FaceitMatchDetail,
+  FaceitMatchStatsPayload,
+  FaceitPlayer,
+  FaceitSuggestedPlayer,
+} from "@repo/types";
+
+import { faceitBackoffSleep } from "./faceit-stats";
 
 const FACEIT_API_BASE = "https://open.faceit.com/data/v4";
 
-const FACEIT_API_KEY = env.FACEIT_API_KEY;
+const FACEIT_FETCH_TIMEOUT_MS = 12_000;
+const MAX_RETRIES = 4;
 
-function headers(): HeadersInit {
-  return { Authorization: `Bearer ${FACEIT_API_KEY}` };
+function faceitAuthHeaders(): HeadersInit {
+  const key = env.FACEIT_API_KEY;
+  if (!key?.trim()) {
+    throw new Error("FACEIT_API_KEY is not configured");
+  }
+  return { Authorization: `Bearer ${key}` };
 }
 
 async function fetchFaceitJson<T>(url: string): Promise<T | null> {
-  const response = await fetch(url, {
-    headers: headers(),
-    signal: AbortSignal.timeout(10_000),
-  });
+  let lastError: unknown;
 
-  if (response.status === 404) return null;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch(url, {
+        headers: faceitAuthHeaders(),
+        signal: AbortSignal.timeout(FACEIT_FETCH_TIMEOUT_MS),
+      });
 
-  if (!response.ok) {
-    throw new Error(`FACEIT request failed: ${response.status}`);
+      if (response.status === 404) return null;
+
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("retry-after");
+        if (attempt + 1 >= MAX_RETRIES) {
+          throw new Error("FACEIT rate limited (429)");
+        }
+        await faceitBackoffSleep(attempt, retryAfter);
+        continue;
+      }
+
+      if (!response.ok) {
+        throw new Error(`FACEIT request failed: ${response.status}`);
+      }
+
+      return (await response.json()) as T;
+    } catch (err) {
+      lastError = err;
+      if (
+        err instanceof Error &&
+        err.message.includes("FACEIT request failed")
+      ) {
+        throw err;
+      }
+      if (attempt + 1 >= MAX_RETRIES) {
+        break;
+      }
+      await faceitBackoffSleep(attempt, null);
+    }
   }
 
-  return (await response.json()) as T;
+  throw lastError instanceof Error
+    ? lastError
+    : new Error(String(lastError ?? "FACEIT request failed"));
 }
 
-export async function getFaceitPlayer(nickname: string): Promise<FaceitPlayer | null> {
+export async function getFaceitPlayer(
+  nickname: string,
+): Promise<FaceitPlayer | null> {
   const url = `${FACEIT_API_BASE}/players?nickname=${encodeURIComponent(nickname)}&game=cs2`;
 
   return await fetchFaceitJson<FaceitPlayer>(url);
@@ -68,4 +114,36 @@ export async function getFaceitSuggestedPlayers(
   );
 
   return suggestions.filter((suggestion) => suggestion !== null);
+}
+
+export async function getFaceitPlayerHistory(
+  playerId: string,
+  options: { limit?: number; offset?: number } = {},
+): Promise<FaceitHistoryResponse | null> {
+  const limit = options.limit ?? 20;
+  const offset = options.offset ?? 0;
+  const params = new URLSearchParams({
+    game: "cs2",
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const url = `${FACEIT_API_BASE}/players/${encodeURIComponent(playerId)}/history?${params}`;
+
+  return await fetchFaceitJson<FaceitHistoryResponse>(url);
+}
+
+export async function getFaceitMatch(
+  matchId: string,
+): Promise<FaceitMatchDetail | null> {
+  const url = `${FACEIT_API_BASE}/matches/${encodeURIComponent(matchId)}`;
+
+  return await fetchFaceitJson<FaceitMatchDetail>(url);
+}
+
+export async function getFaceitMatchStats(
+  matchId: string,
+): Promise<FaceitMatchStatsPayload | null> {
+  const url = `${FACEIT_API_BASE}/matches/${encodeURIComponent(matchId)}/stats`;
+
+  return await fetchFaceitJson<FaceitMatchStatsPayload>(url);
 }

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { useRouter } from "expo-router";
 
@@ -12,12 +12,18 @@ import { trpc } from "@/src/utils/trpc";
 
 import ProfileContent from "./ProfileContent";
 
+export type ProfilePullToRefresh = {
+  refreshing: boolean;
+  onRefresh: () => Promise<void>;
+};
+
 export type ProfileScreenProps = {
   user: User;
   isOwnProfile: boolean;
   gameAccounts: GameAccount[] | undefined;
   title?: string;
   actions?: ScreenTitleAction[];
+  pullToRefresh?: ProfilePullToRefresh;
 };
 
 export default function ProfileScreen({
@@ -26,6 +32,7 @@ export default function ProfileScreen({
   gameAccounts,
   title,
   actions,
+  pullToRefresh,
 }: ProfileScreenProps) {
   const router = useRouter();
   const utils = trpc.useUtils();
@@ -140,6 +147,14 @@ export default function ProfileScreen({
         contentContainerStyle={{ paddingBottom: 96 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          pullToRefresh ? (
+            <RefreshControl
+              refreshing={pullToRefresh.refreshing}
+              onRefresh={() => pullToRefresh.onRefresh()}
+            />
+          ) : undefined
+        }
       >
         <Frame>
           <View className="flex items-center gap-4">
