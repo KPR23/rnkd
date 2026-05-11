@@ -6,6 +6,7 @@ import {
   GAMES,
   lolGameAccountProfiles,
   matches,
+  matchParticipants,
 } from "@repo/db";
 
 import { getLolAccountsOfFriends } from "../social/friend-game-accounts";
@@ -15,6 +16,7 @@ import { getMatchById, getMatchIdsByPuuid } from "./riot-client";
 import type { RiotRegionalRoute } from "./types";
 
 const RIOT_POLL_DELAY_MS = 150;
+const LOL_MATCH_HISTORY_PAGE_SIZE = 20;
 
 export type SyncLatestLolMatchResult =
   | { ok: true; kind: "unchanged" }
@@ -56,7 +58,11 @@ export async function syncLatestLolMatchForAccount(
 
   const region = account.lolProfile.regionalRoute as RiotRegionalRoute;
 
-  const matchIds = await getMatchIdsByPuuid(account.externalId, region, 1);
+  const matchIds = await getMatchIdsByPuuid(
+    account.externalId,
+    region,
+    LOL_MATCH_HISTORY_PAGE_SIZE,
+  );
 
   if (matchIds.length === 0) {
     return { ok: true, kind: "no_match_history" };
@@ -67,16 +73,24 @@ export async function syncLatestLolMatchForAccount(
     return { ok: true, kind: "no_match_history" };
   }
 
-  if (headId === account.lolProfile.lastMatchId) {
-    return { ok: true, kind: "unchanged" };
+  const lastWatermark = account.lolProfile.lastMatchId ?? null;
+
+  const pendingNewestFirst: string[] = [];
+  for (const mid of matchIds) {
+    if (lastWatermark !== null && mid === lastWatermark) break;
+    pendingNewestFirst.push(mid);
   }
 
-  const existsBefore = await db.query.matches.findFirst({
-    where: and(
-      eq(matches.externalMatchId, headId),
-      eq(matches.gameId, GAMES.LOL),
-    ),
-  });
+  /**
+   * When the newest Riot ID matches our watermark we used to exit as "unchanged".
+   * If `match_participants` were never written (older bugs / cross-account ingestion),
+   * history stays empty forever. Always walk the current Riot page once to repair links.
+   */
+  const needsParticipantRepair = pendingNewestFirst.length === 0;
+
+  const queueOldestFirst = needsParticipantRepair
+    ? [...matchIds].reverse()
+    : pendingNewestFirst.slice().reverse();
 
   const followedLolAccounts = account.userId
     ? await getLolAccountsOfFriends(account.userId)
@@ -93,17 +107,67 @@ export async function syncLatestLolMatchForAccount(
     ),
   };
 
-  const riotMatch = await getMatchById(headId, region);
-  await mapRiotMatchToDb(riotMatch, knownAccountsByPuuid);
+  let anyNewMatchInDb = false;
+  let lastSuccessfulMatchId: string | null = null;
+  let syncError: string | null = null;
 
-  const newMatchInDb = !existsBefore;
+  for (const mid of queueOldestFirst) {
+    try {
+      const existedBefore = await db.query.matches.findFirst({
+        where: and(
+          eq(matches.externalMatchId, mid),
+          eq(matches.gameId, GAMES.LOL),
+        ),
+        columns: { id: true },
+      });
+
+      if (existedBefore) {
+        const alreadyLinked = await db.query.matchParticipants.findFirst({
+          where: and(
+            eq(matchParticipants.matchId, existedBefore.id),
+            eq(matchParticipants.gameAccountId, account.id),
+          ),
+          columns: { id: true },
+        });
+
+        if (!alreadyLinked) {
+          const riotMatch = await getMatchById(mid, region);
+          await mapRiotMatchToDb(riotMatch, knownAccountsByPuuid);
+          anyNewMatchInDb = true;
+        }
+      } else {
+        const riotMatch = await getMatchById(mid, region);
+        await mapRiotMatchToDb(riotMatch, knownAccountsByPuuid);
+        anyNewMatchInDb = true;
+      }
+
+      lastSuccessfulMatchId = mid;
+    } catch (error) {
+      syncError =
+        error instanceof Error ? error.message : String(error ?? "riot");
+      break;
+    }
+
+    await new Promise((r) => setTimeout(r, RIOT_POLL_DELAY_MS));
+  }
+
+  if (syncError !== null && lastSuccessfulMatchId === null) {
+    return { ok: false, error: syncError };
+  }
+
+  const watermarkAfterSync =
+    syncError === null ? headId : lastSuccessfulMatchId!;
 
   await db
     .update(lolGameAccountProfiles)
-    .set({ lastMatchId: headId })
+    .set({ lastMatchId: watermarkAfterSync })
     .where(eq(lolGameAccountProfiles.gameAccountId, account.id));
 
-  return { ok: true, kind: "synced", newMatchInDb };
+  if (needsParticipantRepair && !anyNewMatchInDb) {
+    return { ok: true, kind: "unchanged" };
+  }
+
+  return { ok: true, kind: "synced", newMatchInDb: anyNewMatchInDb };
 }
 
 export async function syncLatestLolMatchForAllTrackedAccounts(): Promise<SyncLatestLolMatchBatchSummary> {

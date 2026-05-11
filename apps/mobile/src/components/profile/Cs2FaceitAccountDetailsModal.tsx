@@ -38,10 +38,9 @@ export default function Cs2FaceitAccountDetailsModal({
     gameAccountId: gameAccount.id,
   });
 
-  const { refresh, isRefreshing } = useLinkedAccountRefresh(
-    gameAccount.userId,
-    { refetchLocal: faceitRefetchLocal },
-  );
+  const { refresh, isRefreshing } = useLinkedAccountRefresh(gameAccount.id, {
+    refetchLocal: faceitRefetchLocal,
+  });
 
   const faceitNick =
     gameAccount.profile?.faceitNickname?.trim() || gameAccount.externalId;

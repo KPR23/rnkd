@@ -50,10 +50,9 @@ export default function LolAccountDetailsModal({
       gameAccountId: gameAccount.id,
     });
 
-  const { refresh, isRefreshing } = useLinkedAccountRefresh(
-    gameAccount.userId,
-    { refetchLocal: lolRefetchLocal },
-  );
+  const { refresh, isRefreshing } = useLinkedAccountRefresh(gameAccount.id, {
+    refetchLocal: lolRefetchLocal,
+  });
 
   const soloWr = queueWinRateLine(data?.rankedSoloDuo, isLoading);
   const flexWr = queueWinRateLine(data?.rankedFlex, isLoading);

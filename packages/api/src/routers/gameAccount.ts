@@ -330,6 +330,55 @@ export const gameAccountRouter = router({
 
     return { lolAccounts, faceitAccounts, errors };
   }),
+  refreshTrackedGameAccountMatches: protectedProcedure
+    .input(z.object({ gameAccountId: z.uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const acc = await db.query.gameAccounts.findFirst({
+        where: eq(gameAccounts.id, input.gameAccountId),
+      });
+
+      if (!acc) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      if (acc.userId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      if (!acc.isTracked) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Account is not tracked",
+        });
+      }
+
+      if (acc.gameId === GAMES.LOL) {
+        const result = await syncLatestLolMatchForAccount(acc.id);
+        if (!result.ok) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: result.error,
+          });
+        }
+        return { ok: true as const };
+      }
+
+      if (acc.gameId === GAMES.CS2_FACEIT) {
+        const result = await syncLatestFaceitMatchForAccount(acc.id);
+        if (!result.ok) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: result.error,
+          });
+        }
+        return { ok: true as const };
+      }
+
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Unsupported game for match refresh",
+      });
+    }),
   getLolProfileDisplay: protectedProcedure
     .input(z.object({ gameAccountId: z.uuid() }))
     .query(async ({ input }) => {

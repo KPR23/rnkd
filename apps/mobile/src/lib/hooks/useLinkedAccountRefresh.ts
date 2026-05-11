@@ -1,31 +1,40 @@
 import { useCallback } from "react";
 
+import { TRPCClientError } from "@trpc/client";
+
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
 
 export type UseLinkedAccountRefreshOptions = {
+  /** Run after backend sync + router invalidates (explicit refetch for this screen’s queries). */
   refetchLocal?: () => Promise<void>;
 };
 
 export function useLinkedAccountRefresh(
-  gameAccountUserId: string | null | undefined,
+  gameAccountId: string,
   options?: UseLinkedAccountRefreshOptions,
 ) {
   const refetchLocal = options?.refetchLocal;
 
   const { data: session } = useAuth();
   const utils = trpc.useUtils();
-  const syncPull = trpc.gameAccount.syncMyTrackedLatestMatches.useMutation();
-
-  const isOwn =
-    !!session?.user?.id &&
-    gameAccountUserId != null &&
-    gameAccountUserId === session.user.id;
+  const refreshOne = trpc.gameAccount.refreshTrackedGameAccountMatches.useMutation();
 
   const refresh = useCallback(async () => {
     try {
-      if (isOwn) {
-        await syncPull.mutateAsync();
+      if (session?.user?.id) {
+        try {
+          await refreshOne.mutateAsync({ gameAccountId });
+        } catch (err) {
+          if (
+            err instanceof TRPCClientError &&
+            err.data?.httpStatus === 403
+          ) {
+            /* Viewing someone else's linked account — server refuses sync. */
+          } else {
+            throw err;
+          }
+        }
       }
       await Promise.all([
         utils.gameAccount.invalidate(),
@@ -35,10 +44,10 @@ export function useLinkedAccountRefresh(
     } catch (error) {
       console.error("Linked account refresh failed", error);
     }
-  }, [isOwn, syncPull, utils.gameAccount, utils.riot, refetchLocal]);
+  }, [gameAccountId, refreshOne, session?.user?.id, utils.gameAccount, utils.riot, refetchLocal]);
 
   return {
     refresh,
-    isRefreshing: syncPull.isPending && isOwn,
+    isRefreshing: refreshOne.isPending,
   };
 }
