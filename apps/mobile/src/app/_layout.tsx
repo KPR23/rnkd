@@ -2,10 +2,6 @@ import "@/globals.css";
 
 import { useEffect } from "react";
 
-import {
-  IBMPlexSans_400Regular,
-  IBMPlexSans_500Medium,
-} from "@expo-google-fonts/ibm-plex-sans";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -21,8 +17,7 @@ function RootNavigator() {
   const { data: session, isPending } = useAuth();
 
   const [fontsLoaded, fontError] = useFonts({
-    IBMPlexSans_400Regular,
-    IBMPlexSans_500Medium,
+    "IBM Plex Sans": require("../../assets/fonts/IBMPlexSans-VariableFont_wdth,wght.ttf"),
   });
 
   const fontsReady = fontsLoaded || !!fontError;
