@@ -44,6 +44,7 @@ export function getFaceitLevelProgress(elo: number): FaceitLevelProgress {
   const level = getFaceitLevelFromElo(elo);
   const threshold =
     FACEIT_LEVEL_THRESHOLDS.find((entry) => entry.level === level) ??
+    FACEIT_LEVEL_THRESHOLDS.find((entry) => entry.level === 1) ??
     FACEIT_LEVEL_THRESHOLDS[0];
 
   const levelEnd = threshold.max === null ? null : threshold.max + 1;
