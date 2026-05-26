@@ -18,6 +18,7 @@ import {
   getFaceitPlayerHistory,
 } from "./faceit-client";
 import { persistFaceitSnapshotInTx } from "./faceit-profile-persist";
+import { recomputeGlobalRs } from "../scoring/rnkd-score";
 import {
   buildFaceitPlayerTeamIndex,
   didPlayerWin,
@@ -256,6 +257,8 @@ async function refreshFaceitRankedForAccount(gameAccountId: string) {
       syncedAt,
     });
   });
+
+  await recomputeGlobalRs(account.userId!);
 }
 
 export async function syncLatestFaceitMatchForAccount(
