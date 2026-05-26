@@ -19,11 +19,11 @@ import {
   type GameAccountRecord,
 } from "../../repositories/game-accounts.repo";
 import { getFaceitPlayer } from "../faceit/faceit-client";
-import { persistFaceitSnapshotInTx } from "../faceit/faceit-profile-persist";
 import { syncLatestFaceitMatchForAccount } from "../faceit/faceit-latest-match-sync";
+import { persistFaceitSnapshotInTx } from "../faceit/faceit-profile-persist";
 import { isValidPlatformRoute } from "../riot/helper";
-import { persistLolRankedEntriesInTx } from "../riot/lol-profile-sync";
 import { syncLatestLolMatchForAccount } from "../riot/lol-latest-match-sync";
+import { persistLolRankedEntriesInTx } from "../riot/lol-profile-sync";
 import {
   getAccountByRiotId,
   getLolAccountDetails,
@@ -109,12 +109,7 @@ export async function linkLolAccount(input: {
     }
 
     if (entries.length > 0) {
-      await persistLolRankedEntriesInTx(
-        tx,
-        gameAccount.id,
-        entries,
-        syncedAt,
-      );
+      await persistLolRankedEntriesInTx(tx, gameAccount.id, entries, syncedAt);
     }
 
     await tx

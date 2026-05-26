@@ -60,9 +60,12 @@ export async function updateProfile(
   userId: string,
   input: UpdateProfileInput,
 ) {
-  if (input.favoriteGameId) {
+  const favoriteGameId =
+    input.favoriteGameId?.trim() === "" ? null : input.favoriteGameId?.trim();
+
+  if (favoriteGameId !== null && favoriteGameId !== undefined) {
     const game = await db.query.games.findFirst({
-      where: eq(games.id, input.favoriteGameId),
+      where: eq(games.id, favoriteGameId),
     });
 
     if (!game) {
@@ -77,8 +80,8 @@ export async function updateProfile(
     .update(user)
     .set({
       ...(input.bio !== undefined ? { bio: input.bio } : {}),
-      ...(input.favoriteGameId !== undefined
-        ? { favoriteGameId: input.favoriteGameId }
+      ...(favoriteGameId !== undefined
+        ? { favoriteGameId }
         : {}),
       ...(input.region !== undefined ? { region: input.region } : {}),
     })
