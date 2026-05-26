@@ -38,6 +38,23 @@ export const auth = betterAuth({
       tag: {
         type: "string",
       },
+      bio: {
+        type: "string",
+        required: false,
+      },
+      favoriteGameId: {
+        type: "string",
+        required: false,
+      },
+      region: {
+        type: "string",
+        required: false,
+      },
+      globalRs: {
+        type: "number",
+        required: false,
+        defaultValue: 0,
+      },
     },
   },
   plugins: [expo()],

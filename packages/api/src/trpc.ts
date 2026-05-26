@@ -3,13 +3,16 @@ import superjson from "superjson";
 
 import type { BetterAuthSession } from "@repo/types";
 
+import type { GameAccountRecord } from "./repositories/game-accounts.repo";
+
 export type TRPCContext = {
   session: BetterAuthSession | null;
+  gameAccount?: GameAccountRecord;
 };
 
 export const createTRPCContext = (opts: TRPCContext): TRPCContext => opts;
 
-const t = initTRPC.context<TRPCContext>().create({
+export const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
 });
 
