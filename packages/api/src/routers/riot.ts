@@ -1,53 +1,40 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
 import z from "zod";
 
-import { db, gameAccounts, GAMES, matches, matchParticipants } from "@repo/db";
-import { RIOT_REGIONAL_ROUTE } from "@repo/types";
+import { GAMES } from "@repo/db";
 
+import { gameAccountIdSchema } from "../schemas/common";
+import { riotRegionalRouteSchema } from "../schemas/riot";
+import { getMatchHistoryForAccount } from "../services/match/history";
 import {
   getLolAccountDetails,
   getLolActiveRegionByPuuid,
 } from "../services/riot/riot-client";
+import { requireGameAccountAccess } from "../trpc/middleware/require-game-account-access";
 import { protectedProcedure, router } from "../trpc";
-
-const riotRegionalRouteSchema = z.enum(RIOT_REGIONAL_ROUTE);
 
 export const riotRouter = router({
   getMatchHistory: protectedProcedure
     .input(
-      z.object({
-        gameAccountId: z.uuid(),
+      gameAccountIdSchema.extend({
+        limit: z.number().min(1).max(100).optional(),
       }),
     )
+    .use(requireGameAccountAccess("public-read"))
     .query(async ({ input }) => {
-      const [gameAccount] = await db
-        .select()
-        .from(gameAccounts)
-        .where(
-          and(
-            eq(gameAccounts.id, input.gameAccountId),
-            eq(gameAccounts.gameId, GAMES.LOL),
-          ),
-        );
+      const result = await getMatchHistoryForAccount({
+        gameAccountId: input.gameAccountId,
+        limit: input.limit ?? 40,
+      });
 
-      if (!gameAccount) {
-        throw new TRPCError({ code: "NOT_FOUND" });
+      if (result.gameId !== GAMES.LOL) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Not a League of Legends account",
+        });
       }
 
-      const matchHistory = await db
-        .select()
-        .from(matches)
-        .innerJoin(matchParticipants, eq(matches.id, matchParticipants.matchId))
-        .where(
-          and(
-            eq(matches.gameId, GAMES.LOL),
-            eq(matchParticipants.gameAccountId, gameAccount.id),
-          ),
-        )
-        .orderBy(desc(matches.playedAt));
-
-      return matchHistory;
+      return result.rows;
     }),
   getLolAccountDetails: protectedProcedure
     .input(
