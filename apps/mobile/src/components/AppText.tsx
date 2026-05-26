@@ -1,8 +1,11 @@
 import React from "react";
 import { StyleSheet, Text, type TextProps, type TextStyle } from "react-native";
 
+import { colors } from "@repo/ui/colors";
+
 type AppTextProps = TextProps & {
   weight?: "regular" | "medium";
+  color?: string;
 };
 
 const fontFamilies: Record<NonNullable<AppTextProps["weight"]>, string> = {
@@ -13,6 +16,7 @@ const fontFamilies: Record<NonNullable<AppTextProps["weight"]>, string> = {
 export default function AppText({
   weight = "regular",
   style,
+  color = colors.text,
   ...props
 }: AppTextProps) {
   const fontStyle = StyleSheet.flatten(style) as TextStyle | undefined;
@@ -25,6 +29,7 @@ export default function AppText({
           fontFamily: fontFamilies[weight],
           fontWeight: weight === "medium" ? "500" : "400",
         },
+        { color },
         fontStyle?.fontFamily ? null : undefined,
         style,
       ]}
