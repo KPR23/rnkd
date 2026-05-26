@@ -6,28 +6,23 @@ import { db, gameAccounts, GAMES } from "@repo/db";
 import { env } from "@repo/env";
 
 import { findGameAccountsByUserId } from "../repositories/game-accounts.repo";
-import {
-  gameAccountIdSchema,
-  userIdSchema,
-} from "../schemas/common";
+import { gameAccountIdSchema, userIdSchema } from "../schemas/common";
 import { riotRegionalRouteSchema } from "../schemas/riot";
+import { syncLatestFaceitMatchForAccount } from "../services/faceit/faceit-latest-match-sync";
 import {
   isGameAccountUniqueViolation,
   linkFaceitAccount,
   linkLolAccount,
   unlinkGameAccount,
 } from "../services/game-account/link";
-import {
-  normalizeGameAccounts,
-} from "../services/game-account/normalize";
+import { normalizeGameAccounts } from "../services/game-account/normalize";
 import { getCs2FaceitProfileDisplay } from "../services/profile/faceit-display";
 import { getLolProfileDisplay } from "../services/profile/lol-display";
-import { syncLatestFaceitMatchForAccount } from "../services/faceit/faceit-latest-match-sync";
 import { syncLatestLolMatchForAccount } from "../services/riot/lol-latest-match-sync";
 import { syncLolForAccount } from "../services/riot/lol-sync-runner";
 import { syncTrackedAccountsForUser } from "../services/sync/sync-tracked-for-user";
-import { requireGameAccountAccess } from "../trpc/middleware/require-game-account-access";
 import { protectedProcedure, router } from "../trpc";
+import { requireGameAccountAccess } from "../trpc/middleware/require-game-account-access";
 
 export const gameAccountRouter = router({
   getGameAccounts: protectedProcedure.query(async ({ ctx }) => {
@@ -50,7 +45,7 @@ export const gameAccountRouter = router({
   refreshTrackedGameAccountMatches: protectedProcedure
     .input(gameAccountIdSchema)
     .use(requireGameAccountAccess("owner"))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx }) => {
       const acc = ctx.gameAccount!;
 
       if (!acc.isTracked) {
@@ -96,12 +91,15 @@ export const gameAccountRouter = router({
     .use(requireGameAccountAccess("public-read"))
     .query(({ input }) => getCs2FaceitProfileDisplay(input.gameAccountId)),
   getCs2FaceitMatchHistory: protectedProcedure
-    .input(gameAccountIdSchema.extend({ limit: z.number().min(1).max(100).default(40) }))
+    .input(
+      gameAccountIdSchema.extend({
+        limit: z.number().min(1).max(100).default(40),
+      }),
+    )
     .use(requireGameAccountAccess("public-read"))
     .query(async ({ input }) => {
-      const { getMatchHistoryForAccount } = await import(
-        "../services/match/history"
-      );
+      const { getMatchHistoryForAccount } =
+        await import("../services/match/history");
       const result = await getMatchHistoryForAccount({
         gameAccountId: input.gameAccountId,
         limit: input.limit,

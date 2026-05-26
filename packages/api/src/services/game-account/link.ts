@@ -10,7 +10,6 @@ import {
 import {
   isCs2FaceitGameAccount,
   isLolGameAccount,
-  type RiotPlatformRoute,
   type RiotRegionalRoute,
 } from "@repo/types";
 
