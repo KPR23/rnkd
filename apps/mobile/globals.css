@@ -24,7 +24,7 @@
   --text-xl--line-height: 1.4;
   --text-2xl: 24px;
   --text-2xl--line-height: 1.333;
-  --text-3xl: 30px;
+  --text-3xl: 28px;
   --text-3xl--line-height: 1.2;
   --text-4xl: 36px;
   --text-4xl--line-height: 1.111;
@@ -60,6 +60,10 @@
 
 @layer base {
   * {
+    font-family: var(--font-sans);
+  }
+
+  Text {
     font-family: var(--font-sans);
   }
 }
