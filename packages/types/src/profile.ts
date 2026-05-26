@@ -1,12 +1,6 @@
 import type { GameAccounts } from "./game";
 
-export type FaceitLevelProgress = {
-  level: number;
-  points: number;
-  levelStart: number;
-  levelEnd: number | null;
-  pointsToNextLevel: number | null;
-};
+export type { FaceitLevelProgress } from "./faceit-level-thresholds";
 
 export type MatchActivityDay = {
   date: string;

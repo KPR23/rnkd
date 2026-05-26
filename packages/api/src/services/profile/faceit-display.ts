@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 
-import { getFaceitLevelProgress } from "@repo/ui/constants/faceit-level-thresholds";
+import { getFaceitLevelProgress } from "@repo/types";
 import { db, GAMES, cs2FaceitMatchPlayers, matches } from "@repo/db";
 import { isCs2FaceitGameAccount } from "@repo/types";
 

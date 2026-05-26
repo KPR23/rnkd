@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getFaceitLevelProgress } from "@/constants/faceit-level-thresholds";
+import { getFaceitLevelProgress } from "./faceit-level-thresholds";
 
 test("level 7 at 1448 elo shows progress to level 8", () => {
   const progress = getFaceitLevelProgress(1448);

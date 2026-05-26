@@ -24,8 +24,7 @@
     "superjson": "^2.2.6",
     "@repo/db": "workspace:*",
     "@repo/types": "workspace:*",
-    "@repo/env": "workspace:*",
-    "@repo/ui": "workspace:*"
+    "@repo/env": "workspace:*"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
