@@ -43,6 +43,13 @@
       "when": 1778508560000,
       "tag": "0005_seed_cs2_faceit_game",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779792422888,
+      "tag": "0006_sparkling_angel",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,7 @@
     "./components/getInitialsForFallbackPhoto": "./components/getInitialsForFallbackPhoto.ts",
     "./colors": "./constants/colors.ts",
     "./faceit-level-badges": "./constants/faceit-level-badges.ts",
+    "./constants/faceit-level-thresholds": "./constants/faceit-level-thresholds.ts",
     "./*": "./components/ui/*.tsx"
   },
   "scripts": {

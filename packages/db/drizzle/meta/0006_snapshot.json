@@ -1,6 +1,6 @@
 {
-  "id": "41590748-2e19-4e99-9f75-840f3bbe97a1",
-  "prevId": "da358ac7-a6b5-4549-ad19-b3821e7b5a4e",
+  "id": "7e9946df-6fae-4646-9d87-f04704bfcb9f",
+  "prevId": "41590748-2e19-4e99-9f75-840f3bbe97a1",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -266,6 +266,31 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "favorite_game_id": {
+          "name": "favorite_game_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "region": {
+          "name": "region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "global_rs": {
+          "name": "global_rs",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         },
         "created_at": {
           "name": "created_at",

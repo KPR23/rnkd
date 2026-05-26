@@ -282,6 +282,9 @@ importers:
       '@repo/types':
         specifier: workspace:*
         version: link:../types
+      '@repo/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@trpc/server':
         specifier: ^11.12.0
         version: 11.12.0(typescript@5.9.3)
