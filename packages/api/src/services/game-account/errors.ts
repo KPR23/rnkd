@@ -7,11 +7,9 @@ export function isGameAccountUniqueViolation(error: unknown) {
     cause?: { code?: string; constraint?: string };
   };
 
-  const code = err.code ?? err.cause?.code;
   const constraint = err.constraint ?? err.cause?.constraint;
 
   if (constraint === "game_accounts_game_external_unique") return true;
-  if (code === "23505") return true;
 
   return false;
 }
