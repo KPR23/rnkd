@@ -1,3 +1,5 @@
+import type { GameAccounts } from "./game";
+
 export type FaceitLevelProgress = {
   level: number;
   points: number;
@@ -22,9 +24,6 @@ export type ProfileOverview = {
     globalRs: number;
     favoriteGame: { id: string; name: string } | null;
   };
-  gameAccounts: {
-    lol: unknown[];
-    faceit: unknown[];
-  };
+  gameAccounts: GameAccounts;
   lastActiveAt: Date | null;
 };
