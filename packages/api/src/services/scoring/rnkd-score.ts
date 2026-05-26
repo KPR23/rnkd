@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db, GAMES, user } from "@repo/db";
 
 import { findGameAccountsByUserId } from "../../repositories/game-accounts.repo";
+import type { DbExecutor } from "../../repositories/db-executor";
 import {
   findCs2FaceitRankedEntries,
   findLolRankedEntries,
@@ -22,8 +23,11 @@ export {
   RANKED_SOLO_QUEUE,
 } from "./rnkd-score-calculations";
 
-export async function recomputeGlobalRs(userId: string): Promise<number> {
-  const accounts = await findGameAccountsByUserId(userId);
+export async function recomputeGlobalRs(
+  userId: string,
+  executor: DbExecutor = db,
+): Promise<number> {
+  const accounts = await findGameAccountsByUserId(userId, executor);
 
   let faceitElo: number | null = null;
   let lolSolo: {
@@ -62,7 +66,7 @@ export async function recomputeGlobalRs(userId: string): Promise<number> {
     lolFlex,
   });
 
-  await db.update(user).set({ globalRs }).where(eq(user.id, userId));
+  await executor.update(user).set({ globalRs }).where(eq(user.id, userId));
 
   return globalRs;
 }

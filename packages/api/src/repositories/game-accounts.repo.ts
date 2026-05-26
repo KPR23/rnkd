@@ -7,6 +7,8 @@ import {
   lolGameAccountProfiles,
 } from "@repo/db";
 
+import type { DbExecutor } from "./db-executor";
+
 export type GameAccountRecord = typeof gameAccounts.$inferSelect & {
   lolProfile: typeof lolGameAccountProfiles.$inferSelect | null;
   cs2FaceitProfile: typeof cs2FaceitGameAccountProfiles.$inferSelect | null;
@@ -14,8 +16,9 @@ export type GameAccountRecord = typeof gameAccounts.$inferSelect & {
 
 export async function findGameAccountById(
   gameAccountId: string,
+  executor: DbExecutor = db,
 ): Promise<GameAccountRecord | undefined> {
-  return db.query.gameAccounts.findFirst({
+  return executor.query.gameAccounts.findFirst({
     where: eq(gameAccounts.id, gameAccountId),
     with: {
       lolProfile: true,
@@ -26,8 +29,9 @@ export async function findGameAccountById(
 
 export async function findGameAccountsByUserId(
   userId: string,
+  executor: DbExecutor = db,
 ): Promise<GameAccountRecord[]> {
-  return db.query.gameAccounts.findMany({
+  return executor.query.gameAccounts.findMany({
     where: eq(gameAccounts.userId, userId),
     with: {
       lolProfile: true,
@@ -49,8 +53,9 @@ export async function findTrackedGameAccountsByUserId(userId: string) {
 export async function findGameAccountByIdAndGameId(
   gameAccountId: string,
   gameId: string,
+  executor: DbExecutor = db,
 ) {
-  const [row] = await db
+  const [row] = await executor
     .select()
     .from(gameAccounts)
     .where(
