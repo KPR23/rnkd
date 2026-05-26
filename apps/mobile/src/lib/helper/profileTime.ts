@@ -1,4 +1,6 @@
-export function formatRelativeLastActive(lastActiveAt: Date | null | undefined): string {
+export function formatRelativeLastActive(
+  lastActiveAt: Date | null | undefined,
+): string {
   if (!lastActiveAt || Number.isNaN(lastActiveAt.getTime())) {
     return "—";
   }
@@ -23,7 +25,7 @@ export function formatRelativeLastActive(lastActiveAt: Date | null | undefined):
   );
 
   if (diffDays < 7) {
-    return `${diffDays} days ago`;
+    return diffDays === 1 ? "1 day ago" : `${diffDays} days ago`;
   }
 
   return lastActiveAt.toLocaleDateString("en-GB", {
