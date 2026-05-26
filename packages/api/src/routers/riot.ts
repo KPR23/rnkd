@@ -10,21 +10,21 @@ import {
   getLolAccountDetails,
   getLolActiveRegionByPuuid,
 } from "../services/riot/riot-client";
-import { requireGameAccountAccess } from "../trpc/middleware/require-game-account-access";
 import { protectedProcedure, router } from "../trpc";
+import { requireGameAccountAccess } from "../trpc/middleware/require-game-account-access";
 
 export const riotRouter = router({
   getMatchHistory: protectedProcedure
     .input(
       gameAccountIdSchema.extend({
-        limit: z.number().min(1).max(100).optional(),
+        limit: z.number().int().min(1).max(100).default(40),
       }),
     )
     .use(requireGameAccountAccess("public-read"))
     .query(async ({ input }) => {
       const result = await getMatchHistoryForAccount({
         gameAccountId: input.gameAccountId,
-        limit: input.limit ?? 40,
+        limit: input.limit,
       });
 
       if (result.gameId !== GAMES.LOL) {
