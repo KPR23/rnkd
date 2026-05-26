@@ -28,11 +28,12 @@ export default function ProfileTab() {
     try {
       await syncPull.mutateAsync();
       await utils.gameAccount.invalidate();
+      await utils.profile.invalidate();
       await refetchGameAccounts();
     } catch (error) {
       console.error("Profile pull-to-refresh failed", error);
     }
-  }, [refetchGameAccounts, syncPull, utils.gameAccount]);
+  }, [refetchGameAccounts, syncPull, utils.gameAccount, utils.profile]);
 
   if (isPending) {
     return (
