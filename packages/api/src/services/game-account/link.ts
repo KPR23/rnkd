@@ -215,7 +215,7 @@ export async function unlinkGameAccount(input: {
   gameAccountId: string;
   gameId: string;
 }) {
-  return db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const gameAccount = await tx.query.gameAccounts.findFirst({
       where: and(
         eq(gameAccounts.id, input.gameAccountId),
@@ -255,11 +255,14 @@ export async function unlinkGameAccount(input: {
           eq(gameAccounts.userId, input.userId),
         ),
       );
-
-    await recomputeGlobalRs(input.userId);
-
     return { success: true as const };
   });
+
+  if ("success" in result) {
+    await recomputeGlobalRs(input.userId);
+  }
+
+  return result;
 }
 
 export async function getOwnedGameAccount(
