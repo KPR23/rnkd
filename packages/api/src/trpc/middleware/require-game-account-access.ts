@@ -28,12 +28,11 @@ export function requireGameAccountAccess(policy: GameAccountAccessPolicy) {
 
     const account = await findGameAccountById(parsed.data.gameAccountId);
 
-    if (!account) {
+    if (
+      !account ||
+      (policy === "owner" && account.userId !== ctx.session.user.id)
+    ) {
       throw new TRPCError({ code: "NOT_FOUND" });
-    }
-
-    if (policy === "owner" && account.userId !== ctx.session.user.id) {
-      throw new TRPCError({ code: "FORBIDDEN" });
     }
 
     return next({
