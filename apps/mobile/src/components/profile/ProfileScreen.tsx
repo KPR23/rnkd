@@ -244,7 +244,7 @@ export default function ProfileScreen({
             {activityDays ? <MatchActivityGraph days={activityDays} /> : null}
           </View>
         </View>
-        <View className="flex flex-col gap-8 px-5">
+        <View className="flex flex-col gap-8">
           {sortedAccounts.map((account) => (
             <GameProfileSection
               key={account.id}
