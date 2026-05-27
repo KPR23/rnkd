@@ -4,6 +4,8 @@ import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { GAMES, type GameAccount, type User } from "@repo/types";
+import { colors } from "@repo/ui/colors";
+import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
 import AccountDetailsModal from "@/src/components/profile/AccountDetailsModal";
 import GameProfileSection from "@/src/components/profile/GameProfileSection";
@@ -161,7 +163,7 @@ export default function ProfileScreen({
       )}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 96, gap: 16 }}
+        contentContainerStyle={{ paddingBottom: 96, gap: 20 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         refreshControl={
@@ -173,62 +175,75 @@ export default function ProfileScreen({
           ) : undefined
         }
       >
-        <ProfileInfoCard
-          user={user}
-          bio={overview?.user.bio ?? null}
-          favoriteGameLabel={favoriteGameLabel(overview?.user.favoriteGame?.id)}
-          region={overview?.user.region ?? null}
-          lastActiveAt={overview?.lastActiveAt ?? null}
-        />
+        <View className="flex flex-col gap-2.5">
+          <ProfileInfoCard
+            user={user}
+            bio={overview?.user.bio ?? null}
+            favoriteGameLabel={favoriteGameLabel(
+              overview?.user.favoriteGame?.id,
+            )}
+            region={overview?.user.region ?? null}
+            lastActiveAt={overview?.lastActiveAt ?? null}
+          />
 
-        <View className="flex w-full flex-row gap-3">
-          {incomingRequestCondition ? (
-            <>
-              <Button
-                variant="primary"
-                actionText="Accept"
-                className="flex-1"
-                onPress={() =>
-                  void acceptMut.mutateAsync({ requesterId: user.id })
-                }
-              />
-              <Button
-                variant="secondary"
-                actionText="Decline"
-                className="flex-1"
-                onPress={() =>
-                  void declineMut.mutateAsync({ requesterId: user.id })
-                }
-              />
-            </>
-          ) : (
-            <>
-              {primaryButton}
-              {secondaryButton}
-              {isOwnProfile ? (
+          <View className="flex w-full flex-row gap-2.5">
+            {incomingRequestCondition ? (
+              <>
+                <Button
+                  variant="primary"
+                  actionText="Accept"
+                  className="flex-1"
+                  onPress={() =>
+                    void acceptMut.mutateAsync({ requesterId: user.id })
+                  }
+                />
                 <Button
                   variant="secondary"
-                  actionText="···"
-                  className="w-12 px-0"
-                  onPress={() => router.push("/settings")}
+                  actionText="Decline"
+                  className="flex-1"
+                  onPress={() =>
+                    void declineMut.mutateAsync({ requesterId: user.id })
+                  }
                 />
-              ) : null}
-            </>
-          )}
-        </View>
-
-        <View className="border-border bg-card mx-5 flex flex-col gap-3 border p-4">
-          <View className="flex flex-row items-center justify-between">
-            <Text className="text-text font-sans-semibold text-base">
-              Match activity
-            </Text>
-            <Text className="text-primary font-sans-medium text-sm">
-              View details
-            </Text>
+              </>
+            ) : (
+              <>
+                {primaryButton}
+                {secondaryButton}
+                {isOwnProfile ? (
+                  <Button
+                    variant="secondary"
+                    actionText="···"
+                    className="w-12 px-0"
+                    onPress={() => router.push("/settings")}
+                  />
+                ) : null}
+              </>
+            )}
           </View>
-          {activityDays ? <MatchActivityGraph days={activityDays} /> : null}
         </View>
 
+        <View className="flex flex-col gap-2">
+          <View className="flex flex-row items-center justify-between">
+            <AppText
+              className="text-sm"
+              weight="medium"
+              color={colors.textSecondary}
+            >
+              Match activity
+            </AppText>
+            <AppText
+              className="text-right text-sm"
+              weight="medium"
+              color={colors.primary}
+            >
+              View details
+            </AppText>
+          </View>
+          <View className="border-muted bg-card flex flex-col gap-3 border p-4">
+            {activityDays ? <MatchActivityGraph days={activityDays} /> : null}
+          </View>
+        </View>
         <View className="flex flex-col gap-8 px-5">
           {sortedAccounts.map((account) => (
             <GameProfileSection
