@@ -23,6 +23,7 @@ import {
   buildFaceitPlayerTeamIndex,
   didPlayerWin,
   mergePlayerStatsFromRounds,
+  resolveFaceitMapName,
 } from "./faceit-stats";
 
 const FACEIT_POLL_DELAY_MS = 200;
@@ -95,6 +96,7 @@ export async function mapFaceitMatchToDb(
       started !== undefined && ended !== undefined
         ? Math.max(0, ended - started)
         : null;
+    const mapName = resolveFaceitMapName(detail, statsPayload);
 
     if (!matchRow) {
       const [inserted] = await tx
@@ -106,6 +108,7 @@ export async function mapFaceitMatchToDb(
           queueId: null,
           team1Score,
           team2Score,
+          mapName,
           playedAt,
           durationSeconds,
         })
@@ -116,6 +119,16 @@ export async function mapFaceitMatchToDb(
       }
 
       matchRow = inserted;
+    } else if (mapName && matchRow.mapName !== mapName) {
+      const [updated] = await tx
+        .update(matches)
+        .set({ mapName })
+        .where(eq(matches.id, matchRow.id))
+        .returning();
+
+      if (updated) {
+        matchRow = updated;
+      }
     }
 
     const rows: (typeof cs2FaceitMatchPlayers.$inferInsert)[] = [];

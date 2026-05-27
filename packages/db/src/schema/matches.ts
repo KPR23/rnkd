@@ -23,6 +23,7 @@ export const matches = pgTable(
     queueId: integer("queue_id"),
     team1Score: integer("team1_score").notNull(),
     team2Score: integer("team2_score").notNull(),
+    mapName: text("map_name"),
     playedAt: timestamp("played_at").notNull(),
     durationSeconds: integer("duration_seconds"),
     createdAt: timestamp("created_at").defaultNow().notNull(),

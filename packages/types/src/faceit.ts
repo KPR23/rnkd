@@ -54,6 +54,14 @@ export type FaceitMatchTeamBlock = {
   roster_v1?: FaceitMatchRosterPlayer[] | null;
 };
 
+export type FaceitMapEntity = {
+  game_map_id?: string;
+  guid?: string;
+  image_lg?: string;
+  image_sm?: string;
+  name?: string;
+};
+
 export type FaceitMatchDetail = {
   match_id: string;
   game?: string;
@@ -62,6 +70,10 @@ export type FaceitMatchDetail = {
   results?: {
     winner?: string;
     score?: Record<string, number>;
+  };
+  voting_map?: {
+    entity?: FaceitMapEntity;
+    pick?: string[];
   };
   teams?: Record<string, FaceitMatchTeamBlock>;
 };
@@ -78,6 +90,7 @@ export type FaceitRoundTeam = {
 };
 
 export type FaceitRoundStats = {
+  round_stats?: Record<string, string | null> | null;
   teams?: FaceitRoundTeam[] | null;
 };
 

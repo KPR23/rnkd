@@ -156,6 +156,53 @@ export function mergePlayerStatsFromRounds(
   return byPlayer;
 }
 
+function normalizeFaceitMapName(raw: string | null | undefined): string | null {
+  const trimmed = raw?.trim();
+  if (!trimmed) return null;
+
+  const normalized = trimmed.toLowerCase().replace(/-\d+$/, "");
+  if (normalized.startsWith("de_")) {
+    return normalized;
+  }
+
+  const slug = normalized.replace(/\s+/g, "_");
+  return slug.startsWith("de_") ? slug : `de_${slug}`;
+}
+
+export function mapNameFromStatsPayload(
+  payload: FaceitMatchStatsPayload | null,
+): string | null {
+  for (const round of payload?.rounds ?? []) {
+    const map = normalizeFaceitMapName(round.round_stats?.Map);
+    if (map) return map;
+  }
+  return null;
+}
+
+export function mapNameFromMatchDetail(
+  detail: FaceitMatchDetail,
+): string | null {
+  const entity = detail.voting_map?.entity;
+  const fromEntity = normalizeFaceitMapName(
+    entity?.game_map_id ?? entity?.guid ?? null,
+  );
+  if (fromEntity) return fromEntity;
+
+  for (const pick of detail.voting_map?.pick ?? []) {
+    const map = normalizeFaceitMapName(pick);
+    if (map) return map;
+  }
+
+  return null;
+}
+
+export function resolveFaceitMapName(
+  detail: FaceitMatchDetail,
+  statsPayload: FaceitMatchStatsPayload | null,
+): string | null {
+  return mapNameFromMatchDetail(detail) ?? mapNameFromStatsPayload(statsPayload);
+}
+
 export function buildFaceitPlayerTeamIndex(
   detail: FaceitMatchDetail,
 ): Record<string, number> {
