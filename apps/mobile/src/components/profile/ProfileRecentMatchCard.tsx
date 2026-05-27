@@ -13,10 +13,9 @@ export default function ProfileRecentMatchCard({
 }) {
   const { matches, cs2_faceit_match_players: player } = row;
   const win = player.win;
-  const t1 = matches.team1Score;
-  const t2 = matches.team2Score;
-  const ours = player.team === 1 ? t1 : t2;
-  const theirs = player.team === 1 ? t2 : t1;
+  const teamScores = [matches.team1Score, matches.team2Score];
+  const ourScore = win ? Math.max(...teamScores) : Math.min(...teamScores);
+  const theirScore = win ? Math.min(...teamScores) : Math.max(...teamScores);
   const scoreColor = win ? colors.success : colors.destructive;
   const playedAt =
     matches.playedAt instanceof Date
@@ -46,7 +45,7 @@ export default function ProfileRecentMatchCard({
           weight="medium"
           color={scoreColor}
         >
-          {ours} - {theirs}
+          {ourScore} - {theirScore}
         </AppText>
         <View className="flex flex-col gap-2">
           <AppText className="text-[13px]" color={colors.textSecondary}>
