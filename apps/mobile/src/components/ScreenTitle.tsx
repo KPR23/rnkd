@@ -25,7 +25,7 @@ export default function ScreenTitle({
   const canShowSettings = showSettings && !isBackNavigation;
 
   return (
-    <View className="my-4 flex-row items-center justify-between">
+    <View className="mt-4 mb-6 flex-row items-center justify-between">
       <AppText className="text-text font-sans-medium text-3xl" weight="medium">
         {title}
       </AppText>

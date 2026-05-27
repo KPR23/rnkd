@@ -1,16 +1,16 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { useRouter } from "expo-router";
 
-import type { GameAccount, User } from "@repo/types";
+import { GAMES, type GameAccount, type User } from "@repo/types";
 import Button from "@/src/components/Button";
-import Frame from "@/src/components/Frame";
-import ScreenTitle, { ScreenTitleAction } from "@/src/components/ScreenTitle";
-import UserProfileImage from "@/src/components/UserProfileImage";
+import AccountDetailsModal from "@/src/components/profile/AccountDetailsModal";
+import GameProfileSection from "@/src/components/profile/GameProfileSection";
+import MatchActivityGraph from "@/src/components/profile/MatchActivityGraph";
+import ProfileInfoCard from "@/src/components/profile/ProfileInfoCard";
+import ScreenTitle from "@/src/components/ScreenTitle";
 import { trpc } from "@/src/utils/trpc";
-
-import ProfileContent from "./ProfileContent";
 
 export type ProfilePullToRefresh = {
   refreshing: boolean;
@@ -22,20 +22,40 @@ export type ProfileScreenProps = {
   isOwnProfile: boolean;
   gameAccounts: GameAccount[] | undefined;
   title?: string;
-  actions?: ScreenTitleAction[];
   pullToRefresh?: ProfilePullToRefresh;
 };
+
+function favoriteGameLabel(gameId: string | null | undefined) {
+  switch (gameId) {
+    case GAMES.CS2_FACEIT:
+      return "CS2";
+    case GAMES.LOL:
+      return "LoL";
+    default:
+      return null;
+  }
+}
 
 export default function ProfileScreen({
   user,
   isOwnProfile,
   gameAccounts,
   title,
-  actions,
   pullToRefresh,
 }: ProfileScreenProps) {
   const router = useRouter();
   const utils = trpc.useUtils();
+  const [detailsAccount, setDetailsAccount] = useState<GameAccount | null>(
+    null,
+  );
+
+  const { data: overview } = trpc.profile.getOverview.useQuery({
+    userId: user.id,
+  });
+
+  const { data: activityDays } = trpc.profile.getMatchActivity.useQuery({
+    userId: user.id,
+  });
 
   const { data: relationship } = trpc.friend.relationship.useQuery(
     { userId: user.id },
@@ -61,6 +81,8 @@ export default function ProfileScreen({
   const removeMut = trpc.friend.remove.useMutation({
     onSuccess: invalidateRelationship,
   });
+
+  const globalRs = overview?.user.globalRs ?? 0;
 
   const relationshipButton =
     relationship?.status === "friends" ? (
@@ -90,9 +112,9 @@ export default function ProfileScreen({
   const primaryButton = isOwnProfile ? (
     <Button
       variant="primary"
-      actionText="Edit profile"
+      actionText="Invite"
       className="flex-1"
-      onPress={() => router.push("/settings")}
+      onPress={() => void 0}
     />
   ) : (
     relationshipButton
@@ -101,9 +123,9 @@ export default function ProfileScreen({
   const secondaryButton = isOwnProfile ? (
     <Button
       variant="secondary"
-      actionText="Accounts"
+      actionText="Share"
       className="flex-1"
-      onPress={() => router.push("/linked-accounts")}
+      onPress={() => void 0}
     />
   ) : relationship?.status === "friends" ? (
     <Button
@@ -118,33 +140,28 @@ export default function ProfileScreen({
     relationship?.status === "pending" &&
     relationship?.pendingDirection === "incoming";
 
-  const incomingRequestButton = incomingRequestCondition ? (
-    <View className="w-full flex-row gap-3">
-      <Button
-        variant="primary"
-        actionText="Accept"
-        className="flex-1"
-        onPress={() => void acceptMut.mutateAsync({ requesterId: user.id })}
-      />
-      <Button
-        variant="secondary"
-        actionText="Decline"
-        className="flex-1"
-        onPress={() => void declineMut.mutateAsync({ requesterId: user.id })}
-      />
-    </View>
-  ) : null;
+  const sortedAccounts = [...(gameAccounts ?? [])].sort((a, b) => {
+    const favorite = overview?.user.favoriteGame?.id;
+    if (a.gameId === favorite) return -1;
+    if (b.gameId === favorite) return 1;
+    return 0;
+  });
 
   return (
     <>
       {title ? (
-        <ScreenTitle title={title} actions={actions} />
+        <ScreenTitle
+          title={title}
+          showRsBadge={isOwnProfile}
+          showSettings={isOwnProfile}
+          globalRs={globalRs}
+        />
       ) : (
         <View className="mt-2" />
       )}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 96 }}
+        contentContainerStyle={{ paddingBottom: 96, gap: 16 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         refreshControl={
@@ -156,38 +173,80 @@ export default function ProfileScreen({
           ) : undefined
         }
       >
-        <Frame>
-          <View className="flex items-center gap-4">
-            <UserProfileImage user={user} />
-            <View className="flex flex-col items-center gap-1 text-center">
-              <Text className="font-sans-bold text-text text-2xl">
-                {user.name}
-              </Text>
-              {user.tag && (
-                <Text className="font-mono-bold text-primary text-base">
-                  @{user.tag}
-                </Text>
-              )}
-            </View>
-          </View>
-          <View className="w-full flex-row gap-3">
-            {incomingRequestCondition ? (
-              <View className="w-full flex-row gap-3">
-                {incomingRequestButton}
-              </View>
-            ) : (
-              <View className="w-full flex-row gap-3">
-                {primaryButton}
-                {secondaryButton}
-              </View>
-            )}
-          </View>
-        </Frame>
+        <ProfileInfoCard
+          user={user}
+          bio={overview?.user.bio ?? null}
+          favoriteGameLabel={favoriteGameLabel(overview?.user.favoriteGame?.id)}
+          region={overview?.user.region ?? null}
+          lastActiveAt={overview?.lastActiveAt ?? null}
+        />
 
-        {gameAccounts && gameAccounts.length > 0 ? (
-          <ProfileContent gameAccounts={gameAccounts} />
-        ) : null}
+        <View className="flex w-full flex-row gap-3">
+          {incomingRequestCondition ? (
+            <>
+              <Button
+                variant="primary"
+                actionText="Accept"
+                className="flex-1"
+                onPress={() =>
+                  void acceptMut.mutateAsync({ requesterId: user.id })
+                }
+              />
+              <Button
+                variant="secondary"
+                actionText="Decline"
+                className="flex-1"
+                onPress={() =>
+                  void declineMut.mutateAsync({ requesterId: user.id })
+                }
+              />
+            </>
+          ) : (
+            <>
+              {primaryButton}
+              {secondaryButton}
+              {isOwnProfile ? (
+                <Button
+                  variant="secondary"
+                  actionText="···"
+                  className="w-12 px-0"
+                  onPress={() => router.push("/settings")}
+                />
+              ) : null}
+            </>
+          )}
+        </View>
+
+        <View className="border-border bg-card mx-5 flex flex-col gap-3 border p-4">
+          <View className="flex flex-row items-center justify-between">
+            <Text className="text-text font-sans-semibold text-base">
+              Match activity
+            </Text>
+            <Text className="text-primary font-sans-medium text-sm">
+              View details
+            </Text>
+          </View>
+          {activityDays ? <MatchActivityGraph days={activityDays} /> : null}
+        </View>
+
+        <View className="flex flex-col gap-8 px-5">
+          {sortedAccounts.map((account) => (
+            <GameProfileSection
+              key={account.id}
+              gameAccount={account}
+              onOpenDetails={() => setDetailsAccount(account)}
+            />
+          ))}
+        </View>
       </ScrollView>
+
+      {detailsAccount ? (
+        <AccountDetailsModal
+          gameAccount={detailsAccount}
+          visible={!!detailsAccount}
+          onClose={() => setDetailsAccount(null)}
+        />
+      ) : null}
     </>
   );
 }
