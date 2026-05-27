@@ -1,16 +1,12 @@
 import { useCallback } from "react";
 import { ActivityIndicator, View } from "react-native";
 
-import { useRouter } from "expo-router";
-import { ExportIcon, GearSixIcon } from "phosphor-react-native";
-
 import ProfileScreen from "@/src/components/profile/ProfileScreen";
 import Screen from "@/src/components/Screen";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
 
 export default function ProfileTab() {
-  const router = useRouter();
   const utils = trpc.useUtils();
   const syncPull = trpc.gameAccount.syncMyTrackedLatestMatches.useMutation();
 
@@ -60,18 +56,6 @@ export default function ProfileTab() {
         gameAccounts={[
           ...(gameAccounts?.lol ?? []),
           ...(gameAccounts?.faceit ?? []),
-        ]}
-        actions={[
-          {
-            icon: <ExportIcon />,
-            onPress: () => void 0,
-            accessibilityLabel: "Share",
-          },
-          {
-            icon: <GearSixIcon />,
-            onPress: () => router.push("/settings"),
-            accessibilityLabel: "Settings",
-          },
         ]}
       />
     </Screen>
