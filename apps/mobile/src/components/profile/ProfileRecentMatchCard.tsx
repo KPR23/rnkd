@@ -1,8 +1,9 @@
-import { Text, View } from "react-native";
+import { Image, View } from "react-native";
 
 import type { Cs2FaceitMatchHistoryRow } from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
+import { getCs2MapImageUrl } from "@/src/lib/helper/cs2Map";
 import { formatProfileMatchTime } from "@/src/lib/helper/profileTime";
 
 export default function ProfileRecentMatchCard({
@@ -21,10 +22,24 @@ export default function ProfileRecentMatchCard({
     matches.playedAt instanceof Date
       ? matches.playedAt
       : new Date(matches.playedAt);
+  const mapImageUrl = getCs2MapImageUrl(matches.mapName);
 
   return (
     <View className="bg-card border-muted flex-1 overflow-hidden border">
-      <View className="bg-muted h-24 w-full" />
+      <View className="relative h-30 w-full">
+        {mapImageUrl ? (
+          <>
+            <Image
+              source={{ uri: mapImageUrl }}
+              className="h-30 w-full"
+              resizeMode="cover"
+            />
+            <View className="bg-card/20 absolute inset-0" />
+          </>
+        ) : (
+          <View className="bg-muted h-30 w-full" />
+        )}
+      </View>
       <View className="flex flex-col px-3.5 py-2.5">
         <AppText
           className="text-base tabular-nums"
