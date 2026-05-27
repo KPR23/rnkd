@@ -8,6 +8,7 @@ import {
 import { IconContext } from "phosphor-react-native";
 
 import { colors } from "@repo/ui/colors";
+import AppText from "@/src/components/AppText";
 
 type ButtonVariant = "primary" | "secondary" | "destructive";
 
@@ -23,14 +24,14 @@ const baseClassName = "h-12 flex-row items-center justify-center gap-2";
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary: "bg-primary",
-  secondary: "bg-dark border border-border",
+  secondary: "bg-button border border-border",
   destructive: "bg-destructive border border-destructiveBorder",
 };
 
 const textColors: Record<ButtonVariant, string> = {
-  primary: "text-text",
-  secondary: "text-text",
-  destructive: "text-text",
+  primary: colors.text,
+  secondary: colors.text,
+  destructive: colors.text,
 };
 
 const iconColors: Record<ButtonVariant, string> = {
@@ -69,12 +70,13 @@ export default function Button({
         onPress={onPress}
         {...touchableProps}
       >
-        <Text
-          className={`${isDisabled ? "text-text-muted/50" : textColors[variant]} text-sm uppercase`}
-          style={{ fontFamily: "JetBrainsMono_600SemiBold" }}
+        <AppText
+          className="text-sm"
+          color={isDisabled ? colors.textSecondary : textColors[variant]}
+          weight="medium"
         >
           {actionText}
-        </Text>
+        </AppText>
         {icon}
       </TouchableOpacity>
     </IconContext.Provider>
