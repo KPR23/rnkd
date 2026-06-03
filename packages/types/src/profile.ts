@@ -1,0 +1,23 @@
+import type { GameAccounts } from "./game";
+
+export type { FaceitLevelProgress } from "./faceit-level-thresholds";
+
+export type MatchActivityDay = {
+  date: string;
+  played: boolean;
+};
+
+export type ProfileOverview = {
+  user: {
+    id: string;
+    name: string;
+    tag: string | null;
+    image: string | null;
+    bio: string | null;
+    region: string | null;
+    globalRs: number;
+    favoriteGame: { id: string; name: string } | null;
+  };
+  gameAccounts: GameAccounts;
+  lastActiveAt: Date | null;
+};

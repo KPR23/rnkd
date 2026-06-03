@@ -34,7 +34,7 @@ export const cs2FaceitRankedEntries = pgTable(
     primaryKey({ columns: [table.gameAccountId, table.gameKey] }),
     check(
       "cs2_faceit_ranked_entries_game_id_is_cs2_faceit",
-      sql`${table.gameId} = ${GAMES.CS2_FACEIT}`,
+      sql`${table.gameId} = 'cs2_faceit'`,
     ),
     foreignKey({
       columns: [table.gameAccountId],

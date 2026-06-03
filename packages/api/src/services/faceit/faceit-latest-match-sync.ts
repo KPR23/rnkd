@@ -10,6 +10,7 @@ import {
 } from "@repo/db";
 import type { FaceitMatchDetail, FaceitMatchStatsPayload } from "@repo/types";
 
+import { recomputeGlobalRs } from "../scoring/rnkd-score";
 import { getCs2FaceitAccountsOfFriends } from "../social/friend-game-accounts";
 import {
   getFaceitMatch,
@@ -170,7 +171,9 @@ export async function mapFaceitMatchToDb(
             headshotPct: sql.raw(
               `excluded.${cs2FaceitMatchPlayers.headshotPct.name}`,
             ),
-            rawStats: sql.raw(`excluded.${cs2FaceitMatchPlayers.rawStats.name}`),
+            rawStats: sql.raw(
+              `excluded.${cs2FaceitMatchPlayers.rawStats.name}`,
+            ),
           },
         });
     }
@@ -256,6 +259,10 @@ async function refreshFaceitRankedForAccount(gameAccountId: string) {
       syncedAt,
     });
   });
+
+  if (account.userId) {
+    await recomputeGlobalRs(account.userId);
+  }
 }
 
 export async function syncLatestFaceitMatchForAccount(
