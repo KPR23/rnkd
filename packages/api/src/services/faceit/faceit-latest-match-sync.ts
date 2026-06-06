@@ -213,7 +213,7 @@ async function syncMissingFaceitMatchesFromHistoryPage(params: {
         eq(matches.externalMatchId, mid),
         eq(matches.gameId, GAMES.CS2_FACEIT),
       ),
-      columns: { id: true },
+      columns: { id: true, mapName: true },
     });
 
     if (matchRow) {
@@ -224,7 +224,7 @@ async function syncMissingFaceitMatchesFromHistoryPage(params: {
         ),
         columns: { id: true },
       });
-      if (participant) continue;
+      if (participant && matchRow.mapName) continue;
     }
 
     const detail = await getFaceitMatch(mid);

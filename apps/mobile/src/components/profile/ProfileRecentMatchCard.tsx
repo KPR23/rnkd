@@ -6,6 +6,8 @@ import AppText from "@/src/components/AppText";
 import { getCs2MapImageUrl } from "@/src/lib/helper/cs2Map";
 import { formatProfileMatchTime } from "@/src/lib/helper/profileTime";
 
+const MAP_IMAGE_HEIGHT = 120;
+
 export default function ProfileRecentMatchCard({
   row,
 }: {
@@ -25,18 +27,24 @@ export default function ProfileRecentMatchCard({
 
   return (
     <View className="bg-card border-muted flex-1 overflow-hidden border">
-      <View className="relative h-30 w-full">
+      <View
+        className="relative w-full overflow-hidden"
+        style={{ height: MAP_IMAGE_HEIGHT }}
+      >
         {mapImageUrl ? (
           <>
             <Image
               source={{ uri: mapImageUrl }}
-              className="h-30 w-full"
+              style={{ height: MAP_IMAGE_HEIGHT, width: "100%" }}
               resizeMode="cover"
             />
             <View className="bg-card/20 absolute inset-0" />
           </>
         ) : (
-          <View className="bg-muted h-30 w-full" />
+          <View
+            className="bg-muted w-full"
+            style={{ height: MAP_IMAGE_HEIGHT }}
+          />
         )}
       </View>
       <View className="flex flex-col px-3.5 py-2.5">

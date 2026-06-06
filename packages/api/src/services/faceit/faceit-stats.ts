@@ -184,7 +184,7 @@ export function mapNameFromMatchDetail(
 ): string | null {
   const entity = detail.voting_map?.entity;
   const fromEntity = normalizeFaceitMapName(
-    entity?.game_map_id ?? entity?.guid ?? null,
+    entity?.game_map_id ?? entity?.guid ?? entity?.name ?? null,
   );
   if (fromEntity) return fromEntity;
 
