@@ -250,7 +250,7 @@ export async function getCs2FaceitMatchDetails(input: {
 
   const teams: Cs2FaceitMatchDetails["teams"][number][] = teamEntries
     .slice(0, 2)
-    .map(([_, block], index) => {
+    .map(([, block], index) => {
       const teamNumber = (index + 1) as 1 | 2;
       const score = teamNumber === 1 ? team1Score : team2Score;
       const won = winningTeam === teamNumber;

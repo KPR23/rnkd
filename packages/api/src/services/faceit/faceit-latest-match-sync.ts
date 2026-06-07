@@ -288,7 +288,14 @@ async function refreshFaceitRankedForAccount(gameAccountId: string) {
   });
 
   if (account.userId) {
-    await recomputeGlobalRs(account.userId);
+    try {
+      await recomputeGlobalRs(account.userId);
+    } catch (error) {
+      console.error("Failed to recompute global RS for user", {
+        userId: account.userId,
+        error,
+      });
+    }
   }
 
   try {
