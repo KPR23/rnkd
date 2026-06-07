@@ -18,6 +18,15 @@ export default function TabLayout() {
           }
         />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="groups">
+        <Label>Groups</Label>
+        <Icon
+          sf="person.2.fill"
+          androidSrc={
+            <VectorIcon family={MaterialCommunityIcons} name="account-group" />
+          }
+        />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="search">
         <Label>Search</Label>
         <Icon
@@ -28,15 +37,6 @@ export default function TabLayout() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="progress">
-        <Label>Progress</Label>
-        <Icon
-          sf="chart.bar.fill"
-          androidSrc={
-            <VectorIcon family={MaterialCommunityIcons} name="chart-bar" />
-          }
-        />
-      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Label>Profile</Label>
         <Icon

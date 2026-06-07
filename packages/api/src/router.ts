@@ -2,6 +2,7 @@ import { faceitRouter } from "./routers/faceit";
 import { friendRouter } from "./routers/friend";
 import { gameRouter } from "./routers/game";
 import { gameAccountRouter } from "./routers/gameAccount";
+import { groupRouter } from "./routers/group";
 import { matchRouter } from "./routers/match";
 import { profileRouter } from "./routers/profile";
 import { riotRouter } from "./routers/riot";
@@ -19,6 +20,7 @@ export const appRouter = router({
   faceit: faceitRouter,
   match: matchRouter,
   friend: friendRouter,
+  group: groupRouter,
 });
 
 export type AppRouter = typeof appRouter;

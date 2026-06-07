@@ -10,6 +10,9 @@ export default function WebTabLayout() {
         <TabTrigger name="index" href="/" style={styles.tab}>
           Home
         </TabTrigger>
+        <TabTrigger name="groups" href="/groups" style={styles.tab}>
+          Groups
+        </TabTrigger>
         <TabTrigger name="search" href="/(search)/search" style={styles.tab}>
           Search
         </TabTrigger>

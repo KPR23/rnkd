@@ -1,5 +1,12 @@
-import { useCallback, useState } from "react";
-import { RefreshControl, ScrollView, View } from "react-native";
+import { useCallback, useRef, useState } from "react";
+import {
+  Dimensions,
+  Modal,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  View,
+} from "react-native";
 
 import { useRouter } from "expo-router";
 
@@ -55,6 +62,12 @@ export default function ProfileScreen({
   const [detailsAccount, setDetailsAccount] = useState<GameAccount | null>(
     null,
   );
+  const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
+  const [actionsMenuAnchor, setActionsMenuAnchor] = useState<{
+    top: number;
+    right: number;
+  } | null>(null);
+  const overflowButtonRef = useRef<View>(null);
 
   const { data: overview } = trpc.profile.getOverview.useQuery({
     userId: user.id,
@@ -90,31 +103,33 @@ export default function ProfileScreen({
   });
 
   const globalRs = overview?.user.globalRs ?? 0;
+  const isFriendActionPending =
+    requestMut.isPending ||
+    acceptMut.isPending ||
+    declineMut.isPending ||
+    cancelMut.isPending ||
+    removeMut.isPending;
 
-  const relationshipButton =
-    relationship?.status === "friends" ? (
-      <Button
-        variant="primary"
-        actionText="Message"
-        className="flex-1"
-        onPress={() => void 0}
-      />
-    ) : relationship?.status === "pending" &&
-      relationship?.pendingDirection === "outgoing" ? (
-      <Button
-        variant="secondary"
-        actionText="Cancel request"
-        className="flex-1"
-        onPress={() => void cancelMut.mutateAsync({ userId: user.id })}
-      />
-    ) : relationship?.status === "default" ? (
-      <Button
-        variant="primary"
-        actionText="Add friend"
-        className="flex-1"
-        onPress={() => void requestMut.mutateAsync({ userId: user.id })}
-      />
-    ) : null;
+  const closeActionsMenu = () => {
+    setIsActionsMenuOpen(false);
+    setActionsMenuAnchor(null);
+  };
+
+  const openActionsMenu = () => {
+    overflowButtonRef.current?.measureInWindow((x, y, width, height) => {
+      const { width: screenWidth } = Dimensions.get("window");
+      setActionsMenuAnchor({
+        top: y + height + 8,
+        right: screenWidth - x - width,
+      });
+      setIsActionsMenuOpen(true);
+    });
+  };
+
+  const handleRemoveFriend = () => {
+    closeActionsMenu();
+    void removeMut.mutateAsync({ userId: user.id });
+  };
 
   const primaryButton = isOwnProfile ? (
     <Button
@@ -123,24 +138,66 @@ export default function ProfileScreen({
       className="flex-1"
       onPress={() => void 0}
     />
-  ) : (
-    relationshipButton
-  );
+  ) : relationship?.status === "friends" ? (
+    <Button
+      variant="primary"
+      actionText="Invite"
+      className="flex-1"
+      disabled={isFriendActionPending}
+      onPress={() => router.push("/groups")}
+    />
+  ) : relationship?.status === "pending" &&
+    relationship?.pendingDirection === "outgoing" ? (
+    <Button
+      variant="secondary"
+      actionText="Cancel invite"
+      className="flex-1"
+      disabled={isFriendActionPending}
+      onPress={() => void cancelMut.mutateAsync({ userId: user.id })}
+    />
+  ) : relationship?.status === "default" ? (
+    <Button
+      variant="primary"
+      actionText="Add friend"
+      className="flex-1"
+      disabled={isFriendActionPending}
+      onPress={() => void requestMut.mutateAsync({ userId: user.id })}
+    />
+  ) : null;
 
-  const secondaryButton = isOwnProfile ? (
+  const shouldShowShare =
+    isOwnProfile ||
+    relationship?.status === "default" ||
+    relationship?.status === "friends" ||
+    (relationship?.status === "pending" &&
+      relationship?.pendingDirection === "outgoing");
+
+  const secondaryButton = shouldShowShare ? (
     <Button
       variant="secondary"
       actionText="Share"
       className="flex-1"
       onPress={() => void 0}
     />
-  ) : relationship?.status === "friends" ? (
+  ) : null;
+
+  const overflowButton = isOwnProfile ? (
     <Button
       variant="secondary"
-      actionText="Remove friend"
-      className="flex-1"
-      onPress={() => void removeMut.mutateAsync({ userId: user.id })}
+      actionText="···"
+      className="w-12 px-0"
+      onPress={() => router.push("/settings")}
     />
+  ) : relationship?.status === "friends" ? (
+    <View ref={overflowButtonRef} collapsable={false}>
+      <Button
+        variant="secondary"
+        actionText="···"
+        className="w-12 px-0"
+        disabled={isFriendActionPending}
+        onPress={openActionsMenu}
+      />
+    </View>
   ) : null;
 
   const incomingRequestCondition =
@@ -198,6 +255,7 @@ export default function ProfileScreen({
                   variant="primary"
                   actionText="Accept"
                   className="flex-1"
+                  disabled={isFriendActionPending}
                   onPress={() =>
                     void acceptMut.mutateAsync({ requesterId: user.id })
                   }
@@ -206,6 +264,7 @@ export default function ProfileScreen({
                   variant="secondary"
                   actionText="Decline"
                   className="flex-1"
+                  disabled={isFriendActionPending}
                   onPress={() =>
                     void declineMut.mutateAsync({ requesterId: user.id })
                   }
@@ -215,17 +274,16 @@ export default function ProfileScreen({
               <>
                 {primaryButton}
                 {secondaryButton}
-                {isOwnProfile ? (
-                  <Button
-                    variant="secondary"
-                    actionText="···"
-                    className="w-12 px-0"
-                    onPress={() => router.push("/settings")}
-                  />
-                ) : null}
+                {overflowButton}
               </>
             )}
           </View>
+          {incomingRequestCondition ? (
+            <AppText className="text-sm" color={colors.textSecondary}>
+              {user.tag ?? user.name} sent you a friend request. You can accept
+              or decline it here.
+            </AppText>
+          ) : null}
         </View>
 
         <View className="flex flex-col gap-2">
@@ -265,6 +323,47 @@ export default function ProfileScreen({
           ))}
         </View>
       </ScrollView>
+
+      <Modal
+        visible={isActionsMenuOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={closeActionsMenu}
+      >
+        <View className="flex-1">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close actions menu"
+            className="absolute inset-0"
+            onPress={closeActionsMenu}
+          />
+          {actionsMenuAnchor ? (
+            <View
+              className="border-muted bg-card absolute min-w-48 border p-2"
+              style={{
+                top: actionsMenuAnchor.top,
+                right: actionsMenuAnchor.right,
+              }}
+            >
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Remove friend"
+                className="px-3 py-3"
+                disabled={removeMut.isPending}
+                onPress={handleRemoveFriend}
+              >
+                <AppText
+                  className="text-sm"
+                  color={colors.destructiveText}
+                  weight="medium"
+                >
+                  Remove friend
+                </AppText>
+              </Pressable>
+            </View>
+          ) : null}
+        </View>
+      </Modal>
 
       {detailsAccount ? (
         <AccountDetailsModal

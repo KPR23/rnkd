@@ -2,6 +2,7 @@ export * from "./auth";
 export * from "./cs2-faceit-match-players";
 export * from "./cs2-faceit-ranked";
 export * from "./games";
+export * from "./groups";
 export * from "./leagues";
 export * from "./lol-ranked";
 export * from "./matches";
