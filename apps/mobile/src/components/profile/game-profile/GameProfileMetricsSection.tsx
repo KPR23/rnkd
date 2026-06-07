@@ -63,7 +63,7 @@ export default function GameProfileMetricsSection({
             }
           />
           <GameProfileMetricCard
-            label="ELO peak"
+            label="ELO peak*"
             value={
               isLoading
                 ? loadingValue

@@ -6,6 +6,7 @@ import {
   eloHistory,
   GAMES,
   matches,
+  playerStats,
 } from "@repo/db";
 import type { FaceitMatchKdRow, FaceitMatchPerformanceRow } from "@repo/types";
 
@@ -84,4 +85,15 @@ export async function findFaceitEloPeak(
     .where(eq(eloHistory.gameAccountId, gameAccountId));
 
   return row?.peak ?? null;
+}
+
+export async function findFaceitPlayerStats(gameAccountId: string) {
+  try {
+    return await db.query.playerStats.findFirst({
+      where: eq(playerStats.gameAccountId, gameAccountId),
+    });
+  } catch (error) {
+    console.error("findFaceitPlayerStats failed", { gameAccountId, error });
+    return null;
+  }
 }

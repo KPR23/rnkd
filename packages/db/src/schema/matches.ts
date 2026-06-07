@@ -92,6 +92,7 @@ export const playerStats = pgTable(
     avg_kills: real("avg_kills").notNull(),
     avg_deaths: real("avg_deaths").notNull(),
     avg_assists: real("avg_assists").notNull(),
+    avgKd: real("avg_kd"),
     lastCalculatedAt: timestamp("last_calculated_at").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },

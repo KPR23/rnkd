@@ -1,6 +1,5 @@
 import type {
   FaceitAllTimeMetrics,
-  FaceitMatchKdRow,
   FaceitMatchPerformanceRow,
   FaceitRecentPerformance,
   FaceitRecentRecord,
@@ -81,46 +80,31 @@ export function computeFaceitRecentRecord(
   };
 }
 
-export function computeFaceitAllTimeMetrics(input: {
-  totalMatches: number;
-  wins: number;
-  kdRows: FaceitMatchKdRow[];
-  currentElo: number | null;
-  historyPeak: number | null;
-}): FaceitAllTimeMetrics {
-  const { totalMatches, wins, kdRows, currentElo, historyPeak } = input;
-
-  const winRate = totalMatches > 0 ? (wins / totalMatches) * 100 : null;
-
-  const kdRatios = kdRows
-    .map((row) => computeKdRatio(row.kills, row.deaths))
-    .filter((value): value is number => value !== null);
-
-  const eloPeak = resolveFaceitEloPeak(currentElo, historyPeak);
-
+export function mapPlayerStatsToAllTimeMetrics(
+  row: {
+    totalMatches: number;
+    winRate: number;
+    avgKd: number | null;
+  },
+  historyPeak: number | null,
+): FaceitAllTimeMetrics {
   return {
-    totalMatches,
-    winRate,
-    avgKd: average(kdRatios),
-    eloPeak,
+    totalMatches: row.totalMatches,
+    winRate: Number.isFinite(row.winRate) ? row.winRate : null,
+    avgKd:
+      row.avgKd !== null && row.avgKd !== undefined && Number.isFinite(row.avgKd)
+        ? row.avgKd
+        : null,
+    eloPeak: resolveTrackedEloPeak(historyPeak),
   };
 }
 
-export function resolveFaceitEloPeak(
-  currentElo: number | null,
-  historyPeak: number | null,
-): number | null {
-  if (currentElo !== null && currentElo !== undefined) {
-    return historyPeak !== null && historyPeak !== undefined
-      ? Math.max(currentElo, historyPeak)
-      : currentElo;
+export function resolveTrackedEloPeak(historyPeak: number | null): number | null {
+  if (historyPeak === null || historyPeak === undefined) {
+    return null;
   }
 
-  if (historyPeak !== null && historyPeak !== undefined) {
-    return historyPeak;
-  }
-
-  return null;
+  return historyPeak;
 }
 
 export { RECENT_MATCH_LIMIT };

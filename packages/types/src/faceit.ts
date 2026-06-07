@@ -97,3 +97,26 @@ export type FaceitRoundStats = {
 export type FaceitMatchStatsPayload = {
   rounds?: FaceitRoundStats[] | null;
 };
+
+export type FaceitLifetimeStatMap = Record<string, string | number | null>;
+
+export type FaceitPlayerStatsResponse = {
+  player_id: string;
+  game_id: string;
+  lifetime: FaceitLifetimeStatMap;
+  segments?: Array<{
+    label?: string;
+    mode?: string;
+    type?: string;
+    stats?: FaceitLifetimeStatMap;
+  }>;
+};
+
+export type ParsedFaceitLifetimeStats = {
+  totalMatches: number;
+  totalWins: number;
+  winRate: number | null;
+  avgKd: number | null;
+  avgAdr: number | null;
+  avgHsPct: number | null;
+};

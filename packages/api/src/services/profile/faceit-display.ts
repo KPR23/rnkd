@@ -2,23 +2,45 @@ import { TRPCError } from "@trpc/server";
 
 import { getFaceitLevelProgress } from "@repo/types";
 import { isCs2FaceitGameAccount } from "@repo/types";
+import type { FaceitAllTimeMetrics } from "@repo/types";
 
 import { findGameAccountById } from "../../repositories/game-accounts.repo";
 import {
-  countFaceitMatches,
-  countFaceitWins,
   findFaceitEloPeak,
-  findFaceitMatchKdRows,
+  findFaceitPlayerStats,
   findRecentFaceitMatchPerformance,
 } from "../../repositories/faceit-profile.repo";
 import { findCs2FaceitRankedEntries } from "../../repositories/ranked.repo";
 import { mapGameAccountRecord } from "../game-account/normalize";
 import {
-  computeFaceitAllTimeMetrics,
   computeFaceitRecentPerformance,
   computeFaceitRecentRecord,
+  mapPlayerStatsToAllTimeMetrics,
   RECENT_MATCH_LIMIT,
+  resolveTrackedEloPeak,
 } from "./faceit-metrics";
+
+function emptyAllTimeMetrics(historyPeak: number | null): FaceitAllTimeMetrics {
+  return {
+    totalMatches: 0,
+    winRate: null,
+    avgKd: null,
+    eloPeak: resolveTrackedEloPeak(historyPeak),
+  };
+}
+
+async function resolveAllTimeMetrics(
+  gameAccountId: string,
+  historyPeak: number | null,
+): Promise<FaceitAllTimeMetrics> {
+  const cached = await findFaceitPlayerStats(gameAccountId);
+
+  if (!cached) {
+    return emptyAllTimeMetrics(historyPeak);
+  }
+
+  return mapPlayerStatsToAllTimeMetrics(cached, historyPeak);
+}
 
 export async function getCs2FaceitProfileDisplay(gameAccountId: string) {
   const accountRecord = await findGameAccountById(gameAccountId);
@@ -36,19 +58,9 @@ export async function getCs2FaceitProfileDisplay(gameAccountId: string) {
     });
   }
 
-  const [
-    rankedRows,
-    recentRows,
-    totalMatches,
-    wins,
-    kdRows,
-    historyPeak,
-  ] = await Promise.all([
+  const [rankedRows, recentRows, historyPeak] = await Promise.all([
     findCs2FaceitRankedEntries(gameAccountId),
     findRecentFaceitMatchPerformance(gameAccountId, RECENT_MATCH_LIMIT),
-    countFaceitMatches(gameAccountId),
-    countFaceitWins(gameAccountId),
-    findFaceitMatchKdRows(gameAccountId),
     findFaceitEloPeak(gameAccountId),
   ]);
 
@@ -61,17 +73,16 @@ export async function getCs2FaceitProfileDisplay(gameAccountId: string) {
       ? getFaceitLevelProgress(faceitElo)
       : null;
 
+  const allTimeMetrics = await resolveAllTimeMetrics(
+    gameAccountId,
+    historyPeak,
+  );
+
   return {
     gameAccount: account,
     primaryRanked,
     levelProgress,
-    allTimeMetrics: computeFaceitAllTimeMetrics({
-      totalMatches,
-      wins,
-      kdRows,
-      currentElo: faceitElo,
-      historyPeak,
-    }),
+    allTimeMetrics,
     recentRecord: computeFaceitRecentRecord(recentRows),
     recentPerformance: computeFaceitRecentPerformance(recentRows),
   };

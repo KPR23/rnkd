@@ -18,6 +18,12 @@ import {
   getFaceitPlayerById,
   getFaceitPlayerHistory,
 } from "./faceit-client";
+import {
+  ensureFaceitEloBaseline,
+  recordFaceitEloSnapshot,
+} from "./faceit-elo-tracking";
+import { syncFaceitLifetimeStats } from "./faceit-lifetime-sync";
+import { resolveCs2FaceitElo } from "./faceit-player";
 import { persistFaceitSnapshotInTx } from "./faceit-profile-persist";
 import {
   buildFaceitPlayerTeamIndex,
@@ -265,6 +271,8 @@ async function refreshFaceitRankedForAccount(gameAccountId: string) {
   }
 
   const syncedAt = new Date();
+  const currentElo = resolveCs2FaceitElo(player);
+
   await db.transaction(async (tx) => {
     await persistFaceitSnapshotInTx(tx, {
       gameAccountId,
@@ -273,8 +281,23 @@ async function refreshFaceitRankedForAccount(gameAccountId: string) {
     });
   });
 
+  await ensureFaceitEloBaseline({
+    gameAccountId,
+    faceitPlayerId: account.externalId,
+    currentElo,
+  });
+
   if (account.userId) {
     await recomputeGlobalRs(account.userId);
+  }
+
+  try {
+    await syncFaceitLifetimeStats(gameAccountId);
+  } catch (error) {
+    console.error("Failed to sync Faceit lifetime stats", {
+      gameAccountId,
+      error,
+    });
   }
 }
 
@@ -353,6 +376,22 @@ export async function syncLatestFaceitMatchForAccount(
   }
 
   await refreshFaceitRankedForAccount(gameAccountId);
+
+  const headMatchRow = await db.query.matches.findFirst({
+    where: and(
+      eq(matches.externalMatchId, headId),
+      eq(matches.gameId, GAMES.CS2_FACEIT),
+    ),
+    columns: { id: true },
+  });
+
+  if (headMatchRow) {
+    await recordFaceitEloSnapshot({
+      gameAccountId,
+      faceitPlayerId: account.externalId,
+      matchId: headMatchRow.id,
+    });
+  }
 
   if (!anyWork && watermark === headId) {
     return { ok: true, kind: "unchanged" };
