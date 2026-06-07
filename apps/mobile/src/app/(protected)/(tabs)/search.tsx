@@ -184,84 +184,84 @@ export default function SearchTab() {
 
   return (
     <Screen>
-      <View className="flex flex-1 flex-col gap-6">
-        <View className="-mb-6">
-          <ScreenTitle title="Search" />
-        </View>
-        <SearchInputBar
-          value={search}
-          onChangeText={handleSearch}
-          onSubmitEditing={handleSubmitSearch}
-          onClear={() => setSearch("")}
-        />
+      <View className="flex flex-1 flex-col">
+        <ScreenTitle title="Search" globalRs={3443} showRsBadge />
+        <View className="flex flex-1 flex-col gap-3">
+          <SearchInputBar
+            value={search}
+            onChangeText={handleSearch}
+            onSubmitEditing={handleSubmitSearch}
+            onClear={() => setSearch("")}
+          />
 
-        {showRecentSearches ? (
-          <SearchRecentPreview
-            recentSearches={recentSearches}
-            onSelectSearch={handleSelectRecentSearch}
-          />
-        ) : null}
+          {showRecentSearches ? (
+            <SearchRecentPreview
+              recentSearches={recentSearches}
+              onSelectSearch={handleSelectRecentSearch}
+            />
+          ) : null}
 
-        {showEmptyState ? (
-          <SearchEmptyState
-            title="Start typing to search"
-            subtitle="Players, teams or games"
-          />
-        ) : !hasActiveSearch ? (
-          <SearchEmptyState
-            title={`Type at least ${MIN_SEARCH_LENGTH} characters to search`}
-          />
-        ) : (
-          <View className="flex flex-col gap-4">
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 10 }}
-            >
-              {resultCategories.map((category) => (
-                <View key={category.name}>
-                  <SearchCategoriesCard
-                    name={category.name}
-                    icon={category.icon}
-                    color={category.color}
-                    onPress={() => handleSelectCategory(category.name)}
-                    selected={activeCategory === category.name}
-                  />
-                </View>
-              ))}
-            </ScrollView>
-            <SearchSection
-              title="Search results"
-              onActionPress={
-                activeCategory !== "All" ? handleClearCategory : undefined
-              }
-            >
-              <View className="flex flex-col gap-2">
-                {isLoadingSearchResults ? (
-                  <View className="items-center py-6">
-                    <ActivityIndicator />
-                  </View>
-                ) : filteredSearchResults.length > 0 ? (
-                  filteredSearchResults.map((result) => (
-                    <SearchResultCard
-                      key={`${result.type}:${result.id}`}
-                      result={result}
-                      onPress={() => {
-                        router.push(`/${result.type}/${result.id}`);
-                      }}
+          {showEmptyState ? (
+            <SearchEmptyState
+              title="Start typing to search"
+              subtitle="Players, teams or games"
+            />
+          ) : !hasActiveSearch ? (
+            <SearchEmptyState
+              title={`Type at least ${MIN_SEARCH_LENGTH} characters to search`}
+            />
+          ) : (
+            <View className="flex flex-col gap-4">
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 10 }}
+              >
+                {resultCategories.map((category) => (
+                  <View key={category.name}>
+                    <SearchCategoriesCard
+                      name={category.name}
+                      icon={category.icon}
+                      color={category.color}
+                      onPress={() => handleSelectCategory(category.name)}
+                      selected={activeCategory === category.name}
                     />
-                  ))
-                ) : (
-                  <View className="items-center py-6">
-                    <Text className="font-sans-medium text-text-muted text-sm">
-                      No results found
-                    </Text>
                   </View>
-                )}
-              </View>
-            </SearchSection>
-          </View>
-        )}
+                ))}
+              </ScrollView>
+              <SearchSection
+                title="Search results"
+                onActionPress={
+                  activeCategory !== "All" ? handleClearCategory : undefined
+                }
+              >
+                <View className="flex flex-col gap-2">
+                  {isLoadingSearchResults ? (
+                    <View className="items-center py-6">
+                      <ActivityIndicator />
+                    </View>
+                  ) : filteredSearchResults.length > 0 ? (
+                    filteredSearchResults.map((result) => (
+                      <SearchResultCard
+                        key={`${result.type}:${result.id}`}
+                        result={result}
+                        onPress={() => {
+                          router.push(`/${result.type}/${result.id}`);
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <View className="items-center py-6">
+                      <Text className="font-sans-medium text-text-muted text-sm">
+                        No results found
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </SearchSection>
+            </View>
+          )}
+        </View>
       </View>
     </Screen>
   );

@@ -20,13 +20,13 @@ export default function SearchInputBar({
   onQrPress,
 }: SearchInputBarProps) {
   return (
-    <View className="flex w-full flex-row items-start gap-3">
-      <View className="bg-card border-border h-[54px] min-w-0 flex-1 flex-row items-center gap-3 border px-4">
+    <View className="flex w-full flex-row items-start gap-2.5">
+      <View className="bg-card border-border h-13.5 min-w-0 flex-1 flex-row items-center gap-3 border px-4">
         <MagnifyingGlassIcon size={24} color={colors.textSecondary} />
         <TextInput
           placeholder="Search"
           placeholderTextColor={colors.textSecondary}
-          className="text-text h-[54px] min-w-0 flex-1 text-base leading-5"
+          className="text-text h-13.5 min-w-0 flex-1 text-base leading-13.5"
           autoCorrect={false}
           autoCapitalize="none"
           value={value}
@@ -46,7 +46,7 @@ export default function SearchInputBar({
       </View>
       <TouchableOpacity
         activeOpacity={0.7}
-        className="bg-button border-border size-[54px] items-center justify-center border"
+        className="bg-button border-border size-13.5 items-center justify-center border"
         onPress={onQrPress}
       >
         <QrCodeIcon size={32} color={colors.text} />

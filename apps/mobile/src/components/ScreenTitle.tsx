@@ -25,10 +25,15 @@ export default function ScreenTitle({
   const canShowSettings = showSettings && !isBackNavigation;
 
   return (
-    <View className="mt-4 mb-6 flex-row items-center justify-between">
-      <AppText className="text-text font-sans-medium text-3xl" weight="medium">
+    <View className="my-4 flex-row items-center">
+      <AppText
+        className="text-text font-sans-medium text-3xl leading-[32px]"
+        weight="medium"
+      >
         {title}
       </AppText>
+      <View className="w-6" />
+      <View className="flex-1" />
       <View className="flex-row items-center gap-3">
         {canShowBadge ? <RSBadge globalRs={globalRs} /> : null}
         <Pressable>
