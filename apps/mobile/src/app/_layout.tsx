@@ -2,18 +2,6 @@ import "@/globals.css";
 
 import { useEffect } from "react";
 
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
-import {
-  JetBrainsMono_400Regular,
-  JetBrainsMono_500Medium,
-  JetBrainsMono_600SemiBold,
-  JetBrainsMono_700Bold,
-} from "@expo-google-fonts/jetbrains-mono";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -29,14 +17,7 @@ function RootNavigator() {
   const { data: session, isPending } = useAuth();
 
   const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    JetBrainsMono_400Regular,
-    JetBrainsMono_500Medium,
-    JetBrainsMono_600SemiBold,
-    JetBrainsMono_700Bold,
+    "IBM Plex Sans": require("../../assets/fonts/IBMPlexSans-VariableFont_wdth,wght.ttf"),
   });
 
   const fontsReady = fontsLoaded || !!fontError;

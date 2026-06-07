@@ -3,10 +3,11 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 
 import { CaretRightIcon } from "phosphor-react-native";
 
-import { GAMES, SEARCH_PROFILE_LABELS, type SearchResult } from "@repo/types";
-import { colors, tagColors } from "@repo/ui/colors";
+import { GAMES, type SearchResult } from "@repo/types";
+import { colors } from "@repo/ui/colors";
 import { getInitialsForFallbackPhoto } from "@repo/ui/components/getInitialsForFallbackPhoto";
 import GameLogo from "@/src/components/games/GameLogo";
+import SearchResultCardContent from "@/src/components/search/SearchResultCardContent";
 
 interface SearchResultCardProps {
   result: SearchResult;
@@ -22,10 +23,10 @@ function SearchCardShell({
 }) {
   return (
     <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
-      <View className="bg-card border-border flex-row items-center justify-start gap-3 border px-4 py-3">
+      <View className="bg-card border-muted flex-row items-center justify-start gap-3 border px-4 py-3">
         {children}
         <View className="shrink-0 self-center">
-          <CaretRightIcon weight="bold" color={colors.textMuted} size={16} />
+          <CaretRightIcon weight="regular" color={colors.textMuted} size={24} />
         </View>
       </View>
     </TouchableOpacity>
@@ -75,72 +76,23 @@ export default function SearchResultCard({
   result,
   onPress,
 }: SearchResultCardProps) {
-  if (result.type === "game") {
-    return (
-      <SearchCardShell onPress={onPress}>
-        <SearchResultLeading result={result} />
-        <View className="min-w-0 flex-1 items-start justify-center gap-0.5">
-          <View className="w-full min-w-0 flex-row items-center justify-start gap-1">
-            <Text
-              className="font-sans-semibold text-text shrink text-sm leading-none"
-              numberOfLines={1}
-            >
-              {result.name}
-            </Text>
-            <Text className="font-sans-semibold text-text-secondary text-sm leading-none">
-              ·
-            </Text>
-            <Text
-              className="font-sans-semibold text-xs leading-none"
-              style={{ color: tagColors.game }}
-            >
-              {SEARCH_PROFILE_LABELS.game}
-            </Text>
-          </View>
-          <Text
-            className="font-sans-medium text-text-secondary min-w-0 shrink text-xs leading-none"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {getGamePublisher(result.id)}
-          </Text>
-        </View>
-      </SearchCardShell>
-    );
-  }
-
-  const primaryLine = result.tag ? `@${result.tag}` : result.name;
-  const secondaryLine = result.name;
+  const primaryLine =
+    result.type === "game"
+      ? result.name
+      : result.tag
+        ? result.tag
+        : result.name;
+  const secondaryLine =
+    result.type === "game" ? getGamePublisher(result.id) : result.name;
 
   return (
     <SearchCardShell onPress={onPress}>
       <SearchResultLeading result={result} />
-      <View className="min-w-0 flex-1 items-start justify-center gap-0.5">
-        <View className="w-full min-w-0 flex-row items-center gap-1">
-          <Text
-            className="font-mono-semibold text-text shrink text-sm leading-none"
-            numberOfLines={1}
-          >
-            {primaryLine}
-          </Text>
-          <Text className="font-sans-semibold text-text-secondary text-sm leading-none">
-            ·
-          </Text>
-          <Text
-            className="font-sans-semibold text-xs leading-none"
-            style={{ color: tagColors[result.type] }}
-          >
-            {SEARCH_PROFILE_LABELS[result.type]}
-          </Text>
-        </View>
-        <Text
-          className="font-sans-medium text-text-secondary min-w-0 shrink text-xs leading-none"
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
-          {secondaryLine}
-        </Text>
-      </View>
+      <SearchResultCardContent
+        primaryLine={primaryLine}
+        profileType={result.type}
+        secondaryLine={secondaryLine}
+      />
     </SearchCardShell>
   );
 }

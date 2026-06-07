@@ -1,9 +1,4 @@
-import {
-  Text,
-  TouchableOpacity,
-  TouchableOpacityProps,
-  View,
-} from "react-native";
+import { Text, TouchableOpacity } from "react-native";
 
 import { IconContext } from "phosphor-react-native";
 
@@ -24,12 +19,13 @@ export default function SearchCategoriesCard({
   onPress,
   selected,
 }: SearchCategoriesCardProps) {
+  const activeColor = selected && name === "All" ? colors.text : color;
+
   const iconContext = {
     size: 20,
-    color: color,
+    color: selected ? activeColor : color,
     weight: "regular" as const,
   };
-
   return (
     <IconContext.Provider value={iconContext}>
       <TouchableOpacity
@@ -41,13 +37,14 @@ export default function SearchCategoriesCard({
                 borderColor: color,
                 backgroundColor: `${color}1A`,
               }
-            : { borderColor: colors.border }
+            : { backgroundColor: colors.card, borderColor: colors.muted }
         }
         onPress={onPress}
       >
         {icon}
         <Text
-          className={`font-sans-medium text-sm ${selected ? "text-text" : "text-text-secondary"}`}
+          className="font-sans-medium text-sm"
+          style={{ color: selected ? activeColor : colors.textSecondary }}
         >
           {name}
         </Text>

@@ -47,7 +47,7 @@ export default function SettingsScreen() {
         {
           title: "Personal information",
           icon: <UserIcon />,
-          onPress: () => void 0,
+          onPress: () => router.push("/personal-information"),
         },
         {
           title: "Linked accounts",

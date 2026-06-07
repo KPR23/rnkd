@@ -8,4 +8,5 @@ const config = appJson.expo as ExpoConfig;
 export default (): ExpoConfig => ({
   ...config,
   version: pkg.version,
+  plugins: config.plugins ?? [],
 });

@@ -18,11 +18,18 @@ import {
   getFaceitPlayerById,
   getFaceitPlayerHistory,
 } from "./faceit-client";
+import {
+  ensureFaceitEloBaseline,
+  recordFaceitEloSnapshot,
+} from "./faceit-elo-tracking";
+import { syncFaceitLifetimeStats } from "./faceit-lifetime-sync";
+import { resolveCs2FaceitElo } from "./faceit-player";
 import { persistFaceitSnapshotInTx } from "./faceit-profile-persist";
 import {
   buildFaceitPlayerTeamIndex,
   didPlayerWin,
   mergePlayerStatsFromRounds,
+  resolveFaceitMapName,
 } from "./faceit-stats";
 
 const FACEIT_POLL_DELAY_MS = 200;
@@ -95,6 +102,7 @@ export async function mapFaceitMatchToDb(
       started !== undefined && ended !== undefined
         ? Math.max(0, ended - started)
         : null;
+    const mapName = resolveFaceitMapName(detail, statsPayload);
 
     if (!matchRow) {
       const [inserted] = await tx
@@ -106,6 +114,7 @@ export async function mapFaceitMatchToDb(
           queueId: null,
           team1Score,
           team2Score,
+          mapName,
           playedAt,
           durationSeconds,
         })
@@ -116,6 +125,16 @@ export async function mapFaceitMatchToDb(
       }
 
       matchRow = inserted;
+    } else if (mapName && matchRow.mapName !== mapName) {
+      const [updated] = await tx
+        .update(matches)
+        .set({ mapName })
+        .where(eq(matches.id, matchRow.id))
+        .returning();
+
+      if (updated) {
+        matchRow = updated;
+      }
     }
 
     const rows: (typeof cs2FaceitMatchPlayers.$inferInsert)[] = [];
@@ -200,7 +219,7 @@ async function syncMissingFaceitMatchesFromHistoryPage(params: {
         eq(matches.externalMatchId, mid),
         eq(matches.gameId, GAMES.CS2_FACEIT),
       ),
-      columns: { id: true },
+      columns: { id: true, mapName: true },
     });
 
     if (matchRow) {
@@ -211,7 +230,7 @@ async function syncMissingFaceitMatchesFromHistoryPage(params: {
         ),
         columns: { id: true },
       });
-      if (participant) continue;
+      if (participant && matchRow.mapName) continue;
     }
 
     const detail = await getFaceitMatch(mid);
@@ -252,6 +271,8 @@ async function refreshFaceitRankedForAccount(gameAccountId: string) {
   }
 
   const syncedAt = new Date();
+  const currentElo = resolveCs2FaceitElo(player);
+
   await db.transaction(async (tx) => {
     await persistFaceitSnapshotInTx(tx, {
       gameAccountId,
@@ -260,8 +281,30 @@ async function refreshFaceitRankedForAccount(gameAccountId: string) {
     });
   });
 
+  await ensureFaceitEloBaseline({
+    gameAccountId,
+    faceitPlayerId: account.externalId,
+    currentElo,
+  });
+
   if (account.userId) {
-    await recomputeGlobalRs(account.userId);
+    try {
+      await recomputeGlobalRs(account.userId);
+    } catch (error) {
+      console.error("Failed to recompute global RS for user", {
+        userId: account.userId,
+        error,
+      });
+    }
+  }
+
+  try {
+    await syncFaceitLifetimeStats(gameAccountId);
+  } catch (error) {
+    console.error("Failed to sync Faceit lifetime stats", {
+      gameAccountId,
+      error,
+    });
   }
 }
 
@@ -340,6 +383,22 @@ export async function syncLatestFaceitMatchForAccount(
   }
 
   await refreshFaceitRankedForAccount(gameAccountId);
+
+  const headMatchRow = await db.query.matches.findFirst({
+    where: and(
+      eq(matches.externalMatchId, headId),
+      eq(matches.gameId, GAMES.CS2_FACEIT),
+    ),
+    columns: { id: true },
+  });
+
+  if (headMatchRow) {
+    await recordFaceitEloSnapshot({
+      gameAccountId,
+      faceitPlayerId: account.externalId,
+      matchId: headMatchRow.id,
+    });
+  }
 
   if (!anyWork && watermark === headId) {
     return { ok: true, kind: "unchanged" };

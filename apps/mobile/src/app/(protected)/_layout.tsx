@@ -43,6 +43,13 @@ export default function ProtectedLayout() {
           }}
         />
         <Stack.Screen
+          name="(settings)/personal-information"
+          options={{
+            title: "Personal information",
+            ...commonStackOptions,
+          }}
+        />
+        <Stack.Screen
           name="player/[id]"
           options={{
             title: "Player",
@@ -53,6 +60,13 @@ export default function ProtectedLayout() {
           name="game/[id]"
           options={{
             title: "Game",
+            ...commonStackOptions,
+          }}
+        />
+        <Stack.Screen
+          name="game-profile/[gameAccountId]"
+          options={{
+            title: "Game profile",
             ...commonStackOptions,
           }}
         />

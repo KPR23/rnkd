@@ -47,21 +47,42 @@ export type FaceitMatchRosterPlayer = {
   player_id: string;
   nickname?: string;
   game_player_name?: string;
+  avatar?: string;
+  game_skill_level?: number;
 };
 
 export type FaceitMatchTeamBlock = {
+  name?: string;
+  avatar?: string;
+  leader?: string;
+  faction_id?: string;
   roster?: FaceitMatchRosterPlayer[];
   roster_v1?: FaceitMatchRosterPlayer[] | null;
+};
+
+export type FaceitMapEntity = {
+  game_map_id?: string;
+  guid?: string;
+  image_lg?: string;
+  image_sm?: string;
+  name?: string;
 };
 
 export type FaceitMatchDetail = {
   match_id: string;
   game?: string;
+  region?: string;
+  competition_name?: string;
+  competition_type?: string;
   started_at?: number;
   finished_at?: number;
   results?: {
     winner?: string;
     score?: Record<string, number>;
+  };
+  voting_map?: {
+    entity?: FaceitMapEntity;
+    pick?: string[];
   };
   teams?: Record<string, FaceitMatchTeamBlock>;
 };
@@ -78,9 +99,33 @@ export type FaceitRoundTeam = {
 };
 
 export type FaceitRoundStats = {
+  round_stats?: Record<string, string | null> | null;
   teams?: FaceitRoundTeam[] | null;
 };
 
 export type FaceitMatchStatsPayload = {
   rounds?: FaceitRoundStats[] | null;
+};
+
+export type FaceitLifetimeStatMap = Record<string, string | number | null>;
+
+export type FaceitPlayerStatsResponse = {
+  player_id: string;
+  game_id: string;
+  lifetime: FaceitLifetimeStatMap;
+  segments?: Array<{
+    label?: string;
+    mode?: string;
+    type?: string;
+    stats?: FaceitLifetimeStatMap;
+  }>;
+};
+
+export type ParsedFaceitLifetimeStats = {
+  totalMatches: number;
+  totalWins: number;
+  winRate: number | null;
+  avgKd: number | null;
+  avgAdr: number | null;
+  avgHsPct: number | null;
 };

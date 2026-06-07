@@ -4,6 +4,7 @@ import type {
   FaceitMatchDetail,
   FaceitMatchStatsPayload,
   FaceitPlayer,
+  FaceitPlayerStatsResponse,
   FaceitSuggestedPlayer,
 } from "@repo/types";
 
@@ -82,6 +83,15 @@ export async function getFaceitPlayerById(
   const url = `${FACEIT_API_BASE}/players/${encodeURIComponent(playerId)}`;
 
   return await fetchFaceitJson<FaceitPlayer>(url);
+}
+
+export async function getFaceitPlayerStats(
+  playerId: string,
+  gameId = "cs2",
+): Promise<FaceitPlayerStatsResponse | null> {
+  const url = `${FACEIT_API_BASE}/players/${encodeURIComponent(playerId)}/stats/${encodeURIComponent(gameId)}`;
+
+  return await fetchFaceitJson<FaceitPlayerStatsResponse>(url);
 }
 
 export async function getFaceitSuggestedPlayers(

@@ -72,3 +72,39 @@ export type Cs2FaceitMatchHistoryRow = {
 };
 
 export type Cs2FaceitMatchHistory = Cs2FaceitMatchHistoryRow[];
+
+export type Cs2FaceitMatchDetailsPlayer = {
+  playerId: string;
+  nickname: string;
+  avatar: string | null;
+  skillLevel: number | null;
+  isCaptain: boolean;
+  isViewer: boolean;
+  kills: number | null;
+  deaths: number | null;
+  assists: number | null;
+  kd: number | null;
+};
+
+export type Cs2FaceitMatchDetailsTeam = {
+  name: string;
+  avatar: string | null;
+  score: number;
+  won: boolean;
+  players: Cs2FaceitMatchDetailsPlayer[];
+};
+
+export type Cs2FaceitMatchDetails = {
+  summary: {
+    mapName: string | null;
+    mapLabel: string;
+    playedAt: Date;
+    team1Score: number;
+    team2Score: number;
+    matchTypeLabel: string | null;
+    queueLabel: string;
+    serverLabel: string | null;
+  };
+  viewerTeam: 1 | 2;
+  teams: [Cs2FaceitMatchDetailsTeam, Cs2FaceitMatchDetailsTeam];
+};

@@ -3,8 +3,11 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 
 import { CaretRightIcon, IconContext } from "phosphor-react-native";
 
+import { useRouter } from "expo-router";
+
 import {
   GAMES,
+  isCs2FaceitGameAccount,
   isLolGameAccount,
   type Cs2FaceitGameAccount,
   type GameAccount,
@@ -152,8 +155,10 @@ export default function ConnectedAccountCard({
 }: {
   gameAccount: GameAccount;
 }) {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { bgClass, label, body } = accountCardPresentation(gameAccount);
+  const isFaceit = isCs2FaceitGameAccount(gameAccount);
 
   return (
     <View className="flex flex-col">
@@ -170,6 +175,10 @@ export default function ConnectedAccountCard({
           activeOpacity={0.7}
           className="bg-card border-border flex flex-row items-center justify-between border border-t-0 p-5"
           onPress={() => {
+            if (isFaceit) {
+              router.push(`/game-profile/${gameAccount.id}`);
+              return;
+            }
             setIsModalOpen(true);
           }}
         >
@@ -180,11 +189,13 @@ export default function ConnectedAccountCard({
         </TouchableOpacity>
       </IconContext.Provider>
 
-      <AccountDetailsModal
-        gameAccount={gameAccount}
-        visible={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      {!isFaceit ? (
+        <AccountDetailsModal
+          gameAccount={gameAccount}
+          visible={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      ) : null}
     </View>
   );
 }

@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "test": "node --import tsx --test src/services/scoring/rnkd-score.test.ts",
+    "test": "node --import tsx --test src",
     "lol-sync:latest": "tsx src/jobs/run-lol-latest-match-sync.ts",
     "faceit-sync:latest": "tsx src/jobs/run-faceit-latest-match-sync.ts",
     "match-sync:latest": "tsx src/jobs/run-lol-latest-match-sync.ts && tsx src/jobs/run-faceit-latest-match-sync.ts"

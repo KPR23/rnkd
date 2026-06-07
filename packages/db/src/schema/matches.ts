@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -23,6 +24,7 @@ export const matches = pgTable(
     queueId: integer("queue_id"),
     team1Score: integer("team1_score").notNull(),
     team2Score: integer("team2_score").notNull(),
+    mapName: text("map_name"),
     playedAt: timestamp("played_at").notNull(),
     durationSeconds: integer("duration_seconds"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -91,6 +93,7 @@ export const playerStats = pgTable(
     avg_kills: real("avg_kills").notNull(),
     avg_deaths: real("avg_deaths").notNull(),
     avg_assists: real("avg_assists").notNull(),
+    avgKd: real("avg_kd"),
     lastCalculatedAt: timestamp("last_calculated_at").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
@@ -120,5 +123,8 @@ export const eloHistory = pgTable(
       table.gameAccountId,
       table.createdAt,
     ),
+    uniqueIndex("elo_history_account_match_unique")
+      .on(table.gameAccountId, table.matchId)
+      .where(sql`${table.matchId} IS NOT NULL`),
   ],
 );
