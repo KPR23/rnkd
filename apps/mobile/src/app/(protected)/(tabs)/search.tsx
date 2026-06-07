@@ -215,7 +215,7 @@ export default function SearchTab() {
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 10 }}
+                contentContainerStyle={{ gap: 8 }}
               >
                 {resultCategories.map((category) => (
                   <View key={category.name}>
