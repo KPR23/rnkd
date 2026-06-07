@@ -93,7 +93,7 @@ export const gameAccountRouter = router({
   getCs2FaceitMatchHistory: protectedProcedure
     .input(
       gameAccountIdSchema.extend({
-        limit: z.number().min(1).max(100).default(40),
+        limit: z.number().int().min(1).max(100).default(40),
       }),
     )
     .use(requireGameAccountAccess("public-read"))

@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 
 import { db, eloHistory } from "@repo/db";
 
@@ -20,34 +20,32 @@ export async function recordEloSnapshotInTx(
   }
 
   if (params.matchId) {
-    const existing = await tx.query.eloHistory.findFirst({
-      where: and(
-        eq(eloHistory.gameAccountId, params.gameAccountId),
-        eq(eloHistory.matchId, params.matchId),
-      ),
-      columns: { id: true, elo: true },
-    });
+    await tx
+      .insert(eloHistory)
+      .values({
+        id: crypto.randomUUID(),
+        gameAccountId: params.gameAccountId,
+        matchId: params.matchId,
+        elo: params.elo,
+      })
+      .onConflictDoUpdate({
+        target: [eloHistory.gameAccountId, eloHistory.matchId],
+        targetWhere: sql`${eloHistory.matchId} IS NOT NULL`,
+        set: { elo: sql`excluded.elo` },
+        setWhere: sql`${eloHistory.elo} <> excluded.elo`,
+      });
+    return;
+  }
 
-    if (existing) {
-      if (existing.elo !== params.elo) {
-        await tx
-          .update(eloHistory)
-          .set({ elo: params.elo })
-          .where(eq(eloHistory.id, existing.id));
-      }
-      return;
-    }
-  } else {
-    const [latest] = await tx
-      .select({ elo: eloHistory.elo })
-      .from(eloHistory)
-      .where(eq(eloHistory.gameAccountId, params.gameAccountId))
-      .orderBy(desc(eloHistory.createdAt))
-      .limit(1);
+  const [latest] = await tx
+    .select({ elo: eloHistory.elo })
+    .from(eloHistory)
+    .where(eq(eloHistory.gameAccountId, params.gameAccountId))
+    .orderBy(desc(eloHistory.createdAt))
+    .limit(1);
 
-    if (latest?.elo === params.elo) {
-      return;
-    }
+  if (latest?.elo === params.elo) {
+    return;
   }
 
   await tx.insert(eloHistory).values({

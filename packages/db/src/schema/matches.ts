@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -122,5 +123,8 @@ export const eloHistory = pgTable(
       table.gameAccountId,
       table.createdAt,
     ),
+    uniqueIndex("elo_history_account_match_unique")
+      .on(table.gameAccountId, table.matchId)
+      .where(sql`${table.matchId} IS NOT NULL`),
   ],
 );
