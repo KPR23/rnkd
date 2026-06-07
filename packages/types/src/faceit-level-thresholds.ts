@@ -6,7 +6,13 @@ export type FaceitLevelProgress = {
   pointsToNextLevel: number | null;
 };
 
-const FACEIT_LEVEL_THRESHOLDS = [
+export type FaceitLevelThreshold = {
+  level: number;
+  min: number;
+  max: number | null;
+};
+
+export const FACEIT_LEVEL_THRESHOLDS: readonly FaceitLevelThreshold[] = [
   { level: 1, min: 100, max: 500 },
   { level: 2, min: 501, max: 750 },
   { level: 3, min: 751, max: 900 },
@@ -42,10 +48,10 @@ export function getFaceitLevelFromElo(elo: number): number {
 
 export function getFaceitLevelProgress(elo: number): FaceitLevelProgress {
   const level = getFaceitLevelFromElo(elo);
-  const threshold =
+  const threshold: FaceitLevelThreshold =
     FACEIT_LEVEL_THRESHOLDS.find((entry) => entry.level === level) ??
     FACEIT_LEVEL_THRESHOLDS.find((entry) => entry.level === 1) ??
-    FACEIT_LEVEL_THRESHOLDS[0];
+    FACEIT_LEVEL_THRESHOLDS[0] ?? { level: 1, min: 100, max: 500 };
 
   const levelEnd = threshold.max === null ? null : threshold.max + 1;
   const pointsToNextLevel =
@@ -58,4 +64,33 @@ export function getFaceitLevelProgress(elo: number): FaceitLevelProgress {
     levelEnd,
     pointsToNextLevel,
   };
+}
+
+export function getFaceitLevelWindow(
+  currentLevel: number,
+  windowSize = 5,
+): FaceitLevelThreshold[] {
+  if (windowSize <= 0) return [];
+
+  const levels = FACEIT_LEVEL_THRESHOLDS.map((entry) => entry.level);
+  const minLevel = levels[0] ?? 1;
+  const maxLevel = levels[levels.length - 1] ?? 10;
+  const clampedLevel = Math.min(
+    maxLevel,
+    Math.max(minLevel, currentLevel || minLevel),
+  );
+
+  let start = clampedLevel - Math.floor(windowSize / 2);
+  if (start < minLevel) {
+    start = minLevel;
+  }
+  let end = start + windowSize - 1;
+  if (end > maxLevel) {
+    end = maxLevel;
+    start = Math.max(minLevel, end - windowSize + 1);
+  }
+
+  return FACEIT_LEVEL_THRESHOLDS.filter(
+    (entry) => entry.level >= start && entry.level <= end,
+  );
 }

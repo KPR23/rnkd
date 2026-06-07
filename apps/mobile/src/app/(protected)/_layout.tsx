@@ -64,6 +64,13 @@ export default function ProtectedLayout() {
           }}
         />
         <Stack.Screen
+          name="game-profile/[gameAccountId]"
+          options={{
+            title: "Game profile",
+            ...commonStackOptions,
+          }}
+        />
+        <Stack.Screen
           name="team/[id]"
           options={{
             title: "Team",

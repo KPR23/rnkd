@@ -3,7 +3,12 @@ import { RefreshControl, ScrollView, View } from "react-native";
 
 import { useRouter } from "expo-router";
 
-import { GAMES, type GameAccount, type User } from "@repo/types";
+import {
+  GAMES,
+  isCs2FaceitGameAccount,
+  type GameAccount,
+  type User,
+} from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
@@ -249,7 +254,13 @@ export default function ProfileScreen({
             <GameProfileSection
               key={account.id}
               gameAccount={account}
-              onOpenDetails={() => setDetailsAccount(account)}
+              onOpenDetails={() => {
+                if (isCs2FaceitGameAccount(account)) {
+                  router.push(`/game-profile/${account.id}`);
+                  return;
+                }
+                setDetailsAccount(account);
+              }}
             />
           ))}
         </View>
