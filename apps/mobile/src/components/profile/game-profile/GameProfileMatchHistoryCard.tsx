@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View } from "react-native";
+import { Image, Pressable, StyleSheet, View } from "react-native";
 
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 
@@ -87,8 +87,10 @@ function formatKda(
 
 export default function GameProfileMatchHistoryCard({
   row,
+  onPress,
 }: {
   row: Cs2FaceitMatchHistoryRow;
+  onPress?: () => void;
 }) {
   const { matches, cs2_faceit_match_players: player } = row;
   const win = player.win;
@@ -104,7 +106,7 @@ export default function GameProfileMatchHistoryCard({
   const mapImageUrl = getCs2MapImageUrl(matches.mapName);
   const mapLabel = formatMapDisplayName(matches.mapName);
 
-  return (
+  const content = (
     <View className="border-muted bg-card h-37.5 overflow-hidden border">
       <View
         className="relative w-full overflow-hidden"
@@ -169,5 +171,15 @@ export default function GameProfileMatchHistoryCard({
         </View>
       </View>
     </View>
+  );
+
+  if (!onPress) {
+    return content;
+  }
+
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button">
+      {content}
+    </Pressable>
   );
 }

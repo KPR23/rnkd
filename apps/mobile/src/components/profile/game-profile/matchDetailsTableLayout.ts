@@ -1,0 +1,3 @@
+export const MATCH_DETAILS_KD_WIDTH = 44;
+export const MATCH_DETAILS_KDA_WIDTH = 72;
+export const MATCH_DETAILS_STAT_GAP = 12;

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { View } from "react-native";
 
 import { GameControllerIcon } from "phosphor-react-native";
@@ -13,6 +14,7 @@ import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
 import FaceitLevelProgressCard from "@/src/components/profile/FaceitLevelProgressCard";
+import MatchDetailsModal from "@/src/components/profile/game-profile/MatchDetailsModal";
 import ProfileRecentMatchCard from "@/src/components/profile/ProfileRecentMatchCard";
 import ProfileGameStatCard from "@/src/components/ProfileGameStatCard";
 import { trpc } from "@/src/utils/trpc";
@@ -57,8 +59,10 @@ export default function GameProfileSection({
 
   const recentFaceitRows = (faceitMatches.data?.rows ??
     []) as Cs2FaceitMatchHistoryRow[];
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
 
   return (
+    <>
     <View className="flex flex-col gap-2">
       <AppText className="text-sm" weight="medium" color={colors.textSecondary}>
         {gameTitle(gameAccount.gameId)}
@@ -75,7 +79,11 @@ export default function GameProfileSection({
         {isFaceit && recentFaceitRows.length > 0 ? (
           <View className="flex flex-row gap-2.5">
             {recentFaceitRows.map((row) => (
-              <ProfileRecentMatchCard key={row.matches.id} row={row} />
+              <ProfileRecentMatchCard
+                key={row.matches.id}
+                row={row}
+                onPress={() => setSelectedMatchId(row.matches.id)}
+              />
             ))}
           </View>
         ) : null}
@@ -95,5 +103,15 @@ export default function GameProfileSection({
         />
       </View>
     </View>
+
+    {isFaceit ? (
+      <MatchDetailsModal
+        visible={!!selectedMatchId}
+        matchId={selectedMatchId}
+        gameAccountId={gameAccount.id}
+        onClose={() => setSelectedMatchId(null)}
+      />
+    ) : null}
+    </>
   );
 }

@@ -13,6 +13,7 @@ import { XIcon } from "phosphor-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { colors } from "@repo/ui/colors";
+import AppText from "@/src/components/AppText";
 
 export default function CustomModal({
   children,
@@ -42,36 +43,40 @@ export default function CustomModal({
           keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
         >
           <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
-            <View className="relative flex flex-row items-center justify-between px-6 py-4">
-              {title ? (
-                <Text className="text-text font-sans-bold z-10 text-lg">
-                  {title}
-                </Text>
-              ) : (
-                <View className="h-6 w-6" />
-              )}
-              {headerCenter ? (
-                <View className="absolute right-0 left-0 items-center">
-                  {headerCenter}
+            <View className="border-muted border-b px-5 py-2">
+              <View className="mb-3 items-center">
+                <View className="bg-muted h-1 w-10 rounded-full" />
+              </View>
+              <View className="flex-row items-center">
+                <View className="w-10" />
+                <View className="min-h-10 flex-1 items-center justify-center px-2">
+                  {headerCenter ? (
+                    headerCenter
+                  ) : title ? (
+                    <AppText className="text-center text-lg" weight="medium">
+                      {title}
+                    </AppText>
+                  ) : null}
                 </View>
-              ) : null}
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={onClose}
-                accessibilityLabel="Close modal"
-                accessibilityRole="button"
-                accessible
-                importantForAccessibility="yes"
-                className="z-10"
-              >
-                <XIcon size={24} color={colors.textMuted} weight="bold" />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={onClose}
+                  accessibilityLabel="Close modal"
+                  accessibilityRole="button"
+                  accessible
+                  importantForAccessibility="yes"
+                  className="h-10 w-10 items-center justify-center"
+                >
+                  <XIcon size={22} color={colors.textMuted} weight="bold" />
+                </TouchableOpacity>
+              </View>
             </View>
             <ScrollView
               className="flex-1"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{
                 paddingHorizontal: 20,
+                paddingTop: 20,
                 paddingBottom: 24,
               }}
             >

@@ -47,9 +47,15 @@ export type FaceitMatchRosterPlayer = {
   player_id: string;
   nickname?: string;
   game_player_name?: string;
+  avatar?: string;
+  game_skill_level?: number;
 };
 
 export type FaceitMatchTeamBlock = {
+  name?: string;
+  avatar?: string;
+  leader?: string;
+  faction_id?: string;
   roster?: FaceitMatchRosterPlayer[];
   roster_v1?: FaceitMatchRosterPlayer[] | null;
 };
@@ -65,6 +71,9 @@ export type FaceitMapEntity = {
 export type FaceitMatchDetail = {
   match_id: string;
   game?: string;
+  region?: string;
+  competition_name?: string;
+  competition_type?: string;
   started_at?: number;
   finished_at?: number;
   results?: {

@@ -1,4 +1,4 @@
-import { Image, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 
 import type { Cs2FaceitMatchHistoryRow } from "@repo/types";
 import { colors } from "@repo/ui/colors";
@@ -10,8 +10,10 @@ const MAP_IMAGE_HEIGHT = 120;
 
 export default function ProfileRecentMatchCard({
   row,
+  onPress,
 }: {
   row: Cs2FaceitMatchHistoryRow;
+  onPress?: () => void;
 }) {
   const { matches, cs2_faceit_match_players: player } = row;
   const win = player.win;
@@ -25,7 +27,7 @@ export default function ProfileRecentMatchCard({
       : new Date(matches.playedAt);
   const mapImageUrl = getCs2MapImageUrl(matches.mapName);
 
-  return (
+  const content = (
     <View className="bg-card border-muted flex-1 overflow-hidden border">
       <View
         className="relative w-full overflow-hidden"
@@ -68,5 +70,15 @@ export default function ProfileRecentMatchCard({
         </View>
       </View>
     </View>
+  );
+
+  if (!onPress) {
+    return content;
+  }
+
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" className="flex-1">
+      {content}
+    </Pressable>
   );
 }

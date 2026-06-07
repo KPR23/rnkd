@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 import type {
@@ -10,6 +11,7 @@ import AppText from "@/src/components/AppText";
 import FaceitSkillRankSection from "@/src/components/profile/game-profile/FaceitSkillRankSection";
 import GameProfileHeaderCard from "@/src/components/profile/game-profile/GameProfileHeaderCard";
 import GameProfileMatchHistoryCard from "@/src/components/profile/game-profile/GameProfileMatchHistoryCard";
+import MatchDetailsModal from "@/src/components/profile/game-profile/MatchDetailsModal";
 import GameProfileMetricsSection from "@/src/components/profile/game-profile/GameProfileMetricsSection";
 import GameProfileSectionTitle from "@/src/components/profile/game-profile/GameProfileSectionTitle";
 
@@ -37,7 +39,10 @@ export default function GameProfileOverviewTab({
   isDisplayLoading: boolean;
   isMatchHistoryLoading: boolean;
 }) {
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+
   return (
+    <>
     <View className="flex flex-col gap-5">
       <GameProfileHeaderCard
         gameAccount={gameAccount}
@@ -58,7 +63,11 @@ export default function GameProfileOverviewTab({
         ) : matchHistory && matchHistory.length > 0 ? (
           <View className="flex flex-col gap-2">
             {matchHistory.map((row) => (
-              <GameProfileMatchHistoryCard key={row.matches.id} row={row} />
+              <GameProfileMatchHistoryCard
+                key={row.matches.id}
+                row={row}
+                onPress={() => setSelectedMatchId(row.matches.id)}
+              />
             ))}
           </View>
         ) : (
@@ -68,5 +77,13 @@ export default function GameProfileOverviewTab({
         )}
       </View>
     </View>
+
+    <MatchDetailsModal
+      visible={!!selectedMatchId}
+      matchId={selectedMatchId}
+      gameAccountId={gameAccount.id}
+      onClose={() => setSelectedMatchId(null)}
+    />
+    </>
   );
 }
