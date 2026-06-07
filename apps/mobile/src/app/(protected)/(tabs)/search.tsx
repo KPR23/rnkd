@@ -5,31 +5,24 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import {
   AsteriskIcon,
   GameControllerIcon,
-  MagnifyingGlassIcon,
-  QrCodeIcon,
   UserIcon,
   UsersIcon,
-  XIcon,
 } from "phosphor-react-native";
 
 import { colors, tagColors } from "@repo/ui/colors";
 import Screen from "@/src/components/Screen";
 import ScreenTitle from "@/src/components/ScreenTitle";
 import SearchCategoriesCard from "@/src/components/search/SearchCategoriesCard";
+import SearchEmptyState from "@/src/components/search/SearchEmptyState";
+import SearchInputBar from "@/src/components/search/SearchInputBar";
+import SearchRecentPreview from "@/src/components/search/SearchRecentPreview";
 import SearchResultCard from "@/src/components/search/SearchResultCard";
 import SearchSection from "@/src/components/search/SearchSection";
 import { trpc } from "@/src/utils/trpc";
@@ -101,7 +94,9 @@ export default function SearchTab() {
   }, [activeCategory, searchResults]);
 
   const hasActiveSearch = debouncedSearch.length >= MIN_SEARCH_LENGTH;
-  const showRecentSearches = recentSearches.length > 0 && !hasActiveSearch;
+  const showRecentSearches =
+    recentSearches.length > 0 && search.length === 0 && !hasActiveSearch;
+  const showEmptyState = search.length === 0 && !showRecentSearches;
 
   const saveSearchToHistory = useCallback(async (value: string) => {
     const normalized = value.trim();
@@ -170,17 +165,6 @@ export default function SearchTab() {
     await saveSearchToHistory(normalized);
   };
 
-  const handleClearSearchHistory = async () => {
-    try {
-      setRecentSearches([]);
-      setSearch("");
-      setDebouncedSearch("");
-      await AsyncStorage.removeItem(SEARCH_HISTORY_KEY);
-    } catch (error) {
-      console.error("Failed to clear search history:", error);
-    }
-  };
-
   const handleSelectCategory = (category: ResultCategory) => {
     setActiveCategory(category);
   };
@@ -200,76 +184,33 @@ export default function SearchTab() {
 
   return (
     <Screen>
-      <ScreenTitle title="Search" />
-      <View className="flex flex-1 flex-col gap-2">
-        <View className="flex w-full flex-row items-center justify-between gap-2">
-          <View className="border-border h-12 w-full flex-1 flex-row items-center gap-2 border pl-3">
-            <MagnifyingGlassIcon size={20} color={colors.gray} />
-            <TextInput
-              placeholder="Search"
-              placeholderTextColor={colors.gray}
-              className="text-text h-12 w-full flex-1"
-              autoCorrect={false}
-              autoCapitalize="none"
-              value={search}
-              onChangeText={handleSearch}
-              onSubmitEditing={handleSubmitSearch}
-              returnKeyType="search"
-            />
-            {search.length > 0 && (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                className="flex size-10 items-center justify-center"
-                onPress={() => setSearch("")}
-              >
-                <XIcon size={20} color={colors.text} />
-              </TouchableOpacity>
-            )}
-          </View>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            className="border-border flex size-12 items-center justify-center border"
-          >
-            <QrCodeIcon size={24} color={colors.text} />
-          </TouchableOpacity>
+      <View className="flex flex-1 flex-col gap-6">
+        <View className="-mb-6">
+          <ScreenTitle title="Search" />
         </View>
+        <SearchInputBar
+          value={search}
+          onChangeText={handleSearch}
+          onSubmitEditing={handleSubmitSearch}
+          onClear={() => setSearch("")}
+        />
 
-        {showRecentSearches && (
-          <SearchSection
-            title="Recent"
-            actionLabel="Clear"
-            onActionPress={handleClearSearchHistory}
-          >
-            <View className="flex flex-row gap-2">
-              <View className="flex flex-row flex-wrap gap-2">
-                {recentSearches.map((item) => (
-                  <TouchableOpacity
-                    key={item}
-                    onPress={() => handleSelectRecentSearch(item)}
-                    className="border-border flex flex-row border p-2"
-                  >
-                    <Text className="text-text-muted">{item}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </SearchSection>
-        )}
+        {showRecentSearches ? (
+          <SearchRecentPreview
+            recentSearches={recentSearches}
+            onSelectSearch={handleSelectRecentSearch}
+          />
+        ) : null}
 
-        {search.length === 0 ? (
-          <View className="mb-24 flex-1 items-center justify-center gap-2">
-            <MagnifyingGlassIcon size={32} color={colors.gray} />
-            <Text className="font-sans-medium text-text-muted text-base">
-              Start typing to search
-            </Text>
-          </View>
+        {showEmptyState ? (
+          <SearchEmptyState
+            title="Start typing to search"
+            subtitle="Players, teams or games"
+          />
         ) : !hasActiveSearch ? (
-          <View className="mb-24 flex-1 items-center justify-center gap-2">
-            <MagnifyingGlassIcon size={32} color={colors.gray} />
-            <Text className="font-sans-medium text-text-muted text-base">
-              Type at least {MIN_SEARCH_LENGTH} characters to search
-            </Text>
-          </View>
+          <SearchEmptyState
+            title={`Type at least ${MIN_SEARCH_LENGTH} characters to search`}
+          />
         ) : (
           <View className="flex flex-col gap-4">
             <ScrollView
