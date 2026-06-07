@@ -2,12 +2,12 @@ import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
 
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 
+import AppText from "@/src/components/AppText";
 import {
   BackHeader,
   LeaderboardRow,
   SectionLabel,
 } from "@/src/components/groups/GroupsUI";
-import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
@@ -48,7 +48,7 @@ export default function GroupsManageScreen() {
           style: "destructive",
           onPress: () =>
             removeMember.mutate({
-              groupId,
+              groupId: groupId!,
               userId: member.id,
             }),
         },
@@ -85,7 +85,11 @@ export default function GroupsManageScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="gap-6 pb-6">
-          <BackHeader title="Manage players" centered onBack={() => router.back()} />
+          <BackHeader
+            title="Manage players"
+            centered
+            onBack={() => router.back()}
+          />
 
           <View className="gap-2.5">
             <SectionLabel title={data?.group.name ?? "Group"} />
