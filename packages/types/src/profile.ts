@@ -1,6 +1,13 @@
 import type { GameAccounts } from "./game";
 
 export type { FaceitLevelProgress } from "./faceit-level-thresholds";
+export type {
+  FaceitAllTimeMetrics,
+  FaceitMatchKdRow,
+  FaceitMatchPerformanceRow,
+  FaceitRecentPerformance,
+  FaceitRecentRecord,
+} from "./faceit-profile";
 
 export type MatchActivityDay = {
   date: string;

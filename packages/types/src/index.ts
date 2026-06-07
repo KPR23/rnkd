@@ -5,3 +5,4 @@ export * from "./search";
 export * from "./faceit";
 export * from "./faceit-level-thresholds";
 export * from "./profile";
+export * from "./faceit-profile";
