@@ -1,4 +1,5 @@
 import { Image, StyleSheet, View } from "react-native";
+
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 
 import type { Cs2FaceitMatchHistoryRow } from "@repo/types";
@@ -10,13 +11,7 @@ import { formatProfileMatchTime } from "@/src/lib/helper/profileTime";
 
 const HERO_HEIGHT = 89;
 
-function MatchHeroOverlay({
-  matchId,
-  win,
-}: {
-  matchId: string;
-  win: boolean;
-}) {
+function MatchHeroOverlay({ matchId, win }: { matchId: string; win: boolean }) {
   const outcomeColor = win ? colors.success : colors.destructive;
   const outcomeGradientId = `match-hero-outcome-${matchId}`;
 
@@ -24,11 +19,31 @@ function MatchHeroOverlay({
     <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
       <Defs>
         <LinearGradient id={outcomeGradientId} x1="0" y1="0" x2="1" y2="0">
-          <Stop offset="0" stopColor={outcomeColor} stopOpacity={win ? "0.7" : "0.85"} />
-          <Stop offset="0.25" stopColor={outcomeColor} stopOpacity={win ? "0.4" : "0.5"} />
-          <Stop offset="0.5" stopColor={outcomeColor} stopOpacity={win ? "0.1" : "0.14"} />
-          <Stop offset="0.75" stopColor={outcomeColor} stopOpacity={win ? "0.4" : "0.5"} />
-          <Stop offset="1" stopColor={outcomeColor} stopOpacity={win ? "0.7" : "0.85"} />
+          <Stop
+            offset="0"
+            stopColor={outcomeColor}
+            stopOpacity={win ? "0.7" : "0.85"}
+          />
+          <Stop
+            offset="0.25"
+            stopColor={outcomeColor}
+            stopOpacity={win ? "0.4" : "0.5"}
+          />
+          <Stop
+            offset="0.5"
+            stopColor={outcomeColor}
+            stopOpacity={win ? "0.1" : "0.14"}
+          />
+          <Stop
+            offset="0.75"
+            stopColor={outcomeColor}
+            stopOpacity={win ? "0.4" : "0.5"}
+          />
+          <Stop
+            offset="1"
+            stopColor={outcomeColor}
+            stopOpacity={win ? "0.7" : "0.85"}
+          />
         </LinearGradient>
       </Defs>
       <Rect width="100%" height="100%" fill={`url(#${outcomeGradientId})`} />
@@ -102,7 +117,7 @@ export default function GameProfileMatchHistoryCard({
               style={{ height: HERO_HEIGHT, width: "100%" }}
               resizeMode="cover"
             />
-            <View className="bg-card/50 absolute inset-0" />
+            <View className="bg-card/75 absolute inset-0" />
           </>
         ) : (
           <View className="bg-muted w-full" style={{ height: HERO_HEIGHT }} />
