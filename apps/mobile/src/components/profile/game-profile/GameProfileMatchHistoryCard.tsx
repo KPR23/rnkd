@@ -1,13 +1,40 @@
-import { Image, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 
 import type { Cs2FaceitMatchHistoryRow } from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
-import { formatMapDisplayName } from "@/src/lib/helper/formatMapName";
 import { getCs2MapImageUrl } from "@/src/lib/helper/cs2Map";
+import { formatMapDisplayName } from "@/src/lib/helper/formatMapName";
 import { formatProfileMatchTime } from "@/src/lib/helper/profileTime";
 
 const HERO_HEIGHT = 89;
+
+function MatchHeroOverlay({
+  matchId,
+  win,
+}: {
+  matchId: string;
+  win: boolean;
+}) {
+  const outcomeColor = win ? colors.success : colors.destructive;
+  const outcomeGradientId = `match-hero-outcome-${matchId}`;
+
+  return (
+    <Svg style={StyleSheet.absoluteFill} preserveAspectRatio="none">
+      <Defs>
+        <LinearGradient id={outcomeGradientId} x1="0" y1="0" x2="1" y2="0">
+          <Stop offset="0" stopColor={outcomeColor} stopOpacity={win ? "0.7" : "0.85"} />
+          <Stop offset="0.25" stopColor={outcomeColor} stopOpacity={win ? "0.4" : "0.5"} />
+          <Stop offset="0.5" stopColor={outcomeColor} stopOpacity={win ? "0.1" : "0.14"} />
+          <Stop offset="0.75" stopColor={outcomeColor} stopOpacity={win ? "0.4" : "0.5"} />
+          <Stop offset="1" stopColor={outcomeColor} stopOpacity={win ? "0.7" : "0.85"} />
+        </LinearGradient>
+      </Defs>
+      <Rect width="100%" height="100%" fill={`url(#${outcomeGradientId})`} />
+    </Svg>
+  );
+}
 
 function formatKd(
   kills: number | null | undefined,
@@ -55,9 +82,6 @@ export default function GameProfileMatchHistoryCard({
   const theirScore = win ? Math.min(...teamScores) : Math.max(...teamScores);
   const outcomeLabel = win ? "Victory" : "Defeat";
   const outcomeColor = win ? colors.success : colors.destructive;
-  const overlayColor = win
-    ? "rgba(11, 217, 87, 0.55)"
-    : "rgba(193, 37, 39, 0.75)";
   const playedAt =
     matches.playedAt instanceof Date
       ? matches.playedAt
@@ -66,8 +90,11 @@ export default function GameProfileMatchHistoryCard({
   const mapLabel = formatMapDisplayName(matches.mapName);
 
   return (
-    <View className="border-muted bg-card h-[151px] overflow-hidden border">
-      <View className="relative w-full overflow-hidden" style={{ height: HERO_HEIGHT }}>
+    <View className="border-muted bg-card h-37.5 overflow-hidden border">
+      <View
+        className="relative w-full overflow-hidden"
+        style={{ height: HERO_HEIGHT }}
+      >
         {mapImageUrl ? (
           <>
             <Image
@@ -75,17 +102,14 @@ export default function GameProfileMatchHistoryCard({
               style={{ height: HERO_HEIGHT, width: "100%" }}
               resizeMode="cover"
             />
-            <View className="absolute inset-0 bg-card/80" />
+            <View className="bg-card/50 absolute inset-0" />
           </>
         ) : (
           <View className="bg-muted w-full" style={{ height: HERO_HEIGHT }} />
         )}
-        <View
-          className="absolute inset-0"
-          style={{ backgroundColor: overlayColor }}
-        />
+        <MatchHeroOverlay matchId={matches.id} win={win} />
         <View className="absolute inset-0 items-center justify-center">
-          <AppText className="text-[28px] leading-8" weight="medium">
+          <AppText className="text-[28px]" weight="medium">
             {ourScore} - {theirScore}
           </AppText>
           <AppText
@@ -100,19 +124,32 @@ export default function GameProfileMatchHistoryCard({
 
       <View className="border-muted flex-1 justify-center border-t px-3.5 py-3">
         <View className="flex-row items-center justify-between">
-          <AppText className="text-base" weight="medium" color={outcomeColor}>
+          <AppText
+            className="text-base leading-[100%]"
+            weight="medium"
+            color={outcomeColor}
+          >
             {outcomeLabel}
           </AppText>
-          <AppText className="text-base tabular-nums" weight="medium">
+          <AppText
+            className="text-base leading-[100%] tabular-nums"
+            weight="medium"
+          >
             {formatKd(player.kills, player.deaths)}
           </AppText>
         </View>
         <View className="mt-0.5 flex-row items-center justify-between">
-          <AppText className="text-[13px]" color={colors.textSecondary}>
+          <AppText
+            className="text-[13px] leading-[100%]"
+            color={colors.textSecondary}
+          >
             Europe 5V5 Queue
           </AppText>
-          <AppText className="text-[13px] tabular-nums" color={colors.textSecondary}>
-            {formatKda(player.kills, player.deaths, player.assists)}
+          <AppText
+            className="text-[13px] leading-[100%] tabular-nums"
+            color={colors.textSecondary}
+          >
+            K/D/A {formatKda(player.kills, player.deaths, player.assists)}
           </AppText>
         </View>
       </View>
