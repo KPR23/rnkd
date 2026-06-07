@@ -9,21 +9,33 @@ import {
 } from "@/src/components/groups/GroupsUI";
 import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
+import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
 
 export default function GroupsManageScreen() {
   const router = useRouter();
   const { groupId } = useLocalSearchParams<{ groupId?: string }>();
+  const { data: session } = useAuth();
   const utils = trpc.useUtils();
+  const currentUserId = session?.user?.id;
   const { data, isLoading, isError } = trpc.group.detail.useQuery(
     { groupId: groupId ?? "" },
     { enabled: !!groupId },
   );
+  const approveMember = trpc.group.approveMember.useMutation({
+    onSuccess: async () => {
+      await utils.group.invalidate();
+    },
+  });
   const removeMember = trpc.group.removeMember.useMutation({
     onSuccess: async () => {
       await utils.group.invalidate();
     },
   });
+
+  if (!groupId) {
+    return null;
+  }
 
   const confirmRemoveMember = (member: { id: string; name: string }) => {
     Alert.alert(
@@ -44,9 +56,29 @@ export default function GroupsManageScreen() {
     );
   };
 
-  if (!groupId) {
-    return null;
-  }
+  const confirmDeclineMember = (member: { id: string; name: string }) => {
+    Alert.alert(
+      "Decline request",
+      `Are you sure you want to decline ${member.name}'s request to join?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Decline",
+          style: "destructive",
+          onPress: () =>
+            removeMember.mutate({
+              groupId,
+              userId: member.id,
+            }),
+        },
+      ],
+    );
+  };
+
+  const pendingMembers =
+    data?.members.filter((member) => member.status === "invited") ?? [];
+  const activeMembers =
+    data?.members.filter((member) => member.status === "active") ?? [];
 
   return (
     <Screen>
@@ -69,14 +101,37 @@ export default function GroupsManageScreen() {
                   </AppText>
                 </View>
               ) : (
-                data.members.map((member) => (
-                <LeaderboardRow
-                  key={member.id}
-                  manage
-                  member={member}
-                  onRemove={() => confirmRemoveMember(member)}
-                />
-                ))
+                <>
+                  {pendingMembers.length ? (
+                    <View className="gap-2">
+                      <SectionLabel title="Pending requests" />
+                      {pendingMembers.map((member) => (
+                        <LeaderboardRow
+                          key={member.id}
+                          manage
+                          isCurrentUser={member.id === currentUserId}
+                          member={member}
+                          onAccept={() => {
+                            approveMember.mutate({
+                              groupId,
+                              userId: member.id,
+                            });
+                          }}
+                          onDecline={() => confirmDeclineMember(member)}
+                        />
+                      ))}
+                    </View>
+                  ) : null}
+                  {activeMembers.map((member) => (
+                    <LeaderboardRow
+                      key={member.id}
+                      manage
+                      isCurrentUser={member.id === currentUserId}
+                      member={member}
+                      onRemove={() => confirmRemoveMember(member)}
+                    />
+                  ))}
+                </>
               )}
             </View>
           </View>

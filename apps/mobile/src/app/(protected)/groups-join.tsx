@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { Alert, View } from "react-native";
 
 import { Stack, useRouter } from "expo-router";
 
@@ -18,9 +18,22 @@ export default function GroupsJoinScreen() {
   const normalizedCode = code.trim();
   const utils = trpc.useUtils();
   const joinGroup = trpc.group.joinByCode.useMutation({
-    onSuccess: async ({ groupId }) => {
+    onSuccess: async ({ groupId, pending }) => {
       await utils.group.invalidate();
+
+      if (pending) {
+        Alert.alert(
+          "Request sent",
+          "The group owner will review your request",
+          [{ text: "OK", onPress: () => router.back() }],
+        );
+        return;
+      }
+
       openGroupAfterWizard(router, groupId);
+    },
+    onError: (error) => {
+      Alert.alert("Cannot join group", error.message);
     },
   });
 

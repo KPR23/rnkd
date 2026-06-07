@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type RefObject } from "react";
 import {
   Image,
   Pressable,
@@ -14,6 +14,7 @@ import {
   ArrowUpIcon,
   CaretLeftIcon,
   CheckIcon,
+  DotsThreeVerticalIcon,
   MagnifyingGlassIcon,
   UsersIcon,
   XIcon,
@@ -38,6 +39,7 @@ export type LeaderboardMember = {
   rating: number | null;
   trend: number | null;
   pending?: boolean;
+  joinRequest?: boolean;
   role?: "owner" | "member";
   status?: "active" | "invited";
 };
@@ -84,16 +86,27 @@ function formatInviteSentAgo(invitedAt: Date) {
   return diffDays === 1 ? "Sent 1d ago" : `Sent ${diffDays}d ago`;
 }
 
+const HEADER_ACTION_HIT_SLOP = {
+  top: 10,
+  right: 10,
+  bottom: 10,
+  left: 10,
+} as const;
+
 type BackHeaderProps = {
   title: string;
   centered?: boolean;
   onBack: () => void;
+  onMenuPress?: () => void;
+  menuButtonRef?: RefObject<View | null>;
 };
 
 export function BackHeader({
   title,
   centered = false,
   onBack,
+  onMenuPress,
+  menuButtonRef,
 }: BackHeaderProps) {
   if (!centered) {
     return (
@@ -114,19 +127,54 @@ export function BackHeader({
   }
 
   return (
-    <View className="flex-row items-center justify-between">
+    <View className="min-h-12 flex-row items-center">
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Go back"
-        className="size-6 items-center justify-center"
+        className="h-12 w-12 items-center justify-center"
+        hitSlop={HEADER_ACTION_HIT_SLOP}
         onPress={onBack}
       >
         <CaretLeftIcon size={24} color={colors.text} />
       </Pressable>
-      <AppText className="text-xl leading-6" weight="medium">
-        {title}
+      <View className="min-w-0 flex-1 justify-center px-1">
+        <AppText
+          className="text-center text-xl leading-6"
+          numberOfLines={1}
+          weight="medium"
+        >
+          {title}
+        </AppText>
+      </View>
+      {onMenuPress ? (
+        <Pressable
+          ref={menuButtonRef}
+          accessibilityRole="button"
+          accessibilityLabel="Open group menu"
+          className="h-12 w-12 items-center justify-center"
+          collapsable={false}
+          hitSlop={HEADER_ACTION_HIT_SLOP}
+          onPress={onMenuPress}
+        >
+          <DotsThreeVerticalIcon size={22} color={colors.text} weight="bold" />
+        </Pressable>
+      ) : (
+        <View className="h-12 w-12" />
+      )}
+    </View>
+  );
+}
+
+export function InviteCodeCard({ inviteCode }: { inviteCode: string }) {
+  return (
+    <View className="border-muted bg-card gap-2 border px-4 py-5">
+      <SectionLabel title="Invite code" />
+      <AppText className="text-[28px] leading-8 tracking-[4px]" weight="medium">
+        {inviteCode}
       </AppText>
-      <View className="size-6" />
+      <AppText className="text-sm leading-5" color={colors.textSecondary}>
+        Share this code so others can request to join your group.
+      </AppText>
     </View>
   );
 }
@@ -311,11 +359,17 @@ export function LeaderboardRow({
   member,
   manage,
   selected,
+  isCurrentUser,
+  onAccept,
+  onDecline,
   onRemove,
 }: {
   member: LeaderboardMember;
   manage?: boolean;
   selected?: boolean;
+  isCurrentUser?: boolean;
+  onAccept?: () => void;
+  onDecline?: () => void;
   onRemove?: () => void;
 }) {
   return (
@@ -335,18 +389,47 @@ export function LeaderboardRow({
           <View className="min-w-0 justify-center">
             <AppText className="text-base leading-5.5" weight="medium">
               {member.name}
+              {isCurrentUser ? (
+                <AppText
+                  className="text-base leading-5.5"
+                  color={colors.textSecondary}
+                  weight="medium"
+                >
+                  {" "}
+                  (You)
+                </AppText>
+              ) : null}
             </AppText>
             {member.pending ? (
               <AppText
                 className="text-[13px] leading-4"
                 color={colors.textSecondary}
               >
-                Pending invite
+                {member.joinRequest ? "Join request" : "Pending invite"}
               </AppText>
             ) : null}
           </View>
         </View>
-        {manage && member.role !== "owner" ? (
+        {manage && member.pending ? (
+          <View className="flex-row items-center gap-2">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Accept ${member.name}`}
+              className="size-8 items-center justify-center"
+              onPress={onAccept}
+            >
+              <CheckIcon size={22} color={colors.success} weight="bold" />
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Decline ${member.name}`}
+              className="size-8 items-center justify-center"
+              onPress={onDecline}
+            >
+              <XIcon size={24} color={colors.textSecondary} />
+            </Pressable>
+          </View>
+        ) : manage && member.role !== "owner" ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`Remove ${member.name}`}

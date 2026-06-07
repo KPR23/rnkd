@@ -25,7 +25,7 @@ const inviteInput = z.object({
 });
 
 const INVITE_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const INVITE_CODE_LENGTH = 6;
+const INVITE_CODE_LENGTH = 8;
 
 function createInviteCode() {
   return Array.from({ length: INVITE_CODE_LENGTH }, () => {
@@ -100,6 +100,7 @@ async function getGroupMembers(groupId: string) {
       globalRs: user.globalRs,
       role: groupMembers.role,
       status: groupMembers.status,
+      invitedByUserId: groupMembers.invitedByUserId,
       createdAt: groupMembers.createdAt,
     })
     .from(groupMembers)
@@ -127,6 +128,7 @@ async function getGroupMembers(groupId: string) {
       rating: row.status === "active" ? row.globalRs : null,
       trend: null as number | null,
       pending: row.status === "invited",
+      joinRequest: row.status === "invited" && row.invitedByUserId === null,
       role: row.role,
       status: row.status,
     }));
@@ -348,6 +350,7 @@ export const groupRouter = router({
           .returning({
             id: groupTable.id,
             name: groupTable.name,
+            inviteCode: groupTable.inviteCode,
           });
 
         if (!createdGroup) {
@@ -385,6 +388,7 @@ export const groupRouter = router({
         return {
           groupId: createdGroup.id,
           groupName: createdGroup.name,
+          inviteCode: createdGroup.inviteCode,
           invitedCount: inviteUserIds.length,
         };
       });
@@ -414,27 +418,29 @@ export const groupRouter = router({
       });
 
       if (existingMembership?.status === "active") {
-        return { groupId: group.id };
+        return { groupId: group.id, pending: false as const };
       }
 
       if (existingMembership?.status === "invited") {
-        await db
-          .update(groupMembers)
-          .set({ status: "active", joinedAt: new Date() })
-          .where(eq(groupMembers.id, existingMembership.id));
+        if (existingMembership.invitedByUserId) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "You already have a pending invitation to this group. Accept it from the Groups tab.",
+          });
+        }
 
-        return { groupId: group.id };
+        return { groupId: group.id, pending: true as const };
       }
 
       await db.insert(groupMembers).values({
         groupId: group.id,
         userId: currentUserId,
         role: "member",
-        status: "active",
-        joinedAt: new Date(),
+        status: "invited",
       });
 
-      return { groupId: group.id };
+      return { groupId: group.id, pending: true as const };
     }),
 
   inviteCandidates: protectedProcedure
@@ -530,6 +536,40 @@ export const groupRouter = router({
       return { invitedCount: inviteUserIds.length };
     }),
 
+  approveMember: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string().uuid(),
+        userId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const currentUserId = ctx.session.user.id;
+      await requireOwner(input.groupId, currentUserId);
+
+      const membership = await db.query.groupMembers.findFirst({
+        where: and(
+          eq(groupMembers.groupId, input.groupId),
+          eq(groupMembers.userId, input.userId),
+          eq(groupMembers.status, "invited"),
+        ),
+      });
+
+      if (!membership) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Pending member not found",
+        });
+      }
+
+      await db
+        .update(groupMembers)
+        .set({ status: "active", joinedAt: new Date() })
+        .where(eq(groupMembers.id, membership.id));
+
+      return { ok: true as const };
+    }),
+
   removeMember: protectedProcedure
     .input(
       z.object({
@@ -562,6 +602,27 @@ export const groupRouter = router({
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Member not found",
+        });
+      }
+
+      return { ok: true as const };
+    }),
+
+  deleteGroup: protectedProcedure
+    .input(groupIdInput)
+    .mutation(async ({ ctx, input }) => {
+      const currentUserId = ctx.session.user.id;
+      await requireOwner(input.groupId, currentUserId);
+
+      const deleted = await db
+        .delete(groupTable)
+        .where(eq(groupTable.id, input.groupId))
+        .returning({ id: groupTable.id });
+
+      if (deleted.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Group not found",
         });
       }
 

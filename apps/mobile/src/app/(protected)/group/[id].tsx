@@ -1,7 +1,18 @@
-import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
+import { useCallback, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Modal,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  View,
+} from "react-native";
 
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 
+import { colors } from "@repo/ui/colors";
 import {
   BackHeader,
   GroupsButtonRow,
@@ -11,6 +22,7 @@ import {
 } from "@/src/components/groups/GroupsUI";
 import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
+import { copyToClipboard } from "@/src/lib/clipboard";
 import { goBackFromGroup } from "@/src/lib/navigation/groups";
 import { trpc } from "@/src/utils/trpc";
 
@@ -21,11 +33,36 @@ export default function GroupDetailsScreen() {
     returnTo?: string;
   }>();
   const utils = trpc.useUtils();
-  const { data, isLoading, isError } = trpc.group.detail.useQuery(
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<{
+    top: number;
+    right: number;
+  } | null>(null);
+  const menuButtonRef = useRef<View>(null);
+  const { data, isLoading, isError, isRefetching } = trpc.group.detail.useQuery(
     { groupId: id ?? "" },
     { enabled: !!id },
   );
+
+  const handlePullRefresh = useCallback(async () => {
+    if (!id) return;
+
+    try {
+      await Promise.all([
+        utils.group.detail.invalidate({ groupId: id }),
+        utils.group.list.invalidate(),
+      ]);
+    } catch (error) {
+      console.error("Group pull-to-refresh failed", error);
+    }
+  }, [id, utils.group.detail, utils.group.list]);
   const leaveGroup = trpc.group.leave.useMutation({
+    onSuccess: async () => {
+      await utils.group.invalidate();
+      goBackFromGroup(router, returnTo);
+    },
+  });
+  const deleteGroup = trpc.group.deleteGroup.useMutation({
     onSuccess: async () => {
       await utils.group.invalidate();
       goBackFromGroup(router, returnTo);
@@ -46,6 +83,51 @@ export default function GroupDetailsScreen() {
       </Screen>
     );
   }
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    setMenuAnchor(null);
+  };
+
+  const openMenu = () => {
+    menuButtonRef.current?.measureInWindow((x, y, width, height) => {
+      const { width: screenWidth } = Dimensions.get("window");
+      setMenuAnchor({
+        top: y + height + 8,
+        right: screenWidth - x - width,
+      });
+      setIsMenuOpen(true);
+    });
+  };
+
+  const handleCopyInviteCode = async () => {
+    closeMenu();
+    const inviteCode = data?.group.inviteCode ?? "";
+    const copied = await copyToClipboard(inviteCode);
+
+    if (copied) {
+      Alert.alert("Copied", "Invite code copied to clipboard.");
+      return;
+    }
+
+    Alert.alert("Invite code", inviteCode);
+  };
+
+  const confirmDeleteGroup = () => {
+    closeMenu();
+    Alert.alert(
+      "Remove group",
+      `Are you sure you want to remove ${data?.group.name ?? "this group"}? This cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => deleteGroup.mutate({ groupId: id }),
+        },
+      ],
+    );
+  };
 
   const confirmLeaveGroup = () => {
     Alert.alert(
@@ -78,12 +160,22 @@ export default function GroupDetailsScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={handlePullRefresh}
+          />
+        }
+      >
         <View className="gap-6 pb-6">
           <BackHeader
             title={data.group.name}
             centered
+            menuButtonRef={menuButtonRef}
             onBack={() => goBackFromGroup(router, returnTo)}
+            onMenuPress={data.canManage ? openMenu : undefined}
           />
 
           <View className="gap-3">
@@ -121,13 +213,66 @@ export default function GroupDetailsScreen() {
           <View className="gap-2.5">
             <SectionLabel title="Leaderboard" />
             <View className="gap-2">
-              {data.members.map((member) => (
-                <LeaderboardRow key={member.id} member={member} />
-              ))}
+              {data.members
+                .filter((member) => member.status === "active")
+                .map((member) => (
+                  <LeaderboardRow key={member.id} member={member} />
+                ))}
             </View>
           </View>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={isMenuOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={closeMenu}
+      >
+        <View className="flex-1">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close group menu"
+            className="absolute inset-0"
+            onPress={closeMenu}
+          />
+          {menuAnchor ? (
+            <View
+              className="border-muted bg-card absolute min-w-52 border p-2"
+              style={{
+                top: menuAnchor.top,
+                right: menuAnchor.right,
+              }}
+            >
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Copy invite code"
+                className="px-3 py-3"
+                onPress={() => void handleCopyInviteCode()}
+              >
+                <AppText className="text-sm" weight="medium">
+                  Copy invite code
+                </AppText>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Remove group"
+                className="px-3 py-3"
+                disabled={deleteGroup.isPending}
+                onPress={confirmDeleteGroup}
+              >
+                <AppText
+                  className="text-sm"
+                  color={colors.destructiveText}
+                  weight="medium"
+                >
+                  Remove group
+                </AppText>
+              </Pressable>
+            </View>
+          ) : null}
+        </View>
+      </Modal>
     </Screen>
   );
 }

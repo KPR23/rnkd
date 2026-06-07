@@ -4,6 +4,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 
 import {
   GroupCard,
+  InviteCodeCard,
   SectionLabel,
   WizardFooter,
 } from "@/src/components/groups/GroupsUI";
@@ -48,20 +49,24 @@ export default function GroupsCreatedScreen() {
             You're all set!
           </AppText>
           <AppText className="text-base leading-5" color="#828083">
-            Your group has been created and invitations have been sent
+            Your group has been created. Share the invite code below so others can
+            request to join.
           </AppText>
         </View>
 
-        <View className="gap-2.5">
-          <SectionLabel title="Created group" />
-          {isLoading ? (
-            <View className="items-center py-6">
-              <ActivityIndicator />
+        {isLoading ? (
+          <View className="items-center py-6">
+            <ActivityIndicator />
+          </View>
+        ) : data ? (
+          <>
+            <InviteCodeCard inviteCode={data.group.inviteCode} />
+            <View className="gap-2.5">
+              <SectionLabel title="Created group" />
+              <GroupCard group={data.group} />
             </View>
-          ) : data ? (
-            <GroupCard group={data.group} />
-          ) : null}
-        </View>
+          </>
+        ) : null}
       </View>
     </Screen>
   );
