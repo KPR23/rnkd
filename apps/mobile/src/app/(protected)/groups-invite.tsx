@@ -12,10 +12,12 @@ import {
 } from "@/src/components/groups/GroupsUI";
 import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 export default function GroupsInviteScreen() {
   const router = useRouter();
+  const { showError } = useMessage();
   const {
     mode = "invite",
     groupId,
@@ -51,12 +53,18 @@ export default function GroupsInviteScreen() {
         },
       });
     },
+    onError: (error) => {
+      showError(error.message);
+    },
   });
 
   const inviteToGroup = trpc.group.invite.useMutation({
     onSuccess: async () => {
       await utils.group.invalidate();
       router.back();
+    },
+    onError: (error) => {
+      showError(error.message);
     },
   });
 

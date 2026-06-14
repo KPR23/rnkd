@@ -9,6 +9,7 @@ import { StatusBar } from "expo-status-bar";
 
 import { colors } from "@repo/ui/colors";
 import { useAuth } from "@/src/lib/auth/use-auth";
+import { MessageProvider } from "@/src/lib/messages/message-provider";
 import { TRPCProvider } from "@/src/utils/provider";
 
 SplashScreen.preventAutoHideAsync();
@@ -69,7 +70,9 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <TRPCProvider>
-      <RootNavigator />
+      <MessageProvider>
+        <RootNavigator />
+      </MessageProvider>
     </TRPCProvider>
   );
 }

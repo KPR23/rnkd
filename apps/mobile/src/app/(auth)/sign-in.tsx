@@ -1,13 +1,15 @@
-import { Alert, Button, Text, View } from "react-native";
+import { Button, Text, View } from "react-native";
 
 import { useRouter } from "expo-router";
 
 import { authClient } from "@/src/lib/auth/auth-client";
 import { useAuth } from "@/src/lib/auth/use-auth";
+import { useMessage } from "@/src/lib/messages/message-provider";
 
 export default function SignInScreen() {
   const router = useRouter();
   const { data: session } = useAuth();
+  const { showError } = useMessage();
 
   const handleLogin = async () => {
     try {
@@ -17,15 +19,14 @@ export default function SignInScreen() {
       });
 
       if (result.error) {
-        Alert.alert(
-          "Sign in failed",
+        showError(
           result.error.message || `HTTP ${result.error.status ?? "unknown"}`,
         );
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error("LOGIN EXCEPTION", error);
-      Alert.alert("Sign in exception", message);
+      showError(message);
     }
   };
 

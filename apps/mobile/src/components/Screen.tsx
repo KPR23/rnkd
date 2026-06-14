@@ -20,7 +20,7 @@ export default function Screen({
       <SafeAreaView style={{ flex: 1 }} edges={safeAreaEdges}>
         <View style={{ flex: 1, paddingHorizontal: 20 }}>{children}</View>
         {footer ? (
-          <View className="border-border border-t px-5 py-4">{footer}</View>
+          <View className="border-muted border-t px-5 py-4">{footer}</View>
         ) : null}
       </SafeAreaView>
     </View>

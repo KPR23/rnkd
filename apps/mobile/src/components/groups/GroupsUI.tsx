@@ -23,6 +23,7 @@ import {
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
+import { BOTTOM_DOCK_CONTENT_HEIGHT } from "@/src/constants/bottom-dock";
 
 export type GroupSummary = {
   id: string;
@@ -644,25 +645,40 @@ export function WizardFooter({
   disabled?: boolean;
   onPress: () => void;
 }) {
+  const hasSteps = !!(step && totalSteps);
+
   return (
-    <View className="mb-8 gap-3">
-      {step && totalSteps ? (
-        <View className="flex-row justify-center gap-2.5">
-          {Array.from({ length: totalSteps }).map((_, index) => (
-            <View
-              key={index}
-              className={`size-2 ${index + 1 === step ? "bg-primary" : "bg-muted"}`}
-            />
-          ))}
+    <View
+      className="justify-start"
+      style={{ height: BOTTOM_DOCK_CONTENT_HEIGHT }}
+    >
+      {hasSteps ? (
+        <View className="gap-3">
+          <View className="flex-row justify-center gap-2.5">
+            {Array.from({ length: totalSteps }).map((_, index) => (
+              <View
+                key={index}
+                className={`size-2 ${index + 1 === step ? "bg-primary" : "bg-muted"}`}
+              />
+            ))}
+          </View>
+          <Button
+            actionText={actionText}
+            className="h-13.5"
+            disabled={disabled}
+            variant={disabled ? "secondary" : "primary"}
+            onPress={onPress}
+          />
         </View>
-      ) : null}
-      <Button
-        actionText={actionText}
-        className="h-13.5"
-        disabled={disabled}
-        variant={disabled ? "secondary" : "primary"}
-        onPress={onPress}
-      />
+      ) : (
+        <Button
+          actionText={actionText}
+          className="h-13.5"
+          disabled={disabled}
+          variant={disabled ? "secondary" : "primary"}
+          onPress={onPress}
+        />
+      )}
     </View>
   );
 }
