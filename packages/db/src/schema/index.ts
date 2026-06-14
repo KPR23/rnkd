@@ -1,4 +1,5 @@
 export * from "./auth";
+export * from "./feed";
 export * from "./cs2-faceit-match-players";
 export * from "./cs2-faceit-ranked";
 export * from "./games";
