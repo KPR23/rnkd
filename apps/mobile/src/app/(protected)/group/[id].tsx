@@ -23,11 +23,13 @@ import {
 import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
 import { copyToClipboard } from "@/src/lib/clipboard";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { goBackFromGroup } from "@/src/lib/navigation/groups";
 import { trpc } from "@/src/utils/trpc";
 
 export default function GroupDetailsScreen() {
   const router = useRouter();
+  const { showMessage, showError } = useMessage();
   const { id, returnTo } = useLocalSearchParams<{
     id: string;
     returnTo?: string;
@@ -61,11 +63,17 @@ export default function GroupDetailsScreen() {
       await utils.group.invalidate();
       goBackFromGroup(router, returnTo);
     },
+    onError: (error) => {
+      showError(error.message);
+    },
   });
   const deleteGroup = trpc.group.deleteGroup.useMutation({
     onSuccess: async () => {
       await utils.group.invalidate();
       goBackFromGroup(router, returnTo);
+    },
+    onError: (error) => {
+      showError(error.message);
     },
   });
 
@@ -106,11 +114,11 @@ export default function GroupDetailsScreen() {
     const copied = await copyToClipboard(inviteCode);
 
     if (copied) {
-      Alert.alert("Copied", "Invite code copied to clipboard.");
+      showMessage("Invite code copied to clipboard");
       return;
     }
 
-    Alert.alert("Invite code", inviteCode);
+    showMessage(inviteCode);
   };
 
   const confirmDeleteGroup = () => {

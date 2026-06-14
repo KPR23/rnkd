@@ -1,4 +1,1 @@
-export const BOTTOM_DOCK_CONTENT_HEIGHT = 96;
-
-export const BOTTOM_DOCK_ENTER_DURATION_MS = 520;
-export const BOTTOM_DOCK_EXIT_DURATION_MS = 360;
+export const BOTTOM_DOCK_HEIGHT = 136;

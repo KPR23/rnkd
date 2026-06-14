@@ -1,6 +1,6 @@
 import "@/globals.css";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -9,13 +9,15 @@ import { StatusBar } from "expo-status-bar";
 
 import { colors } from "@repo/ui/colors";
 import { useAuth } from "@/src/lib/auth/use-auth";
+import { KeyboardOffsetProvider } from "@/src/lib/keyboard/keyboard-offset-provider";
 import { MessageProvider } from "@/src/lib/messages/message-provider";
 import { TRPCProvider } from "@/src/utils/provider";
 
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootNavigator() {
   const { data: session, isPending } = useAuth();
+  const splashHiddenRef = useRef(false);
 
   const [fontsLoaded, fontError] = useFonts({
     "IBM Plex Sans": require("../../assets/fonts/IBMPlexSans-VariableFont_wdth,wght.ttf"),
@@ -25,9 +27,12 @@ function RootNavigator() {
   const ready = fontsReady && !isPending;
 
   useEffect(() => {
-    if (ready) {
-      void SplashScreen.hideAsync();
+    if (!ready || splashHiddenRef.current) {
+      return;
     }
+
+    splashHiddenRef.current = true;
+    void SplashScreen.hideAsync().catch(() => {});
   }, [ready]);
 
   if (!ready) {
@@ -70,9 +75,11 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <TRPCProvider>
-      <MessageProvider>
-        <RootNavigator />
-      </MessageProvider>
+      <KeyboardOffsetProvider>
+        <MessageProvider>
+          <RootNavigator />
+        </MessageProvider>
+      </KeyboardOffsetProvider>
     </TRPCProvider>
   );
 }

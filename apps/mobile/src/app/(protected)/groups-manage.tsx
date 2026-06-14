@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
+import { ActivityIndicator, Alert, View } from "react-native";
 
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 
@@ -10,10 +10,13 @@ import {
 } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
 import { useAuth } from "@/src/lib/auth/use-auth";
+import { DismissKeyboardScrollView } from "@/src/lib/keyboard/dismiss-keyboard";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 export default function GroupsManageScreen() {
   const router = useRouter();
+  const { showError } = useMessage();
   const { groupId } = useLocalSearchParams<{ groupId?: string }>();
   const { data: session } = useAuth();
   const utils = trpc.useUtils();
@@ -26,10 +29,16 @@ export default function GroupsManageScreen() {
     onSuccess: async () => {
       await utils.group.invalidate();
     },
+    onError: (error) => {
+      showError(error.message);
+    },
   });
   const removeMember = trpc.group.removeMember.useMutation({
     onSuccess: async () => {
       await utils.group.invalidate();
+    },
+    onError: (error) => {
+      showError(error.message);
     },
   });
 
@@ -83,7 +92,7 @@ export default function GroupsManageScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <DismissKeyboardScrollView showsVerticalScrollIndicator={false}>
         <View className="gap-6 pb-6">
           <BackHeader
             title="Manage players"
@@ -140,7 +149,7 @@ export default function GroupsManageScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
+      </DismissKeyboardScrollView>
     </Screen>
   );
 }

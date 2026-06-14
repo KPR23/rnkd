@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ActivityIndicator, Alert, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 import { Stack, useLocalSearchParams } from "expo-router";
 
@@ -7,6 +7,7 @@ import type { User } from "@repo/types";
 import ProfileScreen from "@/src/components/profile/ProfileScreen";
 import Screen from "@/src/components/Screen";
 import { useAuth } from "@/src/lib/auth/use-auth";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 function toProfileUser(u: {
@@ -27,6 +28,7 @@ function toProfileUser(u: {
 export default function PlayerProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: session } = useAuth();
+  const { showError } = useMessage();
   const utils = trpc.useUtils();
   const syncPull = trpc.gameAccount.syncMyTrackedLatestMatches.useMutation();
 
@@ -57,10 +59,11 @@ export default function PlayerProfileScreen() {
       await refetchGameAccounts();
     } catch (error) {
       console.error("Player profile pull-to-refresh failed", error);
-      const message = error instanceof Error ? error.message : undefined;
-      Alert.alert("Refresh failed", message);
+      const message =
+        error instanceof Error ? error.message : "Could not refresh profile.";
+      showError(message);
     }
-  }, [refetchGameAccounts, isOwnRoute, syncPull, utils.gameAccount]);
+  }, [refetchGameAccounts, isOwnRoute, showError, syncPull, utils.gameAccount]);
 
   if (!id) {
     return null;

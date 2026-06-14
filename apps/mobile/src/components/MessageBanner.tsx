@@ -1,15 +1,9 @@
 import { Modal, Pressable, View } from "react-native";
 
 import { colors } from "@repo/ui/colors";
-import Animated, { FadeOutDown, SlideInUp } from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
-
 import AppText from "@/src/components/AppText";
-import {
-  BOTTOM_DOCK_CONTENT_HEIGHT,
-  BOTTOM_DOCK_ENTER_DURATION_MS,
-  BOTTOM_DOCK_EXIT_DURATION_MS,
-} from "@/src/constants/bottom-dock";
+import { BOTTOM_DOCK_HEIGHT } from "@/src/constants/bottom-dock";
+import { useKeyboardOffset } from "@/src/lib/keyboard/keyboard-offset-provider";
 
 type MessageBannerProps = {
   message: {
@@ -20,7 +14,12 @@ type MessageBannerProps = {
   onDismiss: () => void;
 };
 
-export default function MessageBanner({ message, onDismiss }: MessageBannerProps) {
+export default function MessageBanner({
+  message,
+  onDismiss,
+}: MessageBannerProps) {
+  const keyboardOffset = useKeyboardOffset();
+
   return (
     <Modal
       visible={!!message}
@@ -29,31 +28,23 @@ export default function MessageBanner({ message, onDismiss }: MessageBannerProps
       statusBarTranslucent
       onRequestClose={onDismiss}
     >
-      <View className="flex-1 justify-end" pointerEvents="box-none">
+      <View
+        className="flex-1 justify-end"
+        pointerEvents="box-none"
+        style={{ marginBottom: keyboardOffset }}
+      >
         {message ? (
-          <SafeAreaView edges={["bottom"]} pointerEvents="box-none">
-            <Animated.View
-              key={message.id}
-              entering={SlideInUp.duration(BOTTOM_DOCK_ENTER_DURATION_MS)}
-              exiting={FadeOutDown.duration(BOTTOM_DOCK_EXIT_DURATION_MS)}
-            >
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Dismiss message"
-                className="border-muted bg-sheet border-t px-5 py-4"
-                onPress={onDismiss}
-              >
-                <View
-                  className="justify-center"
-                  style={{ height: BOTTOM_DOCK_CONTENT_HEIGHT }}
-                >
-                  <AppText className="text-sm leading-5" color={colors.text}>
-                    {message.text}
-                  </AppText>
-                </View>
-              </Pressable>
-            </Animated.View>
-          </SafeAreaView>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Dismiss message"
+            className="border-muted bg-sheet justify-start border-t px-5 pt-4"
+            style={{ height: BOTTOM_DOCK_HEIGHT }}
+            onPress={onDismiss}
+          >
+            <AppText className="text-sm leading-5" color={colors.text}>
+              {message.text}
+            </AppText>
+          </Pressable>
         ) : null}
       </View>
     </Modal>

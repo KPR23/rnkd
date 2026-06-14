@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
 
 import { Stack, useRouter } from "expo-router";
 
@@ -9,11 +9,13 @@ import {
   WizardFooter,
 } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { openGroupAfterWizard } from "@/src/lib/navigation/groups";
 import { trpc } from "@/src/utils/trpc";
 
 export default function GroupsJoinScreen() {
   const router = useRouter();
+  const { showMessage, showError } = useMessage();
   const [code, setCode] = useState("");
   const normalizedCode = code.trim();
   const utils = trpc.useUtils();
@@ -22,18 +24,15 @@ export default function GroupsJoinScreen() {
       await utils.group.invalidate();
 
       if (pending) {
-        Alert.alert(
-          "Request sent",
-          "The group owner will review your request",
-          [{ text: "OK", onPress: () => router.back() }],
-        );
+        showMessage("The group owner will review your request");
+        router.back();
         return;
       }
 
       openGroupAfterWizard(router, groupId);
     },
     onError: (error) => {
-      Alert.alert("Cannot join group", error.message);
+      showError(error.message);
     },
   });
 

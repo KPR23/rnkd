@@ -23,7 +23,6 @@ import {
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
-import { BOTTOM_DOCK_CONTENT_HEIGHT } from "@/src/constants/bottom-dock";
 
 export type GroupSummary = {
   id: string;
@@ -648,13 +647,10 @@ export function WizardFooter({
   const hasSteps = !!(step && totalSteps);
 
   return (
-    <View
-      className="justify-start"
-      style={{ height: BOTTOM_DOCK_CONTENT_HEIGHT }}
-    >
+    <View className="h-full justify-start">
       {hasSteps ? (
         <View className="gap-3">
-          <View className="flex-row justify-center gap-2.5">
+          <View className="flex-row justify-center gap-2.5 pt-3">
             {Array.from({ length: totalSteps }).map((_, index) => (
               <View
                 key={index}

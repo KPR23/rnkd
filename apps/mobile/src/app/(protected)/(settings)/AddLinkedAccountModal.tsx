@@ -21,6 +21,7 @@ import { colors } from "@repo/ui/colors";
 import FaceitAccountPreviewCard from "@/src/app/(protected)/(settings)/FaceitAccountPreviewCard";
 import Button from "@/src/components/Button";
 import CustomModal from "@/src/components/Modal";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 import FaceitAccountForm from "./FaceitAccountForm";
@@ -60,12 +61,12 @@ export default function AddLinkedAccountModal({
   onClose: () => void;
 }) {
   const utils = trpc.useUtils();
+  const { showError } = useMessage();
   const [game, setGame] = useState<GameId>(GAMES.LOL);
   const [gameName, setGameName] = useState("");
   const [tagLine, setTagLine] = useState("");
   const [platform, setPlatform] = useState<RiotPlatformRoute>("euw1");
   const [faceitNickname, setFaceitNickname] = useState("");
-  const [formError, setFormError] = useState<string | null>(null);
   const [step, setStep] = useState<ModalStep>("game");
   const [linkedFaceitPlayer, setLinkedFaceitPlayer] =
     useState<FaceitPlayer | null>(null);
@@ -76,7 +77,6 @@ export default function AddLinkedAccountModal({
     setTagLine("");
     setPlatform("euw1");
     setFaceitNickname("");
-    setFormError(null);
     setStep("game");
     setLinkedFaceitPlayer(null);
   };
@@ -116,7 +116,7 @@ export default function AddLinkedAccountModal({
         void utils.gameAccount.getGameAccounts.invalidate();
         handleClose();
       },
-      onError: (err) => setFormError(mapMutationError(err)),
+      onError: (err) => showError(mapMutationError(err)),
     });
 
   const { mutate: addFaceit, isPending: isFaceitPending } =
@@ -125,7 +125,7 @@ export default function AddLinkedAccountModal({
         void utils.gameAccount.getGameAccounts.invalidate();
         setStep("success");
       },
-      onError: (err) => setFormError(mapMutationError(err)),
+      onError: (err) => showError(mapMutationError(err)),
     });
 
   const isSubmitting = isLolPending || isFaceitPending;
@@ -169,19 +169,17 @@ export default function AddLinkedAccountModal({
             };
 
   const handleSubmit = () => {
-    setFormError(null);
-
     if (game === GAMES.LOL) {
       const trimmedGameName = gameName.trim();
       const trimmedTagLine = tagLine.trim();
 
       if (trimmedGameName.length < 3 || trimmedGameName.length > 16) {
-        setFormError("Summoner name must be 3 to 16 characters.");
+        showError("Summoner name must be 3 to 16 characters.");
         return;
       }
 
       if (!/^[a-zA-Z0-9]{3,5}$/.test(trimmedTagLine)) {
-        setFormError("Tag line must be 3 to 5 letters or numbers.");
+        showError("Tag line must be 3 to 5 letters or numbers.");
         return;
       }
 
@@ -194,7 +192,7 @@ export default function AddLinkedAccountModal({
 
     if (game === GAMES.CS2_FACEIT) {
       if (!faceitPlayer) {
-        setFormError("We couldn't verify this Faceit account.");
+        showError("We couldn't verify this Faceit account.");
         return;
       }
 
@@ -204,13 +202,10 @@ export default function AddLinkedAccountModal({
   };
 
   const handleContinue = () => {
-    setFormError(null);
     setStep(step === "game" ? "input" : "confirm");
   };
 
   const handleSecondaryAction = () => {
-    setFormError(null);
-
     if (step === "game") {
       handleClose();
       return;
@@ -242,7 +237,6 @@ export default function AddLinkedAccountModal({
               onPress={() => {
                 if (isSubmitting) return;
                 setGame(g);
-                setFormError(null);
               }}
               disabled={isSubmitting}
               className={`border px-4 py-4 ${
@@ -415,7 +409,6 @@ export default function AddLinkedAccountModal({
 
   const isConfirmDisabled =
     isSubmitting ||
-    !!formError ||
     (game === GAMES.LOL
       ? gameName.trim().length < 3 ||
         gameName.trim().length > 16 ||
@@ -448,9 +441,6 @@ export default function AddLinkedAccountModal({
     </View>
   ) : (
     <View className="flex flex-col gap-3">
-      {formError ? (
-        <Text className="text-destructive text-sm">{formError}</Text>
-      ) : null}
       <View className="flex flex-col gap-3">
         <Button
           variant="primary"

@@ -38,6 +38,15 @@ function uniqueValues(values: string[]) {
   return [...new Set(values)];
 }
 
+async function isGroupNameTaken(name: string) {
+  const existingGroup = await db.query.groups.findFirst({
+    columns: { id: true },
+    where: sql`lower(${groupTable.name}) = lower(${name})`,
+  });
+
+  return !!existingGroup;
+}
+
 async function getAcceptedFriendIds(userId: string) {
   const rows = await db
     .select({
@@ -318,16 +327,19 @@ export const groupRouter = router({
       };
     }),
 
+  isNameAvailable: protectedProcedure
+    .input(z.object({ name: z.string().trim().min(2).max(40) }))
+    .query(async ({ input }) => {
+      const taken = await isGroupNameTaken(input.name);
+      return { available: !taken };
+    }),
+
   create: protectedProcedure
     .input(createGroupInput)
     .mutation(async ({ ctx, input }) => {
       const currentUserId = ctx.session.user.id;
-      const existingGroup = await db.query.groups.findFirst({
-        columns: { id: true },
-        where: sql`lower(${groupTable.name}) = lower(${input.name})`,
-      });
 
-      if (existingGroup) {
+      if (await isGroupNameTaken(input.name)) {
         throw new TRPCError({
           code: "CONFLICT",
           message: "Group name already exists",

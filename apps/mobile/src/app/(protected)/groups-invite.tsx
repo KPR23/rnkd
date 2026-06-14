@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 
@@ -12,6 +12,7 @@ import {
 } from "@/src/components/groups/GroupsUI";
 import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
+import { DismissKeyboardScrollView } from "@/src/lib/keyboard/dismiss-keyboard";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -120,7 +121,7 @@ export default function GroupsInviteScreen() {
       }
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <DismissKeyboardScrollView showsVerticalScrollIndicator={false}>
         <View className="gap-6 pb-6">
           <BackHeader
             title={mode === "create" ? "Invite friends to your group" : "Invite friends"}
@@ -163,7 +164,7 @@ export default function GroupsInviteScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
+      </DismissKeyboardScrollView>
     </Screen>
   );
 }
