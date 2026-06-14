@@ -1,16 +1,12 @@
 import { useMemo, type RefObject } from "react";
-import {
-  Image,
-  Pressable,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, Pressable, TouchableOpacity, View } from "react-native";
 
 import {
   ArrowDownIcon,
   ArrowRightIcon,
   ArrowUpIcon,
   CheckIcon,
+  ClipboardIcon,
   DotsThreeVerticalIcon,
   UsersIcon,
   XIcon,
@@ -20,6 +16,8 @@ import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
 import { HeaderBar } from "@/src/components/Header";
+import { copyToClipboard } from "@/src/lib/clipboard";
+import { useMessage } from "@/src/lib/messages/message-provider";
 
 export type GroupSummary = {
   id: string;
@@ -100,7 +98,11 @@ export function BackHeader({
               onPress={onMenuPress}
               className="size-6 items-center justify-center"
             >
-              <DotsThreeVerticalIcon size={22} color={colors.text} weight="bold" />
+              <DotsThreeVerticalIcon
+                size={22}
+                color={colors.text}
+                weight="bold"
+              />
             </Pressable>
           ) : undefined
         }
@@ -112,12 +114,33 @@ export function BackHeader({
 }
 
 export function InviteCodeCard({ inviteCode }: { inviteCode: string }) {
+  const { showMessage, showError } = useMessage();
   return (
     <View className="border-muted bg-card gap-2 border px-4 py-5">
       <SectionLabel title="Invite code" />
-      <AppText className="text-[28px] leading-8 tracking-[4px]" weight="medium">
-        {inviteCode}
-      </AppText>
+      <View className="flex-row items-center justify-between">
+        <AppText
+          className="text-[28px] leading-8 tracking-[4px]"
+          weight="medium"
+        >
+          {inviteCode}
+        </AppText>
+        <View>
+          <Pressable
+            className="size-6 items-center justify-center"
+            onPress={async () => {
+              const copied = await copyToClipboard(inviteCode);
+              if (copied) {
+                showMessage("Invite code copied to clipboard");
+              } else {
+                showError("Failed to copy invite code");
+              }
+            }}
+          >
+            <ClipboardIcon size={22} color={colors.text} weight="bold" />
+          </Pressable>
+        </View>
+      </View>
       <AppText className="text-sm leading-5" color={colors.textSecondary}>
         Share this code so others can request to join your group.
       </AppText>
@@ -547,4 +570,3 @@ export function FriendSuggestionRow({
     </TouchableOpacity>
   );
 }
-

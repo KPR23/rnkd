@@ -43,12 +43,12 @@ export default function GroupsCreatedScreen() {
       }
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <View className="flex-1 gap-6">
-        <View className="gap-2 pt-18">
-          <AppText className="text-[28px] leading-8" weight="medium">
+      <View className="flex-1 gap-6 pt-4">
+        <View className="gap-2">
+          <AppText className="text-3xl" weight="medium">
             You&apos;re all set!
           </AppText>
-          <AppText className="text-base leading-5" color="#828083">
+          <AppText className="text-base" color="#828083">
             Your group has been created. Share the invite code below so others
             can request to join.
           </AppText>
