@@ -12,6 +12,7 @@ import {
 import { getLolAccountsOfFriends } from "../social/friend-game-accounts";
 import { assertRiotRegion } from "./helper";
 import { mapRiotMatchToDb } from "./lol-sync";
+import { refreshLolRankedForAccount } from "./lol-profile-sync";
 import { getMatchById, getMatchIdsByPuuid } from "./riot-client";
 import type { RiotRegionalRoute } from "./types";
 
@@ -163,8 +164,17 @@ export async function syncLatestLolMatchForAccount(
     .set({ lastMatchId: watermarkAfterSync })
     .where(eq(lolGameAccountProfiles.gameAccountId, account.id));
 
-  if (needsParticipantRepair && !anyNewMatchInDb) {
+  if (!needsParticipantRepair && !anyNewMatchInDb) {
     return { ok: true, kind: "unchanged" };
+  }
+
+  try {
+    await refreshLolRankedForAccount(account.id);
+  } catch (error) {
+    console.error("Failed to refresh LoL ranked entries after match sync", {
+      gameAccountId: account.id,
+      error,
+    });
   }
 
   return { ok: true, kind: "synced", newMatchInDb: anyNewMatchInDb };

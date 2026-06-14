@@ -1,4 +1,6 @@
-import { Alert, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
+
+import { CheckIcon } from "phosphor-react-native";
 
 import {
   GameAccount,
@@ -7,7 +9,7 @@ import {
   isLolGameAccount,
   type GameId,
 } from "@repo/types";
-import Button from "@/src/components/Button";
+import { colors } from "@repo/ui/colors";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -83,24 +85,30 @@ export default function LinkedAccountCard({
     );
   };
 
+  const linkedName = accountDisplayName(linkedAccount);
+
   return (
-    <View className="flex h-16 w-full flex-row items-center">
-      <View className="bg-card border-muted h-full w-full flex-1 flex-col items-start justify-center gap-0.5 border px-4">
-        <Text className="font-sans-medium text-text-secondary text-xs">
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${GAME_TITLE[linkedAccount.gameId]}, linked to ${linkedName}. Long press to unlink.`}
+      className="bg-card border-muted flex w-full flex-col border px-4"
+      onLongPress={() => {
+        if (linkedAccount.externalId) {
+          handleUnlink(linkedAccount);
+        }
+      }}
+    >
+      <View className="flex h-16 flex-row items-center justify-between">
+        <Text className="font-sans-medium text-text text-sm">
           {GAME_TITLE[linkedAccount.gameId]}
         </Text>
-        <Text className="font-sans-semibold text-text text-sm">
-          {accountDisplayName(linkedAccount)}
+        <CheckIcon color={colors.primary} size={24} weight="bold" />
+      </View>
+      <View className="border-muted border-t py-3">
+        <Text className="font-sans text-text-secondary text-sm">
+          Linked to {linkedName}
         </Text>
       </View>
-      <Button
-        variant="secondary"
-        className="h-full border-l-0 px-4"
-        actionText={linkedAccount.externalId && "Unlink"}
-        onPress={() => {
-          linkedAccount.externalId && handleUnlink(linkedAccount);
-        }}
-      />
-    </View>
+    </Pressable>
   );
 }
