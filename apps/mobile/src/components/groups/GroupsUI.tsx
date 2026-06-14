@@ -433,13 +433,24 @@ export function LeaderboardRow({
           <View className="size-8" />
         ) : (
           <View className="h-9 items-end justify-center gap-0.5">
-            <AppText
-              className="text-right text-sm"
-              weight="medium"
-              style={{ lineHeight: 20 }}
-            >
-              {member.rating ? `${member.rating} RS` : "- RS"}
-            </AppText>
+            <View className="flex-row items-center gap-1">
+              <AppText
+                className="text-right text-sm"
+                weight="medium"
+                color={member.rating ? colors.text : colors.textSecondary}
+                style={{ lineHeight: 20 }}
+              >
+                {member.rating ? `${member.rating} ` : "-"}
+              </AppText>
+              <AppText
+                className="text-right text-sm"
+                weight="medium"
+                color={member.rating ? colors.primary : colors.textSecondary}
+                style={{ lineHeight: 20 }}
+              >
+                RS
+              </AppText>
+            </View>
             {member.trend === null ? null : (
               <TrendIndicator trend={member.trend} />
             )}
