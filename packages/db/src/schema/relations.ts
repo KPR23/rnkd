@@ -194,6 +194,14 @@ export const feedPostCommentsRelations = relations(
       fields: [feedPostComments.postId],
       references: [feedPosts.id],
     }),
+    parent: one(feedPostComments, {
+      fields: [feedPostComments.parentCommentId],
+      references: [feedPostComments.id],
+      relationName: "commentReplies",
+    }),
+    replies: many(feedPostComments, {
+      relationName: "commentReplies",
+    }),
     author: one(user, {
       fields: [feedPostComments.authorUserId],
       references: [user.id],

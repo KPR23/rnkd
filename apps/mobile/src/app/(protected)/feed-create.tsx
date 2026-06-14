@@ -6,8 +6,8 @@ import { Stack, useRouter } from "expo-router";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import { BackHeader } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
-import ScreenScroll from "@/src/components/ScreenScroll";
 import { ScreenFooter } from "@/src/components/ScreenFooter";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import { TextFieldMultiline } from "@/src/components/TextField";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
@@ -79,7 +79,6 @@ export default function FeedCreateScreen() {
       >
         <View className="gap-2">
           <TextFieldMultiline
-            className="min-h-40"
             autoFocus
             placeholder="What's on your mind?"
             style={{ minHeight: 128 }}

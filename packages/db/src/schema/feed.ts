@@ -1,4 +1,5 @@
 import {
+  foreignKey,
   index,
   pgTable,
   text,
@@ -60,6 +61,7 @@ export const feedPostComments = pgTable(
     postId: uuid("post_id")
       .notNull()
       .references(() => feedPosts.id, { onDelete: "cascade" }),
+    parentCommentId: uuid("parent_comment_id"),
     authorUserId: text("author_user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -75,6 +77,11 @@ export const feedPostComments = pgTable(
       table.postId,
       table.createdAt,
     ),
+    index("feed_post_comments_parent_idx").on(table.parentCommentId),
+    foreignKey({
+      columns: [table.parentCommentId],
+      foreignColumns: [table.id],
+    }).onDelete("cascade"),
   ],
 );
 

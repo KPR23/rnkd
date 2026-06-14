@@ -54,7 +54,13 @@ export default function GameDetailScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <Screen>
-        <ScreenScroll header={<HeaderBar variant="centered" title={game.name} />} />
+        <ScreenScroll
+          header={<HeaderBar variant="centered" title={game.name} />}
+        >
+          <Text className="text-text text-center font-sans">
+            Game details coming soon.
+          </Text>
+        </ScreenScroll>
       </Screen>
     </>
   );

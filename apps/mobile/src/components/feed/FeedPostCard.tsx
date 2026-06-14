@@ -1,4 +1,5 @@
-import { Pressable, View } from "react-native";
+import { useRef } from "react";
+import { Dimensions, Pressable, View } from "react-native";
 
 import { useRouter } from "expo-router";
 import {
@@ -14,6 +15,7 @@ import UserProfileImage from "@/src/components/UserProfileImage";
 import { formatFeedRelativeTime } from "@/src/lib/feed/feed-time";
 
 import { toFeedUser } from "./feed-user";
+import type { FeedMenuAnchor } from "./FeedCommentRow";
 
 export type FeedPostAuthor = {
   id: string;
@@ -35,7 +37,7 @@ export type FeedPostCardData = {
 type Props = {
   post: FeedPostCardData;
   onToggleLike?: () => void;
-  onMenuPress?: () => void;
+  onMenuPress?: (anchor: FeedMenuAnchor) => void;
   isLikePending?: boolean;
   showActions?: boolean;
   pressable?: boolean;
@@ -52,6 +54,7 @@ export default function FeedPostCard({
   onPressComments,
 }: Props) {
   const router = useRouter();
+  const menuButtonRef = useRef<View>(null);
   const createdAt =
     post.createdAt instanceof Date
       ? post.createdAt
@@ -72,6 +75,16 @@ export default function FeedPostCard({
   };
 
   const cardClassName = "border-muted bg-card gap-3.5 border py-4";
+
+  const handleMenuPress = () => {
+    menuButtonRef.current?.measureInWindow((x, y, width, height) => {
+      const { width: screenWidth } = Dimensions.get("window");
+      onMenuPress?.({
+        top: y + height + 8,
+        right: screenWidth - x - width,
+      });
+    });
+  };
 
   const content = (
     <>
@@ -94,10 +107,11 @@ export default function FeedPostCard({
         </Pressable>
         {onMenuPress ? (
           <Pressable
+            ref={menuButtonRef}
             accessibilityRole="button"
             accessibilityLabel="Post options"
             className="size-6 items-center justify-center"
-            onPress={onMenuPress}
+            onPress={handleMenuPress}
           >
             <DotsThreeIcon size={24} color={colors.text} />
           </Pressable>

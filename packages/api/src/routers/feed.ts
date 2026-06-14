@@ -29,6 +29,7 @@ const createPostInput = z.object({
 const addCommentInput = z.object({
   postId: z.string().uuid(),
   body: z.string().trim().min(MIN_COMMENT_LENGTH).max(MAX_COMMENT_LENGTH),
+  parentCommentId: z.string().uuid().optional(),
 });
 
 async function getAcceptedFriendIds(userId: string) {
@@ -331,6 +332,7 @@ export const feedRouter = router({
             id: feedPostComments.id,
             body: feedPostComments.body,
             createdAt: feedPostComments.createdAt,
+            parentCommentId: feedPostComments.parentCommentId,
             authorId: user.id,
             authorName: user.name,
             authorTag: user.tag,
@@ -375,6 +377,7 @@ export const feedRouter = router({
             id: row.id,
             body: row.body,
             createdAt: row.createdAt,
+            parentCommentId: row.parentCommentId,
             author: mapAuthor({
               id: row.authorId,
               name: row.authorName,
@@ -394,17 +397,32 @@ export const feedRouter = router({
       const me = ctx.session.user.id;
       await requireVisiblePost(input.postId, me);
 
+      if (input.parentCommentId) {
+        const parentComment = await db.query.feedPostComments.findFirst({
+          where: eq(feedPostComments.id, input.parentCommentId),
+        });
+
+        if (!parentComment || parentComment.postId !== input.postId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid reply target",
+          });
+        }
+      }
+
       const [created] = await db
         .insert(feedPostComments)
         .values({
           postId: input.postId,
           authorUserId: me,
           body: input.body,
+          parentCommentId: input.parentCommentId ?? null,
         })
         .returning({
           id: feedPostComments.id,
           body: feedPostComments.body,
           createdAt: feedPostComments.createdAt,
+          parentCommentId: feedPostComments.parentCommentId,
         });
 
       if (!created) {
@@ -427,10 +445,58 @@ export const feedRouter = router({
         id: created.id,
         body: created.body,
         createdAt: created.createdAt,
+        parentCommentId: created.parentCommentId,
         author: mapAuthor(author),
         likeCount: 0,
         likedByMe: false,
       };
+    }),
+
+  deletePost: protectedProcedure
+    .input(postIdInput)
+    .mutation(async ({ ctx, input }) => {
+      const me = ctx.session.user.id;
+      const post = await requireVisiblePost(input.postId, me);
+
+      if (post.authorUserId !== me) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can only remove your own posts",
+        });
+      }
+
+      await db.delete(feedPosts).where(eq(feedPosts.id, input.postId));
+
+      return { deleted: true as const };
+    }),
+
+  deleteComment: protectedProcedure
+    .input(commentIdInput)
+    .mutation(async ({ ctx, input }) => {
+      const me = ctx.session.user.id;
+
+      const comment = await db.query.feedPostComments.findFirst({
+        where: eq(feedPostComments.id, input.commentId),
+      });
+
+      if (!comment) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Comment not found" });
+      }
+
+      await requireVisiblePost(comment.postId, me);
+
+      if (comment.authorUserId !== me) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can only remove your own comments",
+        });
+      }
+
+      await db
+        .delete(feedPostComments)
+        .where(eq(feedPostComments.id, input.commentId));
+
+      return { deleted: true as const, postId: comment.postId };
     }),
 
   toggleCommentLike: protectedProcedure
