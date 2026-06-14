@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Platform } from "react-native";
 
 import Constants from "expo-constants";
+import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 
 import { trpc } from "@/src/utils/trpc";
@@ -24,6 +25,10 @@ function getProjectId() {
 
 async function getExpoPushToken() {
   if (Platform.OS === "web") {
+    return null;
+  }
+
+  if (!Device.isDevice) {
     return null;
   }
 
