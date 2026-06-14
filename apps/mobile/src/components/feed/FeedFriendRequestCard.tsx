@@ -70,14 +70,14 @@ export default function FeedFriendRequestCard({
         <Button
           variant="primary"
           actionText="Accept"
-          className="flex-1"
+          className="h-9! flex-1"
           disabled={disabled}
           onPress={onAccept}
         />
         <Button
           variant="secondary"
           actionText="Decline"
-          className="flex-1"
+          className="h-9! flex-1"
           disabled={disabled}
           onPress={onDecline}
         />
