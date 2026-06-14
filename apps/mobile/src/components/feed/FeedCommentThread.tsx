@@ -10,7 +10,7 @@ type Props = {
   repliesByParent: Map<string, FeedCommentData[]>;
   currentUserId?: string;
   pendingLikeCommentId: string | null;
-  depth?: number;
+  replyTargetId?: string | null;
   onToggleLike: (commentId: string) => void;
   onReply: (comment: FeedCommentData) => void;
   onMenuPress: (comment: FeedCommentData, anchor: FeedMenuAnchor) => void;
@@ -21,6 +21,7 @@ function FeedCommentBranch({
   repliesByParent,
   currentUserId,
   pendingLikeCommentId,
+  replyTargetId = null,
   depth = 0,
   onToggleLike,
   onReply,
@@ -30,6 +31,7 @@ function FeedCommentBranch({
   repliesByParent: Map<string, FeedCommentData[]>;
   currentUserId?: string;
   pendingLikeCommentId: string | null;
+  replyTargetId?: string | null;
   depth?: number;
   onToggleLike: (commentId: string) => void;
   onReply: (comment: FeedCommentData) => void;
@@ -43,6 +45,7 @@ function FeedCommentBranch({
         comment={comment}
         depth={depth}
         isLikePending={pendingLikeCommentId === comment.id}
+        isReplyActive={replyTargetId === comment.id}
         showMenu={comment.author.id === currentUserId}
         onToggleLike={() => onToggleLike(comment.id)}
         onReply={() => onReply(comment)}
@@ -57,6 +60,7 @@ function FeedCommentBranch({
               repliesByParent={repliesByParent}
               currentUserId={currentUserId}
               pendingLikeCommentId={pendingLikeCommentId}
+              replyTargetId={replyTargetId}
               depth={depth + 1}
               onToggleLike={onToggleLike}
               onReply={onReply}
@@ -74,6 +78,7 @@ export default function FeedCommentThread({
   repliesByParent,
   currentUserId,
   pendingLikeCommentId,
+  replyTargetId = null,
   onToggleLike,
   onReply,
   onMenuPress,
@@ -87,6 +92,7 @@ export default function FeedCommentThread({
           repliesByParent={repliesByParent}
           currentUserId={currentUserId}
           pendingLikeCommentId={pendingLikeCommentId}
+          replyTargetId={replyTargetId}
           onToggleLike={onToggleLike}
           onReply={onReply}
           onMenuPress={onMenuPress}

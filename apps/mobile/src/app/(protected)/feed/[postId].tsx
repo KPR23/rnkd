@@ -1,12 +1,13 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  TextInput,
   View,
 } from "react-native";
 
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowUpIcon, XIcon } from "phosphor-react-native";
+import { ArrowUpIcon } from "phosphor-react-native";
 
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
@@ -66,6 +67,7 @@ export default function FeedCommentsScreen() {
   const [pendingLikeCommentId, setPendingLikeCommentId] = useState<
     string | null
   >(null);
+  const commentInputRef = useRef<TextInput>(null);
 
   const invalidateComments = useCallback(async () => {
     if (!postId) return;
@@ -211,8 +213,18 @@ export default function FeedCommentsScreen() {
   };
 
   const handleReply = (comment: FeedCommentData) => {
-    setReplyTarget(comment);
+    setReplyTarget((current) => (current?.id === comment.id ? null : comment));
   };
+
+  useEffect(() => {
+    if (!replyTarget) return;
+
+    const frame = requestAnimationFrame(() => {
+      commentInputRef.current?.focus();
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [replyTarget?.id]);
 
   const handleOpenPostMenu = (anchor: FeedMenuAnchor) => {
     if (!postId) return;
@@ -239,22 +251,9 @@ export default function FeedCommentsScreen() {
     <Screen
       footer={
         <ScreenFooterShell>
-          {replyTarget ? (
-            <View className="border-muted mb-2.5 flex-row items-center justify-between border-b pb-2.5">
-              <AppText className="text-sm" color="#828083">
-                Replying to {replyTarget.author.name}
-              </AppText>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Cancel reply"
-                onPress={() => setReplyTarget(null)}
-              >
-                <XIcon size={16} color={colors.textSecondary} />
-              </Pressable>
-            </View>
-          ) : null}
           <View className="h-13.5 flex-row items-center gap-2.5">
             <TextField
+              ref={commentInputRef}
               className="bg-background min-w-0 flex-1"
               placeholder={commentPlaceholder}
               returnKeyType="send"
@@ -308,6 +307,7 @@ export default function FeedCommentsScreen() {
                   repliesByParent={repliesByParent}
                   currentUserId={currentUser?.id}
                   pendingLikeCommentId={pendingLikeCommentId}
+                  replyTargetId={replyTarget?.id ?? null}
                   onToggleLike={(commentId) =>
                     void toggleCommentLikeMut.mutateAsync({ commentId })
                   }

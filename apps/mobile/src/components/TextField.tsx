@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Pressable, TextInput, View, type TextInputProps } from "react-native";
 
 import { MagnifyingGlassIcon, XIcon } from "phosphor-react-native";
@@ -11,15 +12,18 @@ type TextFieldProps = TextInputProps & {
   onClear?: () => void;
 };
 
-export function TextField({
-  search,
-  onClear,
-  className,
-  style,
-  placeholder,
-  value,
-  ...props
-}: TextFieldProps) {
+export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField(
+  {
+    search,
+    onClear,
+    className,
+    style,
+    placeholder,
+    value,
+    ...props
+  },
+  ref,
+) {
   const showPlaceholder = !value;
 
   return (
@@ -35,6 +39,7 @@ export function TextField({
             <AppText
               className="text-base"
               color={colors.textSecondary}
+              ellipsizeMode="tail"
               numberOfLines={1}
             >
               {placeholder}
@@ -42,6 +47,7 @@ export function TextField({
           </View>
         ) : null}
         <TextInput
+          ref={ref}
           placeholder=""
           value={value}
           className="text-text h-13.5 w-full text-base leading-13.5"
@@ -62,7 +68,7 @@ export function TextField({
       ) : null}
     </View>
   );
-}
+});
 
 type TextFieldMultilineProps = TextInputProps & {
   className?: string;

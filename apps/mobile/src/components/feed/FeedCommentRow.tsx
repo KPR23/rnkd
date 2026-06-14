@@ -6,7 +6,7 @@ import {
   type View as ViewType,
 } from "react-native";
 
-import { DotsThreeIcon, HeartStraightIcon } from "phosphor-react-native";
+import { DotsThreeIcon, HeartStraightIcon, XIcon } from "phosphor-react-native";
 
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
@@ -38,6 +38,7 @@ type Props = {
   onReply?: () => void;
   onMenuPress?: (anchor: FeedMenuAnchor) => void;
   showMenu?: boolean;
+  isReplyActive?: boolean;
   isLikePending?: boolean;
 };
 
@@ -48,6 +49,7 @@ export default function FeedCommentRow({
   onReply,
   onMenuPress,
   showMenu = false,
+  isReplyActive = false,
   isLikePending = false,
 }: Props) {
   const menuButtonRef = useRef<ViewType>(null);
@@ -117,12 +119,23 @@ export default function FeedCommentRow({
           </AppText>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Reply to ${comment.author.name}`}
+            accessibilityLabel={
+              isReplyActive
+                ? `Cancel reply to ${comment.author.name}`
+                : `Reply to ${comment.author.name}`
+            }
+            className="flex-row items-center gap-1"
             onPress={onReply}
           >
-            <AppText className="text-[13px] leading-5" color="#828083">
+            <AppText
+              className="text-[13px] leading-5"
+              color={isReplyActive ? colors.primary : "#828083"}
+            >
               Reply
             </AppText>
+            {isReplyActive ? (
+              <XIcon size={12} color={colors.primary} weight="bold" />
+            ) : null}
           </Pressable>
         </View>
         {showMenu ? (
