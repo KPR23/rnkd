@@ -8,7 +8,10 @@ export default function WebTabLayout() {
       <TabSlot />
       <TabList style={styles.tabList}>
         <TabTrigger name="index" href="/" style={styles.tab}>
-          Home
+          Feed
+        </TabTrigger>
+        <TabTrigger name="groups" href="/groups" style={styles.tab}>
+          Groups
         </TabTrigger>
         <TabTrigger name="search" href="/(search)/search" style={styles.tab}>
           Search

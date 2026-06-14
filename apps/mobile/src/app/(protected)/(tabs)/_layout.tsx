@@ -10,11 +10,20 @@ export default function TabLayout() {
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
-        <Label>Home</Label>
+        <Label>Feed</Label>
         <Icon
-          sf="house.fill"
+          sf="newspaper.fill"
           androidSrc={
-            <VectorIcon family={MaterialCommunityIcons} name="home" />
+            <VectorIcon family={MaterialCommunityIcons} name="newspaper" />
+          }
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="groups">
+        <Label>Groups</Label>
+        <Icon
+          sf="person.2.fill"
+          androidSrc={
+            <VectorIcon family={MaterialCommunityIcons} name="account-group" />
           }
         />
       </NativeTabs.Trigger>
@@ -28,15 +37,6 @@ export default function TabLayout() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="progress">
-        <Label>Progress</Label>
-        <Icon
-          sf="chart.bar.fill"
-          androidSrc={
-            <VectorIcon family={MaterialCommunityIcons} name="chart-bar" />
-          }
-        />
-      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Label>Profile</Label>
         <Icon

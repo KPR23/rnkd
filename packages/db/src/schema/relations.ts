@@ -9,6 +9,7 @@ import {
   games,
   lolGameAccountProfiles,
 } from "./games";
+import { groupMembers, groups } from "./groups";
 import { leagueMembers, leagueRankings, leagues } from "./leagues";
 import { lolRankedEntries } from "./lol-ranked";
 import {
@@ -29,6 +30,8 @@ export const userRelations = relations(user, ({ many }) => ({
   friendshipsReceived: many(friendships, {
     relationName: "friendshipsAddressee",
   }),
+  ownedGroups: many(groups),
+  groupMemberships: many(groupMembers),
 }));
 
 export const gameAccountRelations = relations(
@@ -164,6 +167,29 @@ export const friendshipsRelations = relations(friendships, ({ one }) => ({
     fields: [friendships.addresseeUserId],
     references: [user.id],
     relationName: "friendshipsAddressee",
+  }),
+}));
+
+export const groupsRelations = relations(groups, ({ one, many }) => ({
+  owner: one(user, {
+    fields: [groups.ownerUserId],
+    references: [user.id],
+  }),
+  members: many(groupMembers),
+}));
+
+export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
+  group: one(groups, {
+    fields: [groupMembers.groupId],
+    references: [groups.id],
+  }),
+  user: one(user, {
+    fields: [groupMembers.userId],
+    references: [user.id],
+  }),
+  invitedBy: one(user, {
+    fields: [groupMembers.invitedByUserId],
+    references: [user.id],
   }),
 }));
 

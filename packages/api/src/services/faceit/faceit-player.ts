@@ -2,7 +2,7 @@ import type { getFaceitPlayerById } from "./faceit-client";
 
 export function resolveCs2FaceitElo(
   player: Awaited<ReturnType<typeof getFaceitPlayerById>>,
-): number {
+): number | null {
   const cs2 = player?.games?.cs2;
   if (cs2?.faceit_elo !== null && cs2?.faceit_elo !== undefined) {
     return cs2.faceit_elo;
@@ -12,5 +12,5 @@ export function resolveCs2FaceitElo(
     (game) => game?.faceit_elo !== null && game?.faceit_elo !== undefined,
   );
 
-  return fallback?.faceit_elo ?? 0;
+  return fallback?.faceit_elo ?? null;
 }

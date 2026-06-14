@@ -6,12 +6,12 @@ function normalizeMapName(raw: string | null | undefined): string | null {
   if (!trimmed) return null;
 
   const normalized = trimmed.toLowerCase().replace(/-\d+$/, "");
-  if (normalized.startsWith("de_")) {
-    return normalized;
+  const slug = normalized.replace(/\s+/g, "_");
+  if (slug.startsWith("de_")) {
+    return slug;
   }
 
-  const slug = normalized.replace(/\s+/g, "_");
-  return slug.startsWith("de_") ? slug : `de_${slug}`;
+  return `de_${slug}`;
 }
 
 export function getCs2MapImageUrl(

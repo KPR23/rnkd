@@ -16,7 +16,6 @@ import Button from "@/src/components/Button";
 import FaceitLevelProgressCard from "@/src/components/profile/FaceitLevelProgressCard";
 import MatchDetailsModal from "@/src/components/profile/game-profile/MatchDetailsModal";
 import ProfileRecentMatchCard from "@/src/components/profile/ProfileRecentMatchCard";
-import ProfileGameStatCard from "@/src/components/ProfileGameStatCard";
 import { trpc } from "@/src/utils/trpc";
 
 function gameTitle(gameId: string) {
@@ -53,7 +52,7 @@ export default function GameProfileSection({
   let nickname = gameAccount.externalId;
   if (isFaceit && gameAccount.profile?.faceitNickname?.trim()) {
     nickname = gameAccount.profile.faceitNickname.trim();
-  } else if (isLol) {
+  } else if (isLol && gameAccount.profile?.gameName && gameAccount.profile?.tagLine) {
     nickname = `${gameAccount.profile.gameName}#${gameAccount.profile.tagLine}`;
   }
 

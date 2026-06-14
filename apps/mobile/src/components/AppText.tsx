@@ -20,17 +20,17 @@ export default function AppText({
   ...props
 }: AppTextProps) {
   const fontStyle = StyleSheet.flatten(style) as TextStyle | undefined;
+  const hasCustomFontFamily = Boolean(fontStyle?.fontFamily);
 
   return (
     <Text
       {...props}
       style={[
-        {
+        !hasCustomFontFamily && {
           fontFamily: fontFamilies[weight],
           fontWeight: weight === "medium" ? "500" : "400",
         },
         { color },
-        fontStyle?.fontFamily ? null : undefined,
         style,
       ]}
     />

@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   Text,
   TouchableOpacity,
   View,
@@ -20,13 +19,31 @@ import {
 import { colors } from "@repo/ui/colors";
 import FaceitAccountPreviewCard from "@/src/app/(protected)/(settings)/FaceitAccountPreviewCard";
 import Button from "@/src/components/Button";
+import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import CustomModal from "@/src/components/Modal";
+import { useDebouncedValue } from "@/src/lib/hooks/useDebouncedValue";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 import FaceitAccountForm from "./FaceitAccountForm";
 import LolAccountForm from "./LolAccountForm";
 
 type ModalStep = "game" | "input" | "confirm" | "success";
+
+const MIN_SUMMONER_NAME_LENGTH = 3;
+const MAX_SUMMONER_NAME_LENGTH = 16;
+const TAG_LINE_PATTERN = /^[a-zA-Z0-9]{3,5}$/;
+
+function isLolInputShapeValid(gameName: string, tagLine: string) {
+  const trimmedGameName = gameName.trim();
+  const trimmedTagLine = tagLine.trim();
+
+  return (
+    trimmedGameName.length >= MIN_SUMMONER_NAME_LENGTH &&
+    trimmedGameName.length <= MAX_SUMMONER_NAME_LENGTH &&
+    TAG_LINE_PATTERN.test(trimmedTagLine)
+  );
+}
 
 function mapMutationError(error: { message: string; data?: unknown }) {
   const data = error.data as { code?: string } | null | undefined;
@@ -60,15 +77,65 @@ export default function AddLinkedAccountModal({
   onClose: () => void;
 }) {
   const utils = trpc.useUtils();
+  const { showError } = useMessage();
   const [game, setGame] = useState<GameId>(GAMES.LOL);
   const [gameName, setGameName] = useState("");
   const [tagLine, setTagLine] = useState("");
   const [platform, setPlatform] = useState<RiotPlatformRoute>("euw1");
   const [faceitNickname, setFaceitNickname] = useState("");
-  const [formError, setFormError] = useState<string | null>(null);
   const [step, setStep] = useState<ModalStep>("game");
   const [linkedFaceitPlayer, setLinkedFaceitPlayer] =
     useState<FaceitPlayer | null>(null);
+
+  const debouncedGameName = useDebouncedValue(gameName);
+  const debouncedTagLine = useDebouncedValue(tagLine);
+  const debouncedFaceitNickname = useDebouncedValue(faceitNickname);
+
+  const trimmedGameName = gameName.trim();
+  const trimmedTagLine = tagLine.trim();
+  const trimmedDebouncedGameName = debouncedGameName.trim();
+  const trimmedDebouncedTagLine = debouncedTagLine.trim();
+  const trimmedDebouncedFaceitNickname = debouncedFaceitNickname.trim();
+  const trimmedFaceitNickname = faceitNickname.trim();
+
+  const region = RIOT_PLATFORM_TO_REGIONAL_ROUTE[platform];
+
+  const canPreviewLol =
+    isLolInputShapeValid(trimmedDebouncedGameName, trimmedDebouncedTagLine) &&
+    trimmedDebouncedGameName === trimmedGameName &&
+    trimmedDebouncedTagLine === trimmedTagLine;
+
+  const lolPreview = trpc.gameAccount.previewLolAccount.useQuery(
+    {
+      gameName: trimmedDebouncedGameName,
+      tagLine: trimmedDebouncedTagLine,
+      region,
+    },
+    {
+      enabled:
+        (step === "input" || step === "confirm") &&
+        game === GAMES.LOL &&
+        canPreviewLol,
+    },
+  );
+
+  const canPreviewFaceit =
+    !!trimmedDebouncedFaceitNickname &&
+    trimmedDebouncedFaceitNickname === trimmedFaceitNickname;
+
+  const faceitPreview = trpc.gameAccount.previewFaceitAccount.useQuery(
+    { nickname: trimmedDebouncedFaceitNickname },
+    {
+      enabled:
+        (step === "input" || step === "confirm") &&
+        game === GAMES.CS2_FACEIT &&
+        canPreviewFaceit,
+    },
+  );
+
+  const faceitPlayer = faceitPreview.data?.found
+    ? faceitPreview.data.player
+    : null;
 
   const reset = () => {
     setGame(GAMES.LOL);
@@ -76,7 +143,6 @@ export default function AddLinkedAccountModal({
     setTagLine("");
     setPlatform("euw1");
     setFaceitNickname("");
-    setFormError(null);
     setStep("game");
     setLinkedFaceitPlayer(null);
   };
@@ -85,16 +151,6 @@ export default function AddLinkedAccountModal({
     reset();
     onClose();
   };
-
-  const { data: faceitPlayer, isPending: isFaceitPlayerPending } =
-    trpc.faceit.getFaceitPlayer.useQuery(
-      {
-        nickname: faceitNickname,
-      },
-      {
-        enabled: step === "confirm" && !!faceitNickname,
-      },
-    );
 
   const { data: suggestedPlayers, isPending: isSuggestedPlayersPending } =
     trpc.faceit.getSuggestedPlayers.useQuery(
@@ -116,7 +172,7 @@ export default function AddLinkedAccountModal({
         void utils.gameAccount.getGameAccounts.invalidate();
         handleClose();
       },
-      onError: (err) => setFormError(mapMutationError(err)),
+      onError: (err) => showError(mapMutationError(err)),
     });
 
   const { mutate: addFaceit, isPending: isFaceitPending } =
@@ -125,11 +181,11 @@ export default function AddLinkedAccountModal({
         void utils.gameAccount.getGameAccounts.invalidate();
         setStep("success");
       },
-      onError: (err) => setFormError(mapMutationError(err)),
+      onError: (err) => showError(mapMutationError(err)),
     });
 
   const isSubmitting = isLolPending || isFaceitPending;
-  const region = RIOT_PLATFORM_TO_REGIONAL_ROUTE[platform];
+  const isFaceitPlayerPending = faceitPreview.isFetching;
   const stepIndex =
     step === "game" ? 0 : step === "input" ? 1 : step === "confirm" ? 2 : 3;
   const stepCount = game === GAMES.CS2_FACEIT ? 4 : 3;
@@ -169,19 +225,19 @@ export default function AddLinkedAccountModal({
             };
 
   const handleSubmit = () => {
-    setFormError(null);
-
     if (game === GAMES.LOL) {
-      const trimmedGameName = gameName.trim();
-      const trimmedTagLine = tagLine.trim();
-
-      if (trimmedGameName.length < 3 || trimmedGameName.length > 16) {
-        setFormError("Summoner name must be 3 to 16 characters.");
+      if (!isLolInputShapeValid(trimmedGameName, trimmedTagLine)) {
+        showError("Summoner name must be 3 to 16 characters.");
         return;
       }
 
-      if (!/^[a-zA-Z0-9]{3,5}$/.test(trimmedTagLine)) {
-        setFormError("Tag line must be 3 to 5 letters or numbers.");
+      if (!lolPreview.data?.found) {
+        showError("Failed to find Riot account. Check name and tag.");
+        return;
+      }
+
+      if (lolPreview.data.alreadyLinked) {
+        showError("This account is already linked.");
         return;
       }
 
@@ -194,23 +250,25 @@ export default function AddLinkedAccountModal({
 
     if (game === GAMES.CS2_FACEIT) {
       if (!faceitPlayer) {
-        setFormError("We couldn't verify this Faceit account.");
+        showError("We couldn't verify this Faceit account.");
+        return;
+      }
+
+      if (faceitPreview.data?.alreadyLinked) {
+        showError("This account is already linked.");
         return;
       }
 
       setLinkedFaceitPlayer(faceitPlayer);
-      addFaceit({ externalId: faceitNickname.trim() });
+      addFaceit({ externalId: trimmedFaceitNickname });
     }
   };
 
   const handleContinue = () => {
-    setFormError(null);
     setStep(step === "game" ? "input" : "confirm");
   };
 
   const handleSecondaryAction = () => {
-    setFormError(null);
-
     if (step === "game") {
       handleClose();
       return;
@@ -229,6 +287,124 @@ export default function AddLinkedAccountModal({
     reset();
   };
 
+  const isLolDebouncing =
+    trimmedGameName !== trimmedDebouncedGameName ||
+    trimmedTagLine !== trimmedDebouncedTagLine;
+  const isLolChecking =
+    canPreviewLol && (isLolDebouncing || lolPreview.isFetching);
+
+  const lolInputFeedback = useMemo(() => {
+    if (!trimmedGameName && !trimmedTagLine) {
+      return null;
+    }
+
+    if (
+      trimmedGameName.length > 0 &&
+      (trimmedGameName.length < MIN_SUMMONER_NAME_LENGTH ||
+        trimmedGameName.length > MAX_SUMMONER_NAME_LENGTH)
+    ) {
+      return {
+        tone: "error" as const,
+        message: "Summoner name must be 3 to 16 characters.",
+      };
+    }
+
+    if (trimmedTagLine.length > 0 && !TAG_LINE_PATTERN.test(trimmedTagLine)) {
+      return {
+        tone: "error" as const,
+        message: "Tag line must be 3 to 5 letters or numbers.",
+      };
+    }
+
+    if (!canPreviewLol) {
+      return null;
+    }
+
+    if (isLolChecking) {
+      return { tone: "loading" as const, message: null };
+    }
+
+    if (!lolPreview.data?.found) {
+      return {
+        tone: "error" as const,
+        message: "Failed to find Riot account. Check name and tag.",
+      };
+    }
+
+    if (lolPreview.data.alreadyLinked) {
+      return {
+        tone: "error" as const,
+        message: "This account is already linked.",
+      };
+    }
+
+    return {
+      tone: "success" as const,
+      message: `Found ${lolPreview.data.gameName}#${lolPreview.data.tagLine}.`,
+    };
+  }, [
+    canPreviewLol,
+    isLolChecking,
+    lolPreview.data,
+    trimmedGameName,
+    trimmedTagLine,
+  ]);
+
+  const isFaceitDebouncing =
+    trimmedFaceitNickname !== trimmedDebouncedFaceitNickname;
+  const isFaceitChecking =
+    canPreviewFaceit && (isFaceitDebouncing || faceitPreview.isFetching);
+
+  const faceitInputFeedback = useMemo(() => {
+    if (!trimmedFaceitNickname) {
+      return null;
+    }
+
+    if (!canPreviewFaceit) {
+      return { tone: "loading" as const, message: null };
+    }
+
+    if (isFaceitChecking) {
+      return { tone: "loading" as const, message: null };
+    }
+
+    if (!faceitPreview.data?.found) {
+      return {
+        tone: "error" as const,
+        message: "Faceit player not found.",
+      };
+    }
+
+    if (faceitPreview.data.alreadyLinked) {
+      return {
+        tone: "error" as const,
+        message: "This account is already linked.",
+      };
+    }
+
+    return {
+      tone: "success" as const,
+      message: `Found ${faceitPreview.data.player.nickname}.`,
+    };
+  }, [
+    canPreviewFaceit,
+    faceitPreview.data,
+    isFaceitChecking,
+    trimmedFaceitNickname,
+  ]);
+
+  const isLolInputReady =
+    isLolInputShapeValid(trimmedGameName, trimmedTagLine) &&
+    !isLolChecking &&
+    lolPreview.data?.found === true &&
+    lolPreview.data.alreadyLinked === false;
+
+  const isFaceitInputReady =
+    !!trimmedFaceitNickname &&
+    !isFaceitChecking &&
+    faceitPreview.data?.found === true &&
+    faceitPreview.data.alreadyLinked === false;
+
   const renderGameStep = () => {
     return (
       <View className="flex flex-col gap-3">
@@ -242,7 +418,6 @@ export default function AddLinkedAccountModal({
               onPress={() => {
                 if (isSubmitting) return;
                 setGame(g);
-                setFormError(null);
               }}
               disabled={isSubmitting}
               className={`border px-4 py-4 ${
@@ -282,25 +457,41 @@ export default function AddLinkedAccountModal({
   const renderInputStep = () => {
     if (game === GAMES.LOL) {
       return (
-        <LolAccountForm
-          gameName={gameName}
-          tagLine={tagLine}
-          platform={platform}
-          isPending={isSubmitting}
-          setGameName={setGameName}
-          setTagLine={setTagLine}
-          setPlatform={setPlatform}
-        />
+        <View className="gap-3">
+          <LolAccountForm
+            gameName={gameName}
+            tagLine={tagLine}
+            platform={platform}
+            isPending={isSubmitting}
+            setGameName={setGameName}
+            setTagLine={setTagLine}
+            setPlatform={setPlatform}
+          />
+          {lolInputFeedback ? (
+            <FormFieldFeedback
+              tone={lolInputFeedback.tone}
+              message={lolInputFeedback.message}
+            />
+          ) : null}
+        </View>
       );
     }
 
     if (game === GAMES.CS2_FACEIT) {
       return (
-        <FaceitAccountForm
-          faceitNickname={faceitNickname}
-          isPending={isSubmitting}
-          setFaceitNickname={setFaceitNickname}
-        />
+        <View className="gap-3">
+          <FaceitAccountForm
+            faceitNickname={faceitNickname}
+            isPending={isSubmitting}
+            setFaceitNickname={setFaceitNickname}
+          />
+          {faceitInputFeedback ? (
+            <FormFieldFeedback
+              tone={faceitInputFeedback.tone}
+              message={faceitInputFeedback.message}
+            />
+          ) : null}
+        </View>
       );
     }
 
@@ -309,9 +500,14 @@ export default function AddLinkedAccountModal({
 
   const renderConfirmStep = () => {
     if (game === GAMES.LOL) {
+      const resolvedName =
+        lolPreview.data?.found === true
+          ? `${lolPreview.data.gameName}#${lolPreview.data.tagLine}`
+          : `${trimmedGameName}#${trimmedTagLine}`;
+
       return (
         <Text className="text-text-secondary text-sm">
-          Connect {gameName.trim()}#{tagLine.trim()}?
+          Connect {resolvedName}?
         </Text>
       );
     }
@@ -407,20 +603,13 @@ export default function AddLinkedAccountModal({
           : renderSuccessStep();
 
   const isInputInvalid =
-    game === GAMES.LOL
-      ? gameName.trim().length < 3 ||
-        gameName.trim().length > 16 ||
-        !/^[a-zA-Z0-9]{3,5}$/.test(tagLine.trim())
-      : !faceitNickname.trim();
+    game === GAMES.LOL ? !isLolInputReady : !isFaceitInputReady;
 
   const isConfirmDisabled =
     isSubmitting ||
-    !!formError ||
     (game === GAMES.LOL
-      ? gameName.trim().length < 3 ||
-        gameName.trim().length > 16 ||
-        !/^[a-zA-Z0-9]{3,5}$/.test(tagLine.trim())
-      : !faceitNickname.trim() || !faceitPlayer || isFaceitPlayerPending);
+      ? !isLolInputReady
+      : !isFaceitInputReady || !faceitPlayer || isFaceitPlayerPending);
 
   const primaryActionText =
     step === "success"
@@ -448,9 +637,6 @@ export default function AddLinkedAccountModal({
     </View>
   ) : (
     <View className="flex flex-col gap-3">
-      {formError ? (
-        <Text className="text-destructive text-sm">{formError}</Text>
-      ) : null}
       <View className="flex flex-col gap-3">
         <Button
           variant="primary"

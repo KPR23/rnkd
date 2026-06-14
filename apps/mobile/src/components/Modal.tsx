@@ -4,7 +4,6 @@ import {
   Modal,
   Platform,
   ScrollView,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";

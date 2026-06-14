@@ -246,7 +246,13 @@ export async function getCs2FaceitMatchDetails(input: {
   const mapName =
     matchRow.mapName ?? resolveFaceitMapName(detail, statsPayload);
   const viewerFaceitPlayerId = account.externalId.trim();
-  const viewerTeam = participant.team as 1 | 2;
+  if (participant.team !== 1 && participant.team !== 2) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: `Invalid team number: ${participant.team}`,
+    });
+  }
+  const viewerTeam = participant.team;
 
   const teams: Cs2FaceitMatchDetails["teams"][number][] = teamEntries
     .slice(0, 2)

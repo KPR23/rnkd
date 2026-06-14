@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { QuotesIcon } from "phosphor-react-native";
 
@@ -60,7 +60,7 @@ export default function ProfileInfoCard({
 
       {bio ? (
         <View className="flex flex-row gap-2">
-          <QuotesIcon size={16} color="#6d28d9" weight="fill" />
+          <QuotesIcon size={16} color={colors.primary} weight="fill" />
           <AppText className="text-sm" weight="regular">
             {bio}
           </AppText>

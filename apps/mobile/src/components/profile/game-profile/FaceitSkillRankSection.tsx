@@ -33,10 +33,12 @@ export default function FaceitSkillRankSection({
   }
 
   const levelWindow = getFaceitLevelWindow(levelProgress.level, 5);
-  const span =
+  const span = Math.max(
+    1,
     levelProgress.levelEnd !== null
       ? levelProgress.levelEnd - levelProgress.levelStart
-      : 1;
+      : 1,
+  );
   const progressWithinLevel = Math.min(
     1,
     Math.max(0, (levelProgress.points - levelProgress.levelStart) / span),

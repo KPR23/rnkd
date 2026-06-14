@@ -8,6 +8,7 @@ import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import { getCs2MapImageUrl } from "@/src/lib/helper/cs2Map";
 import { formatMatchDetailsDateTime } from "@/src/lib/helper/matchDetailsTime";
+import { getInitialsForFallbackPhoto } from "@repo/ui/components/getInitialsForFallbackPhoto";
 
 const HERO_HEIGHT = 120;
 const TEAM_AVATAR_SIZE = 44;
@@ -30,7 +31,7 @@ function TeamAvatar({ name, avatar }: { name: string; avatar: string | null }) {
       style={{ width: TEAM_AVATAR_SIZE, height: TEAM_AVATAR_SIZE }}
     >
       <AppText className="text-xs uppercase" weight="medium">
-        {name.slice(0, 2)}
+        {getInitialsForFallbackPhoto(name)}
       </AppText>
     </View>
   );

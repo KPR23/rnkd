@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, View } from "react-native";
 
+import { useRouter } from "expo-router";
 import { BellSimpleIcon, GearSixIcon } from "phosphor-react-native";
 
 import AppText from "@/src/components/AppText";
@@ -21,6 +22,7 @@ export default function ScreenTitle({
   isBackNavigation = false,
   globalRs = 0,
 }: Props) {
+  const router = useRouter();
   const canShowBadge = showRsBadge && !isBackNavigation;
   const canShowSettings = showSettings && !isBackNavigation;
 
@@ -36,11 +38,13 @@ export default function ScreenTitle({
       <View className="flex-1" />
       <View className="flex-row items-center gap-3">
         {canShowBadge ? <RSBadge globalRs={globalRs} /> : null}
-        <Pressable>
-          <BellSimpleIcon size={24} color="white" />
-        </Pressable>
+        <BellSimpleIcon size={24} color="white" />
         {canShowSettings ? (
-          <Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open settings"
+            onPress={() => router.push("/settings")}
+          >
             <GearSixIcon size={24} color="white" />
           </Pressable>
         ) : null}

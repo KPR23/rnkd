@@ -83,7 +83,11 @@ export default function SearchResultCard({
         ? result.tag
         : result.name;
   const secondaryLine =
-    result.type === "game" ? getGamePublisher(result.id) : result.name;
+    result.type === "game"
+      ? getGamePublisher(result.id)
+      : result.tag
+        ? result.name
+        : "";
 
   return (
     <SearchCardShell onPress={onPress}>

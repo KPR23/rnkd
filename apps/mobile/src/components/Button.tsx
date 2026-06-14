@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Text,
   TouchableOpacity,
   type TouchableOpacityProps,
 } from "react-native";

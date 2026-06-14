@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Alert, Modal, Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 
 import {
   GameAccount,
@@ -9,6 +8,7 @@ import {
   type GameId,
 } from "@repo/types";
 import Button from "@/src/components/Button";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 const GAME_TITLE: Record<GameId, string> = {
@@ -37,6 +37,7 @@ export default function LinkedAccountCard({
   linkedAccount: GameAccount;
 }) {
   const utils = trpc.useUtils();
+  const { showError } = useMessage();
   const { mutateAsync: unlinkLolAccount } =
     trpc.gameAccount.unlinkLolAccount.useMutation({
       onSuccess: () => {
@@ -70,6 +71,11 @@ export default function LinkedAccountCard({
               }
             } catch (error) {
               console.error(error);
+              const message =
+                error instanceof Error
+                  ? error.message
+                  : "Could not unlink account.";
+              showError(message);
             }
           },
         },

@@ -71,6 +71,20 @@
       "when": 1779900200000,
       "tag": "0009_elo_history_account_match_unique",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1780855740000,
+      "tag": "0010_groups",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1780858380000,
+      "tag": "0011_groups_name_unique",
+      "breakpoints": true
     }
   ]
 }
