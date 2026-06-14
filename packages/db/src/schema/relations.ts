@@ -4,6 +4,12 @@ import { account, session, user } from "./auth";
 import { cs2FaceitMatchPlayers } from "./cs2-faceit-match-players";
 import { cs2FaceitRankedEntries } from "./cs2-faceit-ranked";
 import {
+  feedCommentLikes,
+  feedPostComments,
+  feedPostLikes,
+  feedPosts,
+} from "./feed";
+import {
   cs2FaceitGameAccountProfiles,
   gameAccounts,
   games,
@@ -12,19 +18,9 @@ import {
 import { groupMembers, groups } from "./groups";
 import { leagueMembers, leagueRankings, leagues } from "./leagues";
 import { lolRankedEntries } from "./lol-ranked";
+import { eloHistory, matches, matchParticipants, playerStats } from "./matches";
+import { pushTokens } from "./notifications";
 import { gameAccountRsPoints } from "./rs-points";
-import {
-  eloHistory,
-  matches,
-  matchParticipants,
-  playerStats,
-} from "./matches";
-import {
-  feedCommentLikes,
-  feedPostComments,
-  feedPostLikes,
-  feedPosts,
-} from "./feed";
 import { friendships } from "./social";
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -41,6 +37,7 @@ export const userRelations = relations(user, ({ many }) => ({
   feedPostLikes: many(feedPostLikes),
   feedPostComments: many(feedPostComments),
   feedCommentLikes: many(feedCommentLikes),
+  pushTokens: many(pushTokens),
   ownedGroups: many(groups),
   groupMemberships: many(groupMembers),
 }));
@@ -311,6 +308,13 @@ export const gameRelations = relations(games, ({ many }) => ({
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, {
     fields: [session.userId],
+    references: [user.id],
+  }),
+}));
+
+export const pushTokenRelations = relations(pushTokens, ({ one }) => ({
+  user: one(user, {
+    fields: [pushTokens.userId],
     references: [user.id],
   }),
 }));

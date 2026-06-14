@@ -1,33 +1,36 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 
 import { Stack, useRouter } from "expo-router";
 import { ArrowsClockwiseIcon } from "phosphor-react-native";
 
-import { User } from "@repo/types";
+import { GAMES, type GameId, type User } from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import { HeaderBar } from "@/src/components/Header";
 import Screen from "@/src/components/Screen";
-import ScreenScroll from "@/src/components/ScreenScroll";
 import { ScreenFooter } from "@/src/components/ScreenFooter";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import EditableProfileRow from "@/src/components/settings/EditableProfileRow";
 import EditProfileFieldModal from "@/src/components/settings/EditProfileFieldModal";
 import SocialAccountCard from "@/src/components/settings/SocialAccountCard";
 import UserProfileImage from "@/src/components/UserProfileImage";
-import { useAuthAccounts } from "@/src/lib/auth/use-auth-accounts";
 import { refetchAuthSession, useAuth } from "@/src/lib/auth/use-auth";
+import { useAuthAccounts } from "@/src/lib/auth/use-auth-accounts";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { pickProfileImageFromLibrary } from "@/src/lib/profile/pick-profile-image";
 import { uploadAvatarLocalDev } from "@/src/lib/profile/upload-avatar-local-dev";
-import { trpc } from "@/src/utils/trpc";
 import { mobileServerUrl } from "@/src/lib/server-url";
+import { trpc } from "@/src/utils/trpc";
 
-type EditableField = "name" | "tag" | null;
+type EditableField = "name" | "tag" | "bio" | null;
+
+const REGIONS = ["EMEA", "NA", "SA", "SEA", "OCE"] as const;
+
+const FAVORITE_GAMES = [
+  { id: GAMES.CS2_FACEIT, label: "CS2" },
+  { id: GAMES.LOL, label: "LoL" },
+] as const satisfies readonly { id: GameId; label: string }[];
 
 function formatNickname(tag: string | null | undefined) {
   if (!tag) {
@@ -35,6 +38,45 @@ function formatNickname(tag: string | null | undefined) {
   }
 
   return tag.startsWith("@") ? tag : `@${tag}`;
+}
+
+function formatBio(bio: string) {
+  const trimmedBio = bio.trim();
+  return trimmedBio.length > 0 ? trimmedBio : "Add bio";
+}
+
+function formatFavoriteGame(gameId: GameId | null) {
+  return FAVORITE_GAMES.find((game) => game.id === gameId)?.label ?? "Not set";
+}
+
+function SelectablePill({
+  label,
+  selected,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      className={[
+        "border-muted h-9 items-center justify-center border px-4",
+        selected ? "border-primary bg-primary/20" : "bg-card",
+      ].join(" ")}
+    >
+      <AppText
+        className="text-sm"
+        weight="medium"
+        color={selected ? colors.text : colors.textSecondary}
+      >
+        {label}
+      </AppText>
+    </Pressable>
+  );
 }
 
 function ProfileAvatar({
@@ -101,6 +143,9 @@ export default function PersonalInformationScreen() {
   const [name, setName] = useState("");
   const [tag, setTag] = useState("");
   const [image, setImage] = useState<string | null>(null);
+  const [bio, setBio] = useState("");
+  const [region, setRegion] = useState<string | null>(null);
+  const [favoriteGameId, setFavoriteGameId] = useState<GameId | null>(null);
   const [activeField, setActiveField] = useState<EditableField>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
@@ -113,6 +158,11 @@ export default function PersonalInformationScreen() {
     setName(overviewUser?.name ?? session?.user.name ?? "");
     setTag(overviewUser?.tag ?? session?.user.tag ?? "");
     setImage(overviewUser?.image ?? session?.user.image ?? null);
+    setBio(overviewUser?.bio ?? "");
+    setRegion(overviewUser?.region ?? null);
+    setFavoriteGameId(
+      (overviewUser?.favoriteGame?.id as GameId | null) ?? null,
+    );
   }, [profileQuery.data, session?.user]);
 
   const updateProfile = trpc.profile.update.useMutation({
@@ -134,13 +184,19 @@ export default function PersonalInformationScreen() {
       name: overviewUser?.name ?? session?.user.name ?? "",
       tag: overviewUser?.tag ?? session?.user.tag ?? "",
       image: overviewUser?.image ?? session?.user.image ?? null,
+      bio: overviewUser?.bio ?? "",
+      region: overviewUser?.region ?? null,
+      favoriteGameId: (overviewUser?.favoriteGame?.id as GameId | null) ?? null,
     };
   }, [profileQuery.data, session?.user]);
 
   const isDirty =
     name.trim() !== initialValues.name.trim() ||
     tag.trim() !== (initialValues.tag ?? "").trim() ||
-    image !== initialValues.image;
+    image !== initialValues.image ||
+    bio.trim() !== initialValues.bio.trim() ||
+    region !== initialValues.region ||
+    favoriteGameId !== initialValues.favoriteGameId;
 
   const canSave =
     isDirty &&
@@ -176,6 +232,9 @@ export default function PersonalInformationScreen() {
       name: name.trim(),
       tag: normalizedTag.length > 0 ? normalizedTag : null,
       image: toStoredImageValue(image),
+      bio: bio.trim() || null,
+      region,
+      favoriteGameId,
     });
   };
 
@@ -207,7 +266,9 @@ export default function PersonalInformationScreen() {
           />
         }
       >
-        <ScreenScroll header={<HeaderBar variant="centered" title="Edit profile" />}>
+        <ScreenScroll
+          header={<HeaderBar variant="centered" title="Edit profile" />}
+        >
           <View className="gap-6">
             <ProfileAvatar
               user={avatarUser}
@@ -216,7 +277,11 @@ export default function PersonalInformationScreen() {
             />
 
             <View className="gap-3">
-              <AppText className="text-sm" weight="medium" color={colors.textSecondary}>
+              <AppText
+                className="text-sm"
+                weight="medium"
+                color={colors.textSecondary}
+              >
                 Personal information
               </AppText>
               <View className="gap-2">
@@ -239,7 +304,78 @@ export default function PersonalInformationScreen() {
             </View>
 
             <View className="gap-3">
-              <AppText className="text-sm" weight="medium" color={colors.textSecondary}>
+              <AppText
+                className="text-sm"
+                weight="medium"
+                color={colors.textSecondary}
+              >
+                Profile details
+              </AppText>
+              <View className="gap-2">
+                <EditableProfileRow
+                  label="Bio"
+                  value={formatBio(bio)}
+                  onPress={() => setActiveField("bio")}
+                />
+                <View className="border-muted bg-card gap-3 border p-3">
+                  <View className="flex-row items-center justify-between gap-3">
+                    <AppText className="text-sm" weight="medium">
+                      Favorite game
+                    </AppText>
+                    <AppText className="text-sm" color={colors.textSecondary}>
+                      {formatFavoriteGame(favoriteGameId)}
+                    </AppText>
+                  </View>
+                  <View className="flex-row flex-wrap gap-2">
+                    <SelectablePill
+                      label="Not set"
+                      selected={favoriteGameId === null}
+                      onPress={() => setFavoriteGameId(null)}
+                    />
+                    {FAVORITE_GAMES.map((game) => (
+                      <SelectablePill
+                        key={game.id}
+                        label={game.label}
+                        selected={favoriteGameId === game.id}
+                        onPress={() => setFavoriteGameId(game.id)}
+                      />
+                    ))}
+                  </View>
+                </View>
+                <View className="border-muted bg-card gap-3 border p-3">
+                  <View className="flex-row items-center justify-between gap-3">
+                    <AppText className="text-sm" weight="medium">
+                      Region
+                    </AppText>
+                    <AppText className="text-sm" color={colors.textSecondary}>
+                      {region ?? "Not set"}
+                    </AppText>
+                  </View>
+                  <View className="flex-row flex-wrap gap-2">
+                    <SelectablePill
+                      label="Not set"
+                      selected={region === null}
+                      onPress={() => setRegion(null)}
+                    />
+                    {REGIONS.map((item) => (
+                      <SelectablePill
+                        key={item}
+                        label={item}
+                        selected={region === item}
+                        onPress={() => setRegion(item)}
+                      />
+                    ))}
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            <View className="gap-3">
+              <AppText
+                className="text-sm"
+                weight="medium"
+                color={colors.textSecondary}
+              >
                 Social accounts
               </AppText>
               {isAuthAccountsLoading ? (
@@ -291,6 +427,19 @@ export default function PersonalInformationScreen() {
         maxLength={32}
         onClose={() => setActiveField(null)}
         onSave={setTag}
+      />
+
+      <EditProfileFieldModal
+        visible={activeField === "bio"}
+        title="Bio"
+        label="Bio"
+        value={bio}
+        placeholder="Tell others about yourself"
+        maxLength={500}
+        allowEmpty
+        multiline
+        onClose={() => setActiveField(null)}
+        onSave={setBio}
       />
     </>
   );

@@ -330,6 +330,7 @@ export function LeaderboardRow({
   manage,
   selected,
   isCurrentUser,
+  onProfilePress,
   onAccept,
   onDecline,
   onRemove,
@@ -338,15 +339,45 @@ export function LeaderboardRow({
   manage?: boolean;
   selected?: boolean;
   isCurrentUser?: boolean;
+  onProfilePress?: () => void;
   onAccept?: () => void;
   onDecline?: () => void;
   onRemove?: () => void;
 }) {
+  const profileContent = (
+    <>
+      <AvatarBubble name={member.name} image={member.image} />
+      <View className="min-w-0 justify-center">
+        <AppText className="text-base leading-5.5" weight="medium">
+          {member.name}
+          {isCurrentUser ? (
+            <AppText
+              className="text-base leading-5.5"
+              color={colors.textSecondary}
+              weight="medium"
+            >
+              {" "}
+              (You)
+            </AppText>
+          ) : null}
+        </AppText>
+        {member.pending ? (
+          <AppText
+            className="text-[13px] leading-4"
+            color={colors.textSecondary}
+          >
+            {member.joinRequest ? "Join request" : "Pending invite"}
+          </AppText>
+        ) : null}
+      </View>
+    </>
+  );
+
   return (
     <View className="border-muted bg-card min-h-15 justify-center border px-3.5 py-3">
       <View className="flex-row items-center justify-between">
         <View className="min-w-0 flex-1 flex-row items-center gap-3">
-          <View className="flex-row items-center gap-3 pl-1">
+          <View className="pl-1">
             <AppText
               className="w-2 text-sm leading-5"
               color={colors.textSecondary}
@@ -354,31 +385,21 @@ export function LeaderboardRow({
             >
               {member.rank}
             </AppText>
-            <AvatarBubble name={member.name} image={member.image} />
           </View>
-          <View className="min-w-0 justify-center">
-            <AppText className="text-base leading-5.5" weight="medium">
-              {member.name}
-              {isCurrentUser ? (
-                <AppText
-                  className="text-base leading-5.5"
-                  color={colors.textSecondary}
-                  weight="medium"
-                >
-                  {" "}
-                  (You)
-                </AppText>
-              ) : null}
-            </AppText>
-            {member.pending ? (
-              <AppText
-                className="text-[13px] leading-4"
-                color={colors.textSecondary}
-              >
-                {member.joinRequest ? "Join request" : "Pending invite"}
-              </AppText>
-            ) : null}
-          </View>
+          {onProfilePress ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`View ${member.name}'s profile`}
+              className="min-w-0 flex-1 flex-row items-center gap-3"
+              onPress={onProfilePress}
+            >
+              {profileContent}
+            </Pressable>
+          ) : (
+            <View className="min-w-0 flex-1 flex-row items-center gap-3">
+              {profileContent}
+            </View>
+          )}
         </View>
         {manage && member.pending ? (
           <View className="flex-row items-center gap-2">
@@ -437,35 +458,68 @@ export function LeaderboardRow({
 export function GroupInviteCard({
   invite,
   disabled,
+  onInviterProfilePress,
   onAccept,
   onDecline,
 }: {
   invite: GroupInvite;
   disabled?: boolean;
+  onInviterProfilePress?: () => void;
   onAccept: () => void;
   onDecline: () => void;
 }) {
   const inviterName = invite.inviter?.name ?? "Someone";
+  const inviterProfileLabel = `View ${inviterName}'s profile`;
 
   return (
     <View className="border-muted bg-card gap-4 border px-4 py-4">
       <View className="flex-row items-center justify-between">
         <View className="min-w-0 flex-1 flex-row items-center gap-2.5">
-          <AvatarBubble
-            name={inviterName}
-            image={invite.inviter?.image}
-            size={36}
-          />
+          {onInviterProfilePress ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={inviterProfileLabel}
+              hitSlop={8}
+              onPress={onInviterProfilePress}
+            >
+              <AvatarBubble
+                name={inviterName}
+                image={invite.inviter?.image}
+                size={36}
+              />
+            </Pressable>
+          ) : (
+            <AvatarBubble
+              name={inviterName}
+              image={invite.inviter?.image}
+              size={36}
+            />
+          )}
           <View className="min-w-0 flex-1 gap-0.5">
             <AppText className="text-base leading-5" weight="medium">
               {invite.groupName}
             </AppText>
-            <AppText
-              className="text-[13px] leading-4"
-              color={colors.textSecondary}
-            >
-              {inviterName} invited you
-            </AppText>
+            {onInviterProfilePress ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={inviterProfileLabel}
+                onPress={onInviterProfilePress}
+              >
+                <AppText
+                  className="text-[13px] leading-4"
+                  color={colors.textSecondary}
+                >
+                  {inviterName} invited you
+                </AppText>
+              </Pressable>
+            ) : (
+              <AppText
+                className="text-[13px] leading-4"
+                color={colors.textSecondary}
+              >
+                {inviterName} invited you
+              </AppText>
+            )}
           </View>
         </View>
         <View className="ml-3 flex-row items-center gap-1.5">
@@ -534,18 +588,27 @@ export function FriendSuggestionRow({
   friend,
   selected,
   onPress,
+  onProfilePress,
 }: {
   friend: FriendSuggestion;
   selected: boolean;
   onPress: () => void;
+  onProfilePress?: () => void;
 }) {
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      className="border-muted bg-card min-h-17 flex-row items-center border pl-4"
-      onPress={onPress}
-    >
-      <View className="min-w-0 flex-1 flex-row items-center gap-3">
+    <View className="border-muted bg-card min-h-17 flex-row items-center border">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={
+          onProfilePress
+            ? `View ${friend.displayName}'s profile`
+            : selected
+              ? `Deselect ${friend.displayName}`
+              : `Select ${friend.displayName}`
+        }
+        className="min-w-0 flex-1 flex-row items-center gap-3 self-stretch pl-4"
+        onPress={onProfilePress ?? onPress}
+      >
         <AvatarBubble name={friend.username} image={friend.image} size={44} />
         <View className="gap-0.5">
           <AppText className="text-base leading-5.5" weight="medium">
@@ -558,15 +621,25 @@ export function FriendSuggestionRow({
             {friend.username}
           </AppText>
         </View>
-      </View>
+      </Pressable>
       <View className="bg-muted h-11 w-px" />
-      <View className="w-15 items-center">
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={
+          selected
+            ? `Deselect ${friend.displayName}`
+            : `Select ${friend.displayName}`
+        }
+        activeOpacity={0.7}
+        className="w-15 items-center justify-center self-stretch"
+        onPress={onPress}
+      >
         <View className="bg-muted size-6 items-center justify-center">
           {selected ? (
             <CheckIcon size={16} color={colors.text} weight="bold" />
           ) : null}
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 }

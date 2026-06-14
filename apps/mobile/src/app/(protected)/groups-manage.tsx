@@ -125,6 +125,9 @@ export default function GroupsManageScreen() {
                           manage
                           isCurrentUser={member.id === currentUserId}
                           member={member}
+                          onProfilePress={() =>
+                            router.push(`/player/${member.id}`)
+                          }
                           onAccept={() => {
                             approveMember.mutate({
                               groupId,
@@ -142,6 +145,7 @@ export default function GroupsManageScreen() {
                       manage
                       isCurrentUser={member.id === currentUserId}
                       member={member}
+                      onProfilePress={() => router.push(`/player/${member.id}`)}
                       onRemove={() => confirmRemoveMember(member)}
                     />
                   ))}

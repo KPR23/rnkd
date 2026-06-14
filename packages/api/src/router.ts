@@ -5,6 +5,7 @@ import { gameRouter } from "./routers/game";
 import { gameAccountRouter } from "./routers/gameAccount";
 import { groupRouter } from "./routers/group";
 import { matchRouter } from "./routers/match";
+import { notificationsRouter } from "./routers/notifications";
 import { profileRouter } from "./routers/profile";
 import { riotRouter } from "./routers/riot";
 import { searchRouter } from "./routers/search";
@@ -20,6 +21,7 @@ export const appRouter = router({
   riot: riotRouter,
   faceit: faceitRouter,
   match: matchRouter,
+  notifications: notificationsRouter,
   friend: friendRouter,
   group: groupRouter,
   feed: feedRouter,

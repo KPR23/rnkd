@@ -4,6 +4,7 @@ import z from "zod";
 
 import { db, friendships, user } from "@repo/db";
 
+import { sendFriendRequestNotification } from "../services/notifications/expo-push";
 import { protectedProcedure, router } from "../trpc";
 
 const userIdInput = z.object({ userId: z.string() });
@@ -84,7 +85,12 @@ export const friendRouter = router({
 
       await requireUser(input.userId);
 
-      return await db.transaction(async (tx) => {
+      const requester = await db.query.user.findFirst({
+        columns: { name: true, tag: true },
+        where: eq(user.id, me),
+      });
+
+      const result = await db.transaction(async (tx) => {
         const inversePending = await tx.query.friendships.findFirst({
           where: and(
             eq(friendships.requesterUserId, input.userId),
@@ -137,6 +143,16 @@ export const friendRouter = router({
 
         return { outcome: "pending" as const };
       });
+
+      if (result.outcome === "pending") {
+        await sendFriendRequestNotification({
+          recipientUserId: input.userId,
+          requesterUserId: me,
+          requesterName: requester?.tag ?? requester?.name ?? "Someone",
+        });
+      }
+
+      return result;
     }),
 
   accept: protectedProcedure

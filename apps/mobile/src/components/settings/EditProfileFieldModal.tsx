@@ -5,7 +5,7 @@ import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
 import CustomModal from "@/src/components/Modal";
 import { ScreenFooterShell } from "@/src/components/ScreenFooter";
-import { TextField } from "@/src/components/TextField";
+import { TextField, TextFieldMultiline } from "@/src/components/TextField";
 
 type EditProfileFieldModalProps = {
   visible: boolean;
@@ -15,6 +15,8 @@ type EditProfileFieldModalProps = {
   placeholder?: string;
   prefix?: string;
   maxLength?: number;
+  allowEmpty?: boolean;
+  multiline?: boolean;
   onClose: () => void;
   onSave: (value: string) => void;
 };
@@ -27,6 +29,8 @@ export default function EditProfileFieldModal({
   placeholder,
   prefix,
   maxLength,
+  allowEmpty = false,
+  multiline = false,
   onClose,
   onSave,
 }: EditProfileFieldModalProps) {
@@ -39,7 +43,7 @@ export default function EditProfileFieldModal({
   }, [value, visible]);
 
   const trimmedDraft = draft.trim();
-  const canSave = trimmedDraft.length > 0;
+  const canSave = allowEmpty || trimmedDraft.length > 0;
 
   return (
     <CustomModal
@@ -72,14 +76,25 @@ export default function EditProfileFieldModal({
             </AppText>
           ) : null}
           <View className="min-w-0 flex-1">
-            <TextField
-              autoFocus
-              className="bg-card"
-              maxLength={maxLength}
-              placeholder={placeholder}
-              value={draft}
-              onChangeText={setDraft}
-            />
+            {multiline ? (
+              <TextFieldMultiline
+                autoFocus
+                className="bg-card min-h-28"
+                maxLength={maxLength}
+                placeholder={placeholder}
+                value={draft}
+                onChangeText={setDraft}
+              />
+            ) : (
+              <TextField
+                autoFocus
+                className="bg-card"
+                maxLength={maxLength}
+                placeholder={placeholder}
+                value={draft}
+                onChangeText={setDraft}
+              />
+            )}
           </View>
         </View>
       </View>
