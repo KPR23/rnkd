@@ -1,6 +1,6 @@
 import { ActivityIndicator, Text, View } from "react-native";
 
-import { useRouter, Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import {
   AsteriskIcon,
   FileTextIcon,
@@ -99,13 +99,15 @@ export default function SettingsScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <Screen safeAreaEdges={["top"]}>
-        <ScreenScroll header={<HeaderBar variant="centered" title="Settings" />}>
+        <ScreenScroll
+          header={<HeaderBar variant="centered" title="Settings" />}
+        >
           <UserHeader user={session.user} />
 
           <View className="flex flex-col gap-4">
             {settingsSections.map((section) => (
               <View key={section.title} className="flex flex-col gap-2">
-                <Text className="font-sans-semibold text-text text-xs uppercase">
+                <Text className="font-sans-semibold text-text-secondary text-sm">
                   {section.title}
                 </Text>
 

@@ -298,13 +298,13 @@ export default function ProfileScreen({
             >
               Match activity
             </AppText>
-            <AppText
+            {/* <AppText
               className="text-right text-sm"
               weight="medium"
               color={colors.primary}
             >
               View details
-            </AppText>
+            </AppText> */}
           </View>
           <View className="border-muted bg-card flex flex-col gap-3 border p-4">
             {activityDays ? <MatchActivityGraph days={activityDays} /> : null}
