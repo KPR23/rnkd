@@ -4,6 +4,7 @@ import { Platform } from "react-native";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import { useRouter } from "expo-router";
 
 import { trpc } from "@/src/utils/trpc";
 
@@ -61,6 +62,8 @@ async function getExpoPushToken() {
 }
 
 export function useRegisterPushNotifications(enabled: boolean) {
+  const router = useRouter();
+  const utils = trpc.useUtils();
   const { mutateAsync: registerPushToken } =
     trpc.notifications.registerPushToken.useMutation();
 
@@ -94,4 +97,32 @@ export function useRegisterPushNotifications(enabled: boolean) {
       cancelled = true;
     };
   }, [enabled, registerPushToken]);
+
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = response.notification.request.content.data;
+
+        if (
+          data.type !== "friend_request" ||
+          typeof data.requesterUserId !== "string"
+        ) {
+          return;
+        }
+
+        void utils.friend.relationship.invalidate({
+          userId: data.requesterUserId,
+        });
+        router.push(`/player/${data.requesterUserId}`);
+      },
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, [enabled, router, utils.friend.relationship]);
 }
