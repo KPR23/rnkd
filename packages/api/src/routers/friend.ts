@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, asc, eq, inArray, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, or } from "drizzle-orm";
 import z from "zod";
 
 import { db, friendships, user } from "@repo/db";
@@ -255,6 +255,40 @@ export const friendRouter = router({
 
       return { ok: true as const };
     }),
+
+  listIncoming: protectedProcedure.query(async ({ ctx }) => {
+    const me = ctx.session.user.id;
+
+    const rows = await db
+      .select({
+        id: friendships.id,
+        createdAt: friendships.createdAt,
+        requesterId: user.id,
+        requesterName: user.name,
+        requesterTag: user.tag,
+        requesterImage: user.image,
+      })
+      .from(friendships)
+      .innerJoin(user, eq(friendships.requesterUserId, user.id))
+      .where(
+        and(
+          eq(friendships.addresseeUserId, me),
+          eq(friendships.status, "pending"),
+        ),
+      )
+      .orderBy(desc(friendships.createdAt), desc(friendships.id));
+
+    return rows.map((row) => ({
+      id: row.id,
+      createdAt: row.createdAt,
+      requester: {
+        id: row.requesterId,
+        name: row.requesterName,
+        tag: row.requesterTag,
+        image: row.requesterImage,
+      },
+    }));
+  }),
 
   list: protectedProcedure.query(async ({ ctx }) => {
     const me = ctx.session.user.id;

@@ -1,7 +1,7 @@
 import { Pressable } from "react-native";
 
 import { useRouter } from "expo-router";
-import { BellSimpleIcon, GearSixIcon } from "phosphor-react-native";
+import { GearSixIcon } from "phosphor-react-native";
 
 import { colors } from "@repo/ui/colors";
 import { HeaderBar } from "@/src/components/Header";
@@ -29,7 +29,6 @@ export default function ScreenTitle({
   const rightSlot = (
     <>
       {canShowBadge ? <RSBadge globalRs={globalRs} /> : null}
-      <BellSimpleIcon size={24} color={colors.text} />
       {canShowSettings ? (
         <Pressable
           accessibilityRole="button"

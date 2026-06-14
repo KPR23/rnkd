@@ -5,8 +5,8 @@ import {
   gameAccountRsPoints,
   GAMES,
   RS_POINT_SOURCES,
-  type RsPointSourceKey,
   user,
+  type RsPointSourceKey,
 } from "@repo/db";
 
 import type { DbExecutor } from "../../repositories/db-executor";
@@ -16,7 +16,6 @@ import {
   findLolRankedEntries,
 } from "../../repositories/ranked.repo";
 import {
-  computeGlobalRsFromScores,
   faceitEloToPoints,
   lolRankToFlexPoints,
   lolRankToSoloPoints,
@@ -67,7 +66,9 @@ function pickPrimaryAccountsByGame(
   return primaryAccountsByGame;
 }
 
-export async function computeRsBreakdownForUser(userId: string): Promise<RsBreakdown> {
+export async function computeRsBreakdownForUser(
+  userId: string,
+): Promise<RsBreakdown> {
   const accounts = await findGameAccountsByUserId(userId);
   const primaryAccountsByGame = pickPrimaryAccountsByGame(accounts);
 
