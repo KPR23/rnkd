@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -12,6 +11,9 @@ import { Stack, useRouter } from "expo-router";
 import { GAMES } from "@repo/types";
 import Button from "@/src/components/Button";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
+import { HeaderBar } from "@/src/components/Header";
+import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import { TextFieldMultiline } from "@/src/components/TextField";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { useMessage } from "@/src/lib/messages/message-provider";
@@ -78,27 +80,29 @@ export default function PersonalInformationScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Personal information" }} />
-      <ScrollView
-        className="bg-background flex-1"
-        contentContainerStyle={{ padding: 20, gap: 20 }}
-      >
-        <View className="flex flex-col gap-2">
-          <Text className="text-text font-sans-semibold text-sm">Bio</Text>
-          <TextFieldMultiline
-            className="bg-card min-h-24"
-            value={bio}
-            onChangeText={setBio}
-            placeholder="Tell others about yourself"
-            maxLength={MAX_BIO_LENGTH + 50}
-          />
-          <FormFieldFeedback
-            tone={bioFeedback.tone}
-            message={bioFeedback.message}
-          />
-        </View>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Screen>
+        <ScreenScroll
+          header={
+            <HeaderBar variant="centered" title="Personal information" />
+          }
+        >
+          <View className="flex flex-col gap-2">
+            <Text className="text-text font-sans-semibold text-sm">Bio</Text>
+            <TextFieldMultiline
+              className="bg-card min-h-24"
+              value={bio}
+              onChangeText={setBio}
+              placeholder="Tell others about yourself"
+              maxLength={MAX_BIO_LENGTH + 50}
+            />
+            <FormFieldFeedback
+              tone={bioFeedback.tone}
+              message={bioFeedback.message}
+            />
+          </View>
 
-        <View className="flex flex-col gap-2">
+          <View className="flex flex-col gap-2">
           <Text className="text-text font-sans-semibold text-sm">Region</Text>
           <View className="flex flex-row flex-wrap gap-2">
             {REGIONS.map((item) => (
@@ -117,9 +121,9 @@ export default function PersonalInformationScreen() {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+          </View>
 
-        <View className="flex flex-col gap-2">
+          <View className="flex flex-col gap-2">
           <Text className="text-text font-sans-semibold text-sm">
             Favorite game
           </Text>
@@ -143,9 +147,9 @@ export default function PersonalInformationScreen() {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+          </View>
 
-        <Button
+          <Button
           variant="primary"
           actionText={updateProfile.isPending ? "Saving…" : "Save changes"}
           className="w-full"
@@ -157,8 +161,9 @@ export default function PersonalInformationScreen() {
               favoriteGameId,
             })
           }
-        />
-      </ScrollView>
+          />
+        </ScreenScroll>
+      </Screen>
     </>
   );
 }

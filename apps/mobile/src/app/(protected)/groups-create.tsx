@@ -9,6 +9,7 @@ import {
   GroupsTextInput,
 } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { useDebouncedValue } from "@/src/lib/hooks/useDebouncedValue";
 import { trpc } from "@/src/utils/trpc";
@@ -96,8 +97,11 @@ export default function GroupsCreateScreen() {
       }
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <View className="flex-1 gap-5">
-        <BackHeader title="Create new group" onBack={() => router.back()} />
+      <ScreenScroll
+        header={
+          <BackHeader title="Create new group" onBack={() => router.back()} />
+        }
+      >
         <View className="gap-2">
           <GroupsTextInput
             autoCapitalize="words"
@@ -113,7 +117,7 @@ export default function GroupsCreateScreen() {
             />
           ) : null}
         </View>
-      </View>
+      </ScreenScroll>
     </Screen>
   );
 }

@@ -6,6 +6,7 @@ import { Stack, useRouter } from "expo-router";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import { BackHeader, GroupsTextInput } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { useDebouncedValue } from "@/src/lib/hooks/useDebouncedValue";
 import { useMessage } from "@/src/lib/messages/message-provider";
@@ -122,8 +123,11 @@ export default function GroupsJoinScreen() {
       }
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <View className="flex-1 gap-6">
-        <BackHeader title="Join new group" onBack={() => router.back()} />
+      <ScreenScroll
+        header={
+          <BackHeader title="Join new group" onBack={() => router.back()} />
+        }
+      >
         <View className="gap-2">
           <GroupsTextInput
             autoCapitalize="characters"
@@ -140,7 +144,7 @@ export default function GroupsJoinScreen() {
             />
           ) : null}
         </View>
-      </View>
+      </ScreenScroll>
     </Screen>
   );
 }

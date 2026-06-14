@@ -10,7 +10,6 @@ import {
   ArrowDownIcon,
   ArrowRightIcon,
   ArrowUpIcon,
-  CaretLeftIcon,
   CheckIcon,
   DotsThreeVerticalIcon,
   UsersIcon,
@@ -20,6 +19,7 @@ import {
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
+import { HeaderBar } from "@/src/components/Header";
 
 export type GroupSummary = {
   id: string;
@@ -83,61 +83,32 @@ export function BackHeader({
   onMenuPress,
   menuButtonRef,
 }: BackHeaderProps) {
-  if (!centered) {
+  if (centered) {
     return (
-      <View className="mt-2 gap-4">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          className="size-6 items-center justify-center"
-          onPress={onBack}
-        >
-          <CaretLeftIcon size={24} color={colors.text} />
-        </Pressable>
-        <AppText className="text-3xl" weight="medium">
-          {title}
-        </AppText>
-      </View>
+      <HeaderBar
+        variant="centered"
+        title={title}
+        onBack={onBack}
+        rightSlot={
+          onMenuPress ? (
+            <Pressable
+              ref={menuButtonRef}
+              accessibilityRole="button"
+              accessibilityLabel="Open group menu"
+              collapsable={false}
+              hitSlop={HEADER_ACTION_HIT_SLOP}
+              onPress={onMenuPress}
+              className="size-6 items-center justify-center"
+            >
+              <DotsThreeVerticalIcon size={22} color={colors.text} weight="bold" />
+            </Pressable>
+          ) : undefined
+        }
+      />
     );
   }
 
-  return (
-    <View className="min-h-12 flex-row items-center">
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-        className="h-12 w-12 items-center justify-center"
-        hitSlop={HEADER_ACTION_HIT_SLOP}
-        onPress={onBack}
-      >
-        <CaretLeftIcon size={24} color={colors.text} />
-      </Pressable>
-      <View className="min-w-0 flex-1 justify-center px-1">
-        <AppText
-          className="text-center text-xl leading-6"
-          numberOfLines={1}
-          weight="medium"
-        >
-          {title}
-        </AppText>
-      </View>
-      {onMenuPress ? (
-        <Pressable
-          ref={menuButtonRef}
-          accessibilityRole="button"
-          accessibilityLabel="Open group menu"
-          className="h-12 w-12 items-center justify-center"
-          collapsable={false}
-          hitSlop={HEADER_ACTION_HIT_SLOP}
-          onPress={onMenuPress}
-        >
-          <DotsThreeVerticalIcon size={22} color={colors.text} weight="bold" />
-        </Pressable>
-      ) : (
-        <View className="h-12 w-12" />
-      )}
-    </View>
-  );
+  return <HeaderBar variant="leading" title={title} onBack={onBack} />;
 }
 
 export function InviteCodeCard({ inviteCode }: { inviteCode: string }) {

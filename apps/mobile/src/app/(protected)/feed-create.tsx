@@ -6,6 +6,7 @@ import { Stack, useRouter } from "expo-router";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import { BackHeader } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { TextFieldMultiline } from "@/src/components/TextField";
 import { useMessage } from "@/src/lib/messages/message-provider";
@@ -73,8 +74,9 @@ export default function FeedCreateScreen() {
       }
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <View className="flex-1 gap-5">
-        <BackHeader title="Create post" onBack={() => router.back()} />
+      <ScreenScroll
+        header={<BackHeader title="Create post" onBack={() => router.back()} />}
+      >
         <View className="gap-2">
           <TextFieldMultiline
             className="min-h-40"
@@ -91,7 +93,7 @@ export default function FeedCreateScreen() {
             />
           ) : null}
         </View>
-      </View>
+      </ScreenScroll>
     </Screen>
   );
 }

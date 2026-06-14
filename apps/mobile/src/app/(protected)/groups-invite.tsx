@@ -11,8 +11,8 @@ import {
 } from "@/src/components/groups/GroupsUI";
 import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import { ScreenFooter } from "@/src/components/ScreenFooter";
-import { DismissKeyboardScrollView } from "@/src/lib/keyboard/dismiss-keyboard";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -120,15 +120,20 @@ export default function GroupsInviteScreen() {
       }
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <DismissKeyboardScrollView showsVerticalScrollIndicator={false}>
-        <View className="gap-6 pb-6">
+      <ScreenScroll
+        header={
           <BackHeader
-            title={mode === "create" ? "Invite friends to your group" : "Invite friends"}
+            title={
+              mode === "create"
+                ? "Invite friends to your group"
+                : "Invite friends"
+            }
             centered={mode !== "create"}
             onBack={() => router.back()}
           />
-
-          <GroupsTextInput
+        }
+      >
+        <GroupsTextInput
             placeholder="Search friends"
             returnKeyType="search"
             search
@@ -162,8 +167,7 @@ export default function GroupsInviteScreen() {
               )}
             </View>
           </View>
-        </View>
-      </DismissKeyboardScrollView>
+      </ScreenScroll>
     </Screen>
   );
 }

@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   View,
 } from "react-native";
 
@@ -19,6 +18,7 @@ import FeedPostCard, {
 } from "@/src/components/feed/FeedPostCard";
 import { BackHeader } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import { ScreenFooterShell } from "@/src/components/ScreenFooter";
 import { TextField } from "@/src/components/TextField";
 import { useMessage } from "@/src/lib/messages/message-provider";
@@ -224,58 +224,59 @@ export default function FeedCommentsScreen() {
       }
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <BackHeader title="Comments" centered onBack={() => router.back()} />
-
-      {isLoading ? (
-        <View className="flex-1 items-center justify-center py-10">
-          <ActivityIndicator />
-        </View>
-      ) : normalizedPost ? (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 24, gap: 20 }}
-        >
-          <FeedPostCard
-            post={normalizedPost}
-            pressable={false}
-            isLikePending={pendingLikePostId === normalizedPost.id}
-            onToggleLike={() =>
-              void togglePostLikeMut.mutateAsync({ postId: normalizedPost.id })
-            }
-          />
-
-          <View className="gap-5">
-            {normalizedComments.length ? (
-              normalizedComments.map((comment) => (
-                <FeedCommentRow
-                  key={comment.id}
-                  comment={comment}
-                  isLikePending={pendingLikeCommentId === comment.id}
-                  onToggleLike={() =>
-                    void toggleCommentLikeMut.mutateAsync({
-                      commentId: comment.id,
-                    })
-                  }
-                />
-              ))
-            ) : (
-              <AppText className="text-center text-sm" color="#828083">
-                No comments yet. Be the first to reply.
-              </AppText>
-            )}
+      <ScreenScroll
+        header={
+          <BackHeader title="Comments" centered onBack={() => router.back()} />
+        }
+      >
+        {isLoading ? (
+          <View className="items-center justify-center py-10">
+            <ActivityIndicator />
           </View>
+        ) : normalizedPost ? (
+          <>
+            <FeedPostCard
+              post={normalizedPost}
+              pressable={false}
+              isLikePending={pendingLikePostId === normalizedPost.id}
+              onToggleLike={() =>
+                void togglePostLikeMut.mutateAsync({ postId: normalizedPost.id })
+              }
+            />
 
-          {isRefetching ? (
-            <View className="items-center py-2">
-              <ActivityIndicator size="small" />
+            <View className="gap-5">
+              {normalizedComments.length ? (
+                normalizedComments.map((comment) => (
+                  <FeedCommentRow
+                    key={comment.id}
+                    comment={comment}
+                    isLikePending={pendingLikeCommentId === comment.id}
+                    onToggleLike={() =>
+                      void toggleCommentLikeMut.mutateAsync({
+                        commentId: comment.id,
+                      })
+                    }
+                  />
+                ))
+              ) : (
+                <AppText className="text-center text-sm" color="#828083">
+                  No comments yet. Be the first to reply.
+                </AppText>
+              )}
             </View>
-          ) : null}
-        </ScrollView>
-      ) : (
-        <View className="flex-1 items-center justify-center py-10">
-          <AppText color="#828083">Post not found.</AppText>
-        </View>
-      )}
+
+            {isRefetching ? (
+              <View className="items-center py-2">
+                <ActivityIndicator size="small" />
+              </View>
+            ) : null}
+          </>
+        ) : (
+          <View className="items-center justify-center py-10">
+            <AppText color="#828083">Post not found.</AppText>
+          </View>
+        )}
+      </ScreenScroll>
     </Screen>
   );
 }
