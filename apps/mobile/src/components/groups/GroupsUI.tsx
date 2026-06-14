@@ -1,4 +1,4 @@
-import { useMemo, type RefObject } from "react";
+import { useMemo, type PropsWithChildren, type RefObject } from "react";
 import {
   Image,
   Pressable,
@@ -23,6 +23,7 @@ import {
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
+import { BOTTOM_DOCK_HEIGHT } from "@/src/constants/bottom-dock";
 
 export type GroupSummary = {
   id: string;
@@ -610,6 +611,14 @@ export function FriendSuggestionRow({
   );
 }
 
+export function ScreenFooterShell({ children }: PropsWithChildren) {
+  return (
+    <View className="gap-3 pt-3" style={{ paddingBottom: BOTTOM_DOCK_HEIGHT }}>
+      {children}
+    </View>
+  );
+}
+
 export function WizardFooter({
   step,
   totalSteps,
@@ -626,34 +635,24 @@ export function WizardFooter({
   const hasSteps = !!(step && totalSteps);
 
   return (
-    <View className="h-full justify-start">
+    <ScreenFooterShell>
       {hasSteps ? (
-        <View className="gap-3">
-          <View className="flex-row justify-center gap-2.5 pt-3">
-            {Array.from({ length: totalSteps }).map((_, index) => (
-              <View
-                key={index}
-                className={`size-2 ${index + 1 === step ? "bg-primary" : "bg-muted"}`}
-              />
-            ))}
-          </View>
-          <Button
-            actionText={actionText}
-            className="h-13.5"
-            disabled={disabled}
-            variant={disabled ? "secondary" : "primary"}
-            onPress={onPress}
-          />
+        <View className="flex-row justify-center gap-2.5">
+          {Array.from({ length: totalSteps }).map((_, index) => (
+            <View
+              key={index}
+              className={`size-2 ${index + 1 === step ? "bg-primary" : "bg-muted"}`}
+            />
+          ))}
         </View>
-      ) : (
-        <Button
-          actionText={actionText}
-          className="h-13.5"
-          disabled={disabled}
-          variant={disabled ? "secondary" : "primary"}
-          onPress={onPress}
-        />
-      )}
-    </View>
+      ) : null}
+      <Button
+        actionText={actionText}
+        className="h-13.5"
+        disabled={disabled}
+        variant={disabled ? "secondary" : "primary"}
+        onPress={onPress}
+      />
+    </ScreenFooterShell>
   );
 }

@@ -5,7 +5,7 @@ import { Stack } from "expo-router";
 
 import AddLinkedAccountModal from "@/src/app/(protected)/(settings)/AddLinkedAccountModal";
 import LinkedAccountsList from "@/src/app/(protected)/(settings)/LinkedAccountsList";
-import Button from "@/src/components/Button";
+import { WizardFooter } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
@@ -27,7 +27,7 @@ export default function LinkedAccountsScreen() {
     return (
       <>
         <Stack.Screen options={{ title: "Linked accounts" }} />
-        <Screen safeAreaEdges={["bottom", "left", "right"]}>
+        <Screen>
           <View className="flex-1 items-center justify-center py-8">
             <ActivityIndicator />
           </View>
@@ -40,14 +40,10 @@ export default function LinkedAccountsScreen() {
     <>
       <Stack.Screen options={{ title: "Linked accounts" }} />
       <Screen
-        safeAreaEdges={["bottom", "left", "right"]}
         footer={
-          <Button
-            variant="primary"
+          <WizardFooter
             actionText="Connect new account"
-            onPress={() => {
-              setIsModalVisible(true);
-            }}
+            onPress={() => setIsModalVisible(true)}
           />
         }
       >
