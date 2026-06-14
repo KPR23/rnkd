@@ -18,9 +18,7 @@ import FeedCommentRow, {
 import FeedPostCard, {
   type FeedPostCardData,
 } from "@/src/components/feed/FeedPostCard";
-import {
-  BackHeader,
-} from "@/src/components/groups/GroupsUI";
+import { BackHeader } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
 import { ScreenFooterShell } from "@/src/components/ScreenFooter";
 import { useMessage } from "@/src/lib/messages/message-provider";
@@ -191,13 +189,9 @@ export default function FeedCommentsScreen() {
             <View className="border-border bg-background h-13.5 min-w-0 flex-1 flex-row items-center border px-4">
               <TextInput
                 multiline
-                placeholder={
-                  currentUser?.name
-                    ? `Add a comment as ${currentUser.name}`
-                    : "Add a comment"
-                }
+                placeholder={"Add a comment"}
                 placeholderTextColor={colors.textSecondary}
-                className="text-text min-w-0 flex-1 text-sm leading-5"
+                className="text-text min-w-0 flex-1 text-sm"
                 value={commentBody}
                 onChangeText={setCommentBody}
               />

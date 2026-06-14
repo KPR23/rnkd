@@ -1,17 +1,14 @@
 import { Pressable, View } from "react-native";
 
-import {
-  DotsThreeIcon,
-  HeartStraightIcon,
-} from "phosphor-react-native";
+import { DotsThreeIcon, HeartStraightIcon } from "phosphor-react-native";
 
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import UserProfileImage from "@/src/components/UserProfileImage";
 import { formatFeedRelativeTime } from "@/src/lib/feed/feed-time";
 
-import type { FeedPostAuthor } from "./FeedPostCard";
 import { toFeedUser } from "./feed-user";
+import type { FeedPostAuthor } from "./FeedPostCard";
 
 export type FeedCommentData = {
   id: string;
@@ -79,16 +76,21 @@ export default function FeedCommentRow({
         </Pressable>
       </View>
 
-      <View className="flex-row items-center justify-between pl-12 pr-1">
-        <AppText className="text-[13px] leading-5" color="#828083">
-          {comment.likeCount > 0
-            ? `${comment.likeCount} like${comment.likeCount === 1 ? "" : "s"}`
-            : "0 likes"}
-        </AppText>
-        <AppText className="text-[13px] leading-5" color="#828083">
-          Reply
-        </AppText>
-        <Pressable accessibilityRole="button" accessibilityLabel="Comment options">
+      <View className="flex-row items-center justify-between pr-1 pl-12">
+        <View className="flex-row items-center gap-3">
+          <AppText className="text-[13px] leading-5" color="#828083">
+            {comment.likeCount > 0
+              ? `${comment.likeCount} like${comment.likeCount === 1 ? "" : "s"}`
+              : "0 likes"}
+          </AppText>
+          <AppText className="text-[13px] leading-5" color="#828083">
+            Reply
+          </AppText>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Comment options"
+        >
           <DotsThreeIcon size={20} color={colors.textSecondary} />
         </Pressable>
       </View>
