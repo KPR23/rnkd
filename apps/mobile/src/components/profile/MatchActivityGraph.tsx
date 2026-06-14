@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import type { MatchActivityDay } from "@repo/types";
 import { colors } from "@repo/ui/colors";

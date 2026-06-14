@@ -2,13 +2,13 @@ import { ActivityIndicator, View } from "react-native";
 
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 
+import AppText from "@/src/components/AppText";
 import {
   GroupCard,
   InviteCodeCard,
   SectionLabel,
   WizardFooter,
 } from "@/src/components/groups/GroupsUI";
-import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
 import { openGroupAfterWizard } from "@/src/lib/navigation/groups";
 import { trpc } from "@/src/utils/trpc";
@@ -46,11 +46,11 @@ export default function GroupsCreatedScreen() {
       <View className="flex-1 gap-6">
         <View className="gap-2 pt-18">
           <AppText className="text-[28px] leading-8" weight="medium">
-            You're all set!
+            You&apos;re all set!
           </AppText>
           <AppText className="text-base leading-5" color="#828083">
-            Your group has been created. Share the invite code below so others can
-            request to join.
+            Your group has been created. Share the invite code below so others
+            can request to join.
           </AppText>
         </View>
 

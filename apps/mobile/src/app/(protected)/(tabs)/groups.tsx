@@ -8,13 +8,13 @@ import {
 
 import { useRouter } from "expo-router";
 
+import AppText from "@/src/components/AppText";
 import {
   GroupCard,
   GroupInviteCard,
   GroupsButtonRow,
   SectionLabel,
 } from "@/src/components/groups/GroupsUI";
-import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
 import ScreenTitle from "@/src/components/ScreenTitle";
 import { trpc } from "@/src/utils/trpc";
@@ -27,10 +27,8 @@ export default function GroupsTab() {
     isLoading,
     isRefetching: isGroupsRefetching,
   } = trpc.group.list.useQuery();
-  const {
-    data: pendingInvites,
-    isRefetching: isInvitesRefetching,
-  } = trpc.group.pendingInvites.useQuery();
+  const { data: pendingInvites, isRefetching: isInvitesRefetching } =
+    trpc.group.pendingInvites.useQuery();
 
   const invalidateGroups = async () => {
     await Promise.all([
@@ -96,10 +94,14 @@ export default function GroupsTab() {
                   }}
                   disabled={isInviteActionPending}
                   onAccept={() =>
-                    void acceptInviteMut.mutateAsync({ groupId: invite.groupId })
+                    void acceptInviteMut.mutateAsync({
+                      groupId: invite.groupId,
+                    })
                   }
                   onDecline={() =>
-                    void declineInviteMut.mutateAsync({ groupId: invite.groupId })
+                    void declineInviteMut.mutateAsync({
+                      groupId: invite.groupId,
+                    })
                   }
                 />
               ))}
@@ -115,11 +117,11 @@ export default function GroupsTab() {
                 </View>
               ) : data?.groups.length ? (
                 data.groups.map((group) => (
-                <GroupCard
-                  key={group.id}
-                  group={group}
-                  onPress={() => router.push(`/group/${group.id}`)}
-                />
+                  <GroupCard
+                    key={group.id}
+                    group={group}
+                    onPress={() => router.push(`/group/${group.id}`)}
+                  />
                 ))
               ) : (
                 <View className="border-muted bg-card border px-4 py-6">

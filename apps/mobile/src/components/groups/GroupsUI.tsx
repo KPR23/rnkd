@@ -64,28 +64,6 @@ export type GroupInvite = {
   } | null;
 };
 
-function formatInviteSentAgo(invitedAt: Date) {
-  const diffMs = Date.now() - invitedAt.getTime();
-  const diffMins = Math.floor(diffMs / 60_000);
-
-  if (diffMins < 1) {
-    return "Sent just now";
-  }
-
-  if (diffMins < 60) {
-    return `Sent ${diffMins}m ago`;
-  }
-
-  const diffHours = Math.floor(diffMins / 60);
-
-  if (diffHours < 24) {
-    return `Sent ${diffHours}h ago`;
-  }
-
-  const diffDays = Math.floor(diffHours / 24);
-  return diffDays === 1 ? "Sent 1d ago" : `Sent ${diffDays}d ago`;
-}
-
 const HEADER_ACTION_HIT_SLOP = {
   top: 10,
   right: 10,

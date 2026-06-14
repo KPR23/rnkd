@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Alert, Modal, Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 
 import {
   GameAccount,
