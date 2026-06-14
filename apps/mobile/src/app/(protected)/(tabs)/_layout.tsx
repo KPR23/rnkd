@@ -10,11 +10,11 @@ export default function TabLayout() {
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
-        <Label>Home</Label>
+        <Label>Feed</Label>
         <Icon
-          sf="house.fill"
+          sf="newspaper.fill"
           androidSrc={
-            <VectorIcon family={MaterialCommunityIcons} name="home" />
+            <VectorIcon family={MaterialCommunityIcons} name="newspaper" />
           }
         />
       </NativeTabs.Trigger>
