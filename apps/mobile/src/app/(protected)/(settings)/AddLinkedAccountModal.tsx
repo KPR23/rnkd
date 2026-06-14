@@ -18,9 +18,9 @@ import {
 } from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import FaceitAccountPreviewCard from "@/src/app/(protected)/(settings)/FaceitAccountPreviewCard";
-import Button from "@/src/components/Button";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import CustomModal from "@/src/components/Modal";
+import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { useDebouncedValue } from "@/src/lib/hooks/useDebouncedValue";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
@@ -52,21 +52,6 @@ function mapMutationError(error: { message: string; data?: unknown }) {
     return "This account is already linked.";
   }
   return error.message;
-}
-
-function StepDots({ current, total }: { current: number; total: number }) {
-  return (
-    <View className="flex flex-row items-center justify-center gap-2">
-      {Array.from({ length: total }).map((_, index) => (
-        <View
-          key={index}
-          className={`h-2 rounded-full ${
-            index === current ? "bg-text w-2" : "bg-border w-2"
-          }`}
-        />
-      ))}
-    </View>
-  );
 }
 
 export default function AddLinkedAccountModal({
@@ -186,9 +171,6 @@ export default function AddLinkedAccountModal({
 
   const isSubmitting = isLolPending || isFaceitPending;
   const isFaceitPlayerPending = faceitPreview.isFetching;
-  const stepIndex =
-    step === "game" ? 0 : step === "input" ? 1 : step === "confirm" ? 2 : 3;
-  const stepCount = game === GAMES.CS2_FACEIT ? 4 : 3;
   const stepCopy =
     step === "game"
       ? {
@@ -629,49 +611,33 @@ export default function AddLinkedAccountModal({
             : "Edit details"
           : "Connect another account";
 
-  const footer = isSubmitting ? (
-    <View className="flex flex-col gap-3">
-      <View className="items-center py-2">
-        <ActivityIndicator color={colors.text} />
-      </View>
-    </View>
-  ) : (
-    <View className="flex flex-col gap-3">
-      <View className="flex flex-col gap-3">
-        <Button
-          variant="primary"
-          actionText={primaryActionText}
-          onPress={
-            step === "success"
-              ? handleClose
-              : step === "confirm"
-                ? handleSubmit
-                : handleContinue
-          }
-          disabled={
-            step === "success" || step === "game"
-              ? false
-              : step === "input"
-                ? isInputInvalid
-                : isConfirmDisabled
-          }
-        />
-        <Button
-          variant="secondary"
-          actionText={secondaryActionText}
-          onPress={handleSecondaryAction}
-        />
-      </View>
-    </View>
+  const footer = (
+    <ScreenFooter
+      loading={isSubmitting}
+      primaryAction={{
+        text: primaryActionText,
+        onPress:
+          step === "success"
+            ? handleClose
+            : step === "confirm"
+              ? handleSubmit
+              : handleContinue,
+        disabled:
+          step === "success" || step === "game"
+            ? false
+            : step === "input"
+              ? isInputInvalid
+              : isConfirmDisabled,
+      }}
+      secondaryAction={{
+        text: secondaryActionText,
+        onPress: handleSecondaryAction,
+      }}
+    />
   );
 
   return (
-    <CustomModal
-      visible={visible}
-      onClose={handleClose}
-      headerCenter={<StepDots current={stepIndex} total={stepCount} />}
-      footer={footer}
-    >
+    <CustomModal visible={visible} onClose={handleClose} footer={footer}>
       <View className="flex flex-col gap-8 pt-1">
         <View className="gap-3">
           <Text className="text-text font-sans-bold text-3xl leading-tight">

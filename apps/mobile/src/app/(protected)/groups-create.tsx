@@ -7,9 +7,9 @@ import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import {
   BackHeader,
   GroupsTextInput,
-  WizardFooter,
 } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { useDebouncedValue } from "@/src/lib/hooks/useDebouncedValue";
 import { trpc } from "@/src/utils/trpc";
 
@@ -82,17 +82,16 @@ export default function GroupsCreateScreen() {
   return (
     <Screen
       footer={
-        <WizardFooter
-          actionText="Continue"
-          disabled={!canContinue}
-          step={1}
-          totalSteps={3}
-          onPress={() =>
-            router.push({
-              pathname: "/groups-invite",
-              params: { mode: "create", groupName: normalizedGroupName },
-            })
-          }
+        <ScreenFooter
+          primaryAction={{
+            text: "Continue",
+            disabled: !canContinue,
+            onPress: () =>
+              router.push({
+                pathname: "/groups-invite",
+                params: { mode: "create", groupName: normalizedGroupName },
+              }),
+          }}
         />
       }
     >

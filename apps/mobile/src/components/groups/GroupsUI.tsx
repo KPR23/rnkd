@@ -1,4 +1,4 @@
-import { useMemo, type PropsWithChildren, type RefObject } from "react";
+import { useMemo, type RefObject } from "react";
 import {
   Image,
   Pressable,
@@ -23,7 +23,6 @@ import {
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
-import { BOTTOM_DOCK_HEIGHT } from "@/src/constants/bottom-dock";
 
 export type GroupSummary = {
   id: string;
@@ -491,18 +490,18 @@ export function GroupInviteCard({
       </View>
       <View className="flex-row gap-3">
         <Button
-          actionText="Accept"
-          className="h-9! flex-1"
-          disabled={disabled}
-          variant="primary"
-          onPress={onAccept}
-        />
-        <Button
           actionText="Decline"
           className="h-9! flex-1"
           disabled={disabled}
           variant="secondary"
           onPress={onDecline}
+        />
+        <Button
+          actionText="Accept"
+          className="h-9! flex-1"
+          disabled={disabled}
+          variant="primary"
+          onPress={onAccept}
         />
       </View>
     </View>
@@ -523,16 +522,16 @@ export function GroupsButtonRow({
   return (
     <View className="flex-row gap-3">
       <Button
-        actionText={primaryText}
-        className="h-11 flex-1"
-        variant="primary"
-        onPress={onPrimaryPress}
-      />
-      <Button
         actionText={secondaryText}
         className="h-11 flex-1"
         variant="secondary"
         onPress={onSecondaryPress}
+      />
+      <Button
+        actionText={primaryText}
+        className="h-11 flex-1"
+        variant="primary"
+        onPress={onPrimaryPress}
       />
     </View>
   );
@@ -611,48 +610,3 @@ export function FriendSuggestionRow({
   );
 }
 
-export function ScreenFooterShell({ children }: PropsWithChildren) {
-  return (
-    <View className="gap-3 pt-3" style={{ paddingBottom: BOTTOM_DOCK_HEIGHT }}>
-      {children}
-    </View>
-  );
-}
-
-export function WizardFooter({
-  step,
-  totalSteps,
-  actionText,
-  disabled,
-  onPress,
-}: {
-  step?: number;
-  totalSteps?: number;
-  actionText: string;
-  disabled?: boolean;
-  onPress: () => void;
-}) {
-  const hasSteps = !!(step && totalSteps);
-
-  return (
-    <ScreenFooterShell>
-      {hasSteps ? (
-        <View className="flex-row justify-center gap-2.5">
-          {Array.from({ length: totalSteps }).map((_, index) => (
-            <View
-              key={index}
-              className={`size-2 ${index + 1 === step ? "bg-primary" : "bg-muted"}`}
-            />
-          ))}
-        </View>
-      ) : null}
-      <Button
-        actionText={actionText}
-        className="h-13.5"
-        disabled={disabled}
-        variant={disabled ? "secondary" : "primary"}
-        onPress={onPress}
-      />
-    </ScreenFooterShell>
-  );
-}

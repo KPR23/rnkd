@@ -8,10 +8,10 @@ import {
   FriendSuggestionRow,
   GroupsTextInput,
   SectionLabel,
-  WizardFooter,
 } from "@/src/components/groups/GroupsUI";
 import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
+import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { DismissKeyboardScrollView } from "@/src/lib/keyboard/dismiss-keyboard";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
@@ -109,14 +109,13 @@ export default function GroupsInviteScreen() {
   return (
     <Screen
       footer={
-        <WizardFooter
-          actionText={mode === "create" ? "Create group" : "Invite selected"}
-          disabled={
-            (mode === "invite" && selectedFriendIds.size === 0) || isSubmitting
-          }
-          step={mode === "create" ? 2 : undefined}
-          totalSteps={mode === "create" ? 3 : undefined}
-          onPress={handleInvite}
+        <ScreenFooter
+          loading={isSubmitting}
+          primaryAction={{
+            text: mode === "create" ? "Create group" : "Invite selected",
+            disabled: mode === "invite" && selectedFriendIds.size === 0,
+            onPress: handleInvite,
+          }}
         />
       }
     >

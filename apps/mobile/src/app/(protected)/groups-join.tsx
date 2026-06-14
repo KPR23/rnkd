@@ -4,12 +4,9 @@ import { View } from "react-native";
 import { Stack, useRouter } from "expo-router";
 
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
-import {
-  BackHeader,
-  GroupsTextInput,
-  WizardFooter,
-} from "@/src/components/groups/GroupsUI";
+import { BackHeader, GroupsTextInput } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { useDebouncedValue } from "@/src/lib/hooks/useDebouncedValue";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { openGroupAfterWizard } from "@/src/lib/navigation/groups";
@@ -115,10 +112,12 @@ export default function GroupsJoinScreen() {
   return (
     <Screen
       footer={
-        <WizardFooter
-          actionText="Join group"
-          disabled={!canJoin}
-          onPress={() => joinGroup.mutate({ code: normalizedCode })}
+        <ScreenFooter
+          primaryAction={{
+            text: "Join group",
+            disabled: !canJoin,
+            onPress: () => joinGroup.mutate({ code: normalizedCode }),
+          }}
         />
       }
     >

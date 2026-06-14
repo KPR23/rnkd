@@ -20,9 +20,9 @@ import FeedPostCard, {
 } from "@/src/components/feed/FeedPostCard";
 import {
   BackHeader,
-  ScreenFooterShell,
 } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import { ScreenFooterShell } from "@/src/components/ScreenFooter";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -187,8 +187,8 @@ export default function FeedCommentsScreen() {
     <Screen
       footer={
         <ScreenFooterShell>
-          <View className="flex-row items-center gap-3">
-            <View className="border-border bg-background h-11 min-w-0 flex-1 flex-row items-center border px-4">
+          <View className="h-13.5 flex-row items-center gap-2.5">
+            <View className="border-border bg-background h-13.5 min-w-0 flex-1 flex-row items-center border px-4">
               <TextInput
                 multiline
                 placeholder={
@@ -205,7 +205,7 @@ export default function FeedCommentsScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Post comment"
-              className={`size-11 items-center justify-center ${
+              className={`h-13.5 w-13.5 items-center justify-center ${
                 canSubmitComment && !addCommentMut.isPending
                   ? "bg-primary"
                   : "bg-muted"

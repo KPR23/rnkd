@@ -5,8 +5,8 @@ import { Stack } from "expo-router";
 
 import AddLinkedAccountModal from "@/src/app/(protected)/(settings)/AddLinkedAccountModal";
 import LinkedAccountsList from "@/src/app/(protected)/(settings)/LinkedAccountsList";
-import { WizardFooter } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
 
@@ -41,9 +41,11 @@ export default function LinkedAccountsScreen() {
       <Stack.Screen options={{ title: "Linked accounts" }} />
       <Screen
         footer={
-          <WizardFooter
-            actionText="Connect new account"
-            onPress={() => setIsModalVisible(true)}
+          <ScreenFooter
+            primaryAction={{
+              text: "Connect new account",
+              onPress: () => setIsModalVisible(true),
+            }}
           />
         }
       >

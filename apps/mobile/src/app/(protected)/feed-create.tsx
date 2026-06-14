@@ -5,8 +5,9 @@ import { Stack, useRouter } from "expo-router";
 
 import { colors } from "@repo/ui/colors";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
-import { BackHeader, WizardFooter } from "@/src/components/groups/GroupsUI";
+import { BackHeader } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -60,12 +61,14 @@ export default function FeedCreateScreen() {
   return (
     <Screen
       footer={
-        <WizardFooter
-          actionText="Post"
-          disabled={!canPost || createPostMut.isPending}
-          onPress={() =>
-            void createPostMut.mutateAsync({ body: normalizedBody })
-          }
+        <ScreenFooter
+          loading={createPostMut.isPending}
+          primaryAction={{
+            text: "Post",
+            disabled: !canPost,
+            onPress: () =>
+              void createPostMut.mutateAsync({ body: normalizedBody }),
+          }}
         />
       }
     >
