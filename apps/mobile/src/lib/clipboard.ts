@@ -2,8 +2,12 @@ import { Platform } from "react-native";
 
 export async function copyToClipboard(text: string): Promise<boolean> {
   if (Platform.OS === "web") {
-    await navigator.clipboard.writeText(text);
-    return true;
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   try {

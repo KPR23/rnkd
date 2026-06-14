@@ -37,11 +37,22 @@ export default function MessageBanner({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Dismiss message"
-            className="border-muted bg-sheet justify-start border-t px-5 pt-4"
+            className={`justify-start border-t px-5 pt-4 ${
+              message.variant === "error"
+                ? "border-destructiveBorder bg-destructive/20"
+                : "border-muted bg-sheet"
+            }`}
             style={{ height: BOTTOM_DOCK_HEIGHT }}
             onPress={onDismiss}
           >
-            <AppText className="text-sm leading-5" color={colors.text}>
+            <AppText
+              className="text-sm leading-5"
+              color={
+                message.variant === "error"
+                  ? colors.destructiveText
+                  : colors.text
+              }
+            >
               {message.text}
             </AppText>
           </Pressable>

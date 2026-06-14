@@ -62,8 +62,7 @@ async function fetchCurrentFaceitElo(faceitPlayerId: string): Promise<number | n
     return null;
   }
 
-  const elo = resolveCs2FaceitElo(player);
-  return elo > 0 ? elo : null;
+  return resolveCs2FaceitElo(player);
 }
 
 export async function recordFaceitEloSnapshot(params: {

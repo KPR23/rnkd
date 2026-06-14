@@ -30,12 +30,12 @@ export default function GroupsTab() {
   const { data: pendingInvites, isRefetching: isInvitesRefetching } =
     trpc.group.pendingInvites.useQuery();
 
-  const invalidateGroups = async () => {
+  const invalidateGroups = useCallback(async () => {
     await Promise.all([
       utils.group.list.invalidate(),
       utils.group.pendingInvites.invalidate(),
     ]);
-  };
+  }, [utils.group.list, utils.group.pendingInvites]);
 
   const handlePullRefresh = useCallback(async () => {
     try {
@@ -43,7 +43,7 @@ export default function GroupsTab() {
     } catch (error) {
       console.error("Groups pull-to-refresh failed", error);
     }
-  }, [utils.group.list, utils.group.pendingInvites]);
+  }, [invalidateGroups]);
 
   const acceptInviteMut = trpc.group.acceptInvite.useMutation({
     onSuccess: async ({ groupId }) => {

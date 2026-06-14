@@ -24,6 +24,7 @@ import GameProfileSection from "@/src/components/profile/GameProfileSection";
 import MatchActivityGraph from "@/src/components/profile/MatchActivityGraph";
 import ProfileInfoCard from "@/src/components/profile/ProfileInfoCard";
 import ScreenTitle from "@/src/components/ScreenTitle";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 export type ProfilePullToRefresh = {
@@ -59,6 +60,7 @@ export default function ProfileScreen({
 }: ProfileScreenProps) {
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { showError } = useMessage();
   const [detailsAccount, setDetailsAccount] = useState<GameAccount | null>(
     null,
   );
@@ -100,6 +102,9 @@ export default function ProfileScreen({
   });
   const removeMut = trpc.friend.remove.useMutation({
     onSuccess: invalidateRelationship,
+    onError: (error) => {
+      showError(error.message);
+    },
   });
 
   const globalRs = overview?.user.globalRs ?? 0;

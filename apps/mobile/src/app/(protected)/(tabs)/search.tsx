@@ -95,7 +95,7 @@ export default function SearchTab() {
 
   const hasActiveSearch = debouncedSearch.length >= MIN_SEARCH_LENGTH;
   const showRecentSearches =
-    recentSearches.length > 0 && search.length === 0 && !hasActiveSearch;
+    recentSearches.length > 0 && search.length === 0;
   const showEmptyState = search.length === 0 && !showRecentSearches;
 
   const saveSearchToHistory = useCallback(async (value: string) => {

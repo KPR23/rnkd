@@ -17,7 +17,7 @@ export async function persistFaceitLifetimeStatsInTx(
   params: {
     gameAccountId: string;
     lifetime: ParsedFaceitLifetimeStats;
-    currentElo: number;
+    currentElo: number | null;
     syncedAt: Date;
   },
 ) {
@@ -28,29 +28,29 @@ export async function persistFaceitLifetimeStatsInTx(
       ? (lifetime.totalWins / lifetime.totalMatches) * 100
       : 0);
 
+  const sharedStats = {
+    totalMatches: lifetime.totalMatches,
+    totalWins: lifetime.totalWins,
+    winRate,
+    avgKd: lifetime.avgKd,
+    lastCalculatedAt: syncedAt,
+  };
+
   await tx
     .insert(playerStats)
     .values({
       gameAccountId,
-      totalMatches: lifetime.totalMatches,
-      totalWins: lifetime.totalWins,
-      winRate,
-      currentElo,
+      ...sharedStats,
+      currentElo: currentElo ?? 0,
       avg_kills: 0,
       avg_deaths: 0,
       avg_assists: 0,
-      avgKd: lifetime.avgKd,
-      lastCalculatedAt: syncedAt,
     })
     .onConflictDoUpdate({
       target: playerStats.gameAccountId,
       set: {
-        totalMatches: lifetime.totalMatches,
-        totalWins: lifetime.totalWins,
-        winRate,
-        currentElo,
-        avgKd: lifetime.avgKd,
-        lastCalculatedAt: syncedAt,
+        ...sharedStats,
+        ...(currentElo !== null ? { currentElo } : {}),
       },
     });
 }

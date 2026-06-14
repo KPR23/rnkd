@@ -15,6 +15,7 @@ import {
   formatMatchKda,
   formatSkillLevelLabel,
 } from "@/src/lib/helper/matchStats";
+import { getInitialsForFallbackPhoto } from "@repo/ui/components/getInitialsForFallbackPhoto";
 
 function PlayerAvatar({
   nickname,
@@ -32,7 +33,7 @@ function PlayerAvatar({
   return (
     <View className="bg-muted flex h-9 w-9 items-center justify-center rounded-full">
       <AppText className="text-[11px] uppercase" weight="medium">
-        {nickname.slice(0, 2)}
+        {getInitialsForFallbackPhoto(nickname)}
       </AppText>
     </View>
   );

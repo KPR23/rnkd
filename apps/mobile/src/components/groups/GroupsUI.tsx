@@ -253,6 +253,7 @@ function AvatarBubble({
   const initials = useMemo(
     () =>
       name
+        .trim()
         .split(/\s+/)
         .map((part) => part[0])
         .join("")

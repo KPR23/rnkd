@@ -14,6 +14,7 @@ import { GAMES } from "@repo/types";
 import Button from "@/src/components/Button";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import { useAuth } from "@/src/lib/auth/use-auth";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 const REGIONS = ["EMEA", "NA", "SA", "SEA", "OCE"] as const;
@@ -22,6 +23,7 @@ const MAX_BIO_LENGTH = 500;
 export default function PersonalInformationScreen() {
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { showError } = useMessage();
   const { data: session } = useAuth();
 
   const profileQuery = trpc.profile.getOverview.useQuery(
@@ -44,6 +46,9 @@ export default function PersonalInformationScreen() {
     onSuccess: async () => {
       await utils.profile.invalidate();
       router.back();
+    },
+    onError: (error) => {
+      showError(error.message);
     },
   });
 

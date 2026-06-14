@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -77,6 +78,12 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     },
     [showMessage],
   );
+
+  useEffect(() => {
+    return () => {
+      clearHideTimer();
+    };
+  }, [clearHideTimer]);
 
   const value = useMemo(
     () => ({

@@ -52,7 +52,7 @@ export default function GameProfileSection({
   let nickname = gameAccount.externalId;
   if (isFaceit && gameAccount.profile?.faceitNickname?.trim()) {
     nickname = gameAccount.profile.faceitNickname.trim();
-  } else if (isLol) {
+  } else if (isLol && gameAccount.profile?.gameName && gameAccount.profile?.tagLine) {
     nickname = `${gameAccount.profile.gameName}#${gameAccount.profile.tagLine}`;
   }
 

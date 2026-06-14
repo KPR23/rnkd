@@ -113,7 +113,7 @@ export function refreshLolAccountDataInBackground(
         await recomputeGlobalRs(userId);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Failed to refresh LoL account data", { accountId, error });
     }
   })();
 }

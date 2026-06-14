@@ -99,7 +99,8 @@ export function summarizeGameAccounts(records: GameAccountRecord[]) {
   return records.flatMap((record) => {
     try {
       return [mapGameAccountRecord(record)];
-    } catch {
+    } catch (error) {
+      console.error("Failed to map game account record", { record, error });
       return [];
     }
   });

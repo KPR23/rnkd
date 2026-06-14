@@ -56,9 +56,11 @@ export default function FaceitLevelProgressCard({
                 {levelProgress.level + 1}
               </AppText>
             ) : null}
-            <AppText className="text-xs" color={colors.textSecondary}>
-              {levelProgress.levelEnd}
-            </AppText>
+            {levelProgress.levelEnd !== null ? (
+              <AppText className="text-xs" color={colors.textSecondary}>
+                {levelProgress.levelEnd}
+              </AppText>
+            ) : null}
           </View>
         </View>
       </View>
