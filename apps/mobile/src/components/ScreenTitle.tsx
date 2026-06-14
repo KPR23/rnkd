@@ -29,14 +29,14 @@ export default function ScreenTitle({
   const rightSlot = (
     <>
       {canShowBadge ? <RSBadge globalRs={globalRs} /> : null}
-      <BellSimpleIcon size={28} color={colors.text} />
+      <BellSimpleIcon size={24} color={colors.text} />
       {canShowSettings ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Open settings"
           onPress={() => router.push("/settings")}
         >
-          <GearSixIcon size={28} color={colors.text} />
+          <GearSixIcon size={24} color={colors.text} />
         </Pressable>
       ) : null}
     </>
