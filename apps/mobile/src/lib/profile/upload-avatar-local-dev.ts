@@ -6,6 +6,14 @@ type UploadAvatarResponse = {
   error?: string;
 };
 
+function resolveUploadedImageUrl(url: string) {
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  return `${mobileServerUrl}${url.startsWith("/") ? url : `/${url}`}`;
+}
+
 function mimeTypeForUri(uri: string) {
   const extension = uri.split(".").pop()?.toLowerCase();
 
@@ -49,5 +57,5 @@ export async function uploadAvatarLocalDev(uri: string) {
     throw new Error("Upload did not return an image URL");
   }
 
-  return body.url;
+  return resolveUploadedImageUrl(body.url);
 }

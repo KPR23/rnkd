@@ -1,10 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 import { PlusIcon } from "phosphor-react-native";
 
@@ -640,7 +635,7 @@ export default function AddLinkedAccountModal({
     <CustomModal visible={visible} onClose={handleClose} footer={footer}>
       <View className="flex flex-col gap-8 pt-1">
         <View className="gap-3">
-          <Text className="text-text font-sans-bold text-3xl leading-tight">
+          <Text className="text-text font-sans-medium text-3xl leading-tight">
             {stepCopy.title}
           </Text>
           <Text className="text-text-secondary font-sans-medium text-base leading-6">

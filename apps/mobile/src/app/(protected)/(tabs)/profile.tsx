@@ -3,7 +3,7 @@ import { ActivityIndicator, View } from "react-native";
 
 import ProfileScreen from "@/src/components/profile/ProfileScreen";
 import Screen from "@/src/components/Screen";
-import { useAuth } from "@/src/lib/auth/use-auth";
+import { refetchAuthSession, useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
 
 export default function ProfileTab() {
@@ -25,6 +25,7 @@ export default function ProfileTab() {
       await syncPull.mutateAsync();
       await utils.gameAccount.invalidate();
       await utils.profile.invalidate();
+      await refetchAuthSession();
       await refetchGameAccounts();
     } catch (error) {
       console.error("Profile pull-to-refresh failed", error);

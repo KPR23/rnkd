@@ -1,18 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   View,
 } from "react-native";
 
-import * as ImagePicker from "expo-image-picker";
 import { Stack, useRouter } from "expo-router";
 import { ArrowsClockwiseIcon } from "phosphor-react-native";
 
 import { User } from "@repo/types";
 import { colors } from "@repo/ui/colors";
-import { getInitialsForFallbackPhoto } from "@repo/ui/components/getInitialsForFallbackPhoto";
 import AppText from "@/src/components/AppText";
 import { HeaderBar } from "@/src/components/Header";
 import Screen from "@/src/components/Screen";
@@ -21,12 +18,14 @@ import { ScreenFooter } from "@/src/components/ScreenFooter";
 import EditableProfileRow from "@/src/components/settings/EditableProfileRow";
 import EditProfileFieldModal from "@/src/components/settings/EditProfileFieldModal";
 import SocialAccountCard from "@/src/components/settings/SocialAccountCard";
-import { authClient } from "@/src/lib/auth/auth-client";
+import UserProfileImage from "@/src/components/UserProfileImage";
 import { useAuthAccounts } from "@/src/lib/auth/use-auth-accounts";
-import { useAuth } from "@/src/lib/auth/use-auth";
+import { refetchAuthSession, useAuth } from "@/src/lib/auth/use-auth";
 import { useMessage } from "@/src/lib/messages/message-provider";
+import { pickProfileImageFromLibrary } from "@/src/lib/profile/pick-profile-image";
 import { uploadAvatarLocalDev } from "@/src/lib/profile/upload-avatar-local-dev";
 import { trpc } from "@/src/utils/trpc";
+import { mobileServerUrl } from "@/src/lib/server-url";
 
 type EditableField = "name" | "tag" | null;
 
@@ -50,23 +49,7 @@ function ProfileAvatar({
   return (
     <View className="items-center">
       <View className="relative">
-        {user.image ? (
-          <Image
-            source={{ uri: user.image }}
-            className="rounded-full"
-            resizeMode="cover"
-            style={{ width: 76, height: 76 }}
-          />
-        ) : (
-          <View
-            className="bg-dark items-center justify-center rounded-full"
-            style={{ width: 76, height: 76 }}
-          >
-            <AppText className="text-xl" weight="medium">
-              {getInitialsForFallbackPhoto(user.name)}
-            </AppText>
-          </View>
-        )}
+        <UserProfileImage user={user as User} size={76} />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Change profile photo"
@@ -85,11 +68,24 @@ function ProfileAvatar({
   );
 }
 
+function toStoredImageValue(image: string | null) {
+  if (!image) {
+    return null;
+  }
+
+  const normalizedServerUrl = mobileServerUrl.replace(/\/+$/, "");
+  if (image.startsWith(`${normalizedServerUrl}/`)) {
+    return image.slice(normalizedServerUrl.length);
+  }
+
+  return image;
+}
+
 export default function PersonalInformationScreen() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { showError } = useMessage();
-  const { data: session } = useAuth();
+  const { data: session, refetch: refetchSession } = useAuth();
   const {
     accounts,
     error: authAccountsError,
@@ -122,7 +118,8 @@ export default function PersonalInformationScreen() {
   const updateProfile = trpc.profile.update.useMutation({
     onSuccess: async () => {
       await utils.profile.invalidate();
-      await authClient.getSession({ query: { disableCookieCache: true } });
+      await refetchSession({ query: { disableCookieCache: true } });
+      await refetchAuthSession();
       router.back();
     },
     onError: (error) => {
@@ -152,28 +149,16 @@ export default function PersonalInformationScreen() {
     !isUploadingAvatar;
 
   const handlePickAvatar = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const asset = await pickProfileImageFromLibrary();
 
-    if (!permission.granted) {
-      showError("Photo library permission is required to change your avatar.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.85,
-    });
-
-    if (result.canceled || !result.assets[0]?.uri) {
+    if (!asset?.uri) {
       return;
     }
 
     setIsUploadingAvatar(true);
 
     try {
-      const uploadedUrl = await uploadAvatarLocalDev(result.assets[0].uri);
+      const uploadedUrl = await uploadAvatarLocalDev(asset.uri);
       setImage(uploadedUrl);
     } catch (error) {
       const message =
@@ -190,7 +175,7 @@ export default function PersonalInformationScreen() {
     await updateProfile.mutateAsync({
       name: name.trim(),
       tag: normalizedTag.length > 0 ? normalizedTag : null,
-      image,
+      image: toStoredImageValue(image),
     });
   };
 

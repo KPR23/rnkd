@@ -26,7 +26,10 @@ export const updateProfileInputSchema = z.object({
   image: z
     .string()
     .trim()
-    .url("Image must be a valid URL")
+    .refine(
+      (value) => value.startsWith("/") || /^https?:\/\//i.test(value),
+      "Image must be a valid URL or path",
+    )
     .nullable()
     .optional(),
   bio: z.string().max(500).nullable().optional(),

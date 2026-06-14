@@ -64,9 +64,7 @@ export async function POST(req: Request) {
     Buffer.from(await file.arrayBuffer()),
   );
 
-  const origin = new URL(req.url).origin;
-
   return Response.json({
-    url: `${origin}/uploads/avatars/${filename}`,
+    url: `/uploads/avatars/${filename}`,
   });
 }

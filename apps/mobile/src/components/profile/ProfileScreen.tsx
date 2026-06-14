@@ -25,6 +25,7 @@ import MatchActivityGraph from "@/src/components/profile/MatchActivityGraph";
 import ProfileInfoCard from "@/src/components/profile/ProfileInfoCard";
 import ScreenTitle from "@/src/components/ScreenTitle";
 import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
+import { mergeProfileIdentity } from "@/src/lib/profile/merge-profile-identity";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -110,6 +111,9 @@ export default function ProfileScreen({
   });
 
   const globalRs = overview?.user.globalRs ?? 0;
+  const displayUser = overview?.user
+    ? mergeProfileIdentity(user, overview.user)
+    : user;
   const isFriendActionPending =
     requestMut.isPending ||
     acceptMut.isPending ||
@@ -242,7 +246,7 @@ export default function ProfileScreen({
       >
         <View className="flex flex-col gap-2.5">
           <ProfileInfoCard
-            user={user}
+            user={displayUser}
             bio={overview?.user.bio ?? null}
             favoriteGameLabel={favoriteGameLabel(
               overview?.user.favoriteGame?.id,
@@ -283,7 +287,7 @@ export default function ProfileScreen({
           </View>
           {incomingRequestCondition ? (
             <AppText className="text-sm" color={colors.textSecondary}>
-              {user.tag ?? user.name} sent you a friend request. You can accept
+              {displayUser.tag ?? displayUser.name} sent you a friend request. You can accept
               or decline it here.
             </AppText>
           ) : null}
