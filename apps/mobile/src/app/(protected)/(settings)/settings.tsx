@@ -47,7 +47,7 @@ export default function SettingsScreen() {
       title: "Account details",
       items: [
         {
-          title: "Personal information",
+          title: "Edit profile",
           icon: <UserIcon />,
           onPress: () => router.push("/personal-information"),
         },
