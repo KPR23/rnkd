@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Pressable,
   ScrollView,
-  TextInput,
   View,
 } from "react-native";
 
@@ -21,6 +20,7 @@ import FeedPostCard, {
 import { BackHeader } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
 import { ScreenFooterShell } from "@/src/components/ScreenFooter";
+import { TextField } from "@/src/components/TextField";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -186,16 +186,21 @@ export default function FeedCommentsScreen() {
       footer={
         <ScreenFooterShell>
           <View className="h-13.5 flex-row items-center gap-2.5">
-            <View className="border-border bg-background h-13.5 min-w-0 flex-1 flex-row items-center border px-4">
-              <TextInput
-                multiline
-                placeholder={"Add a comment"}
-                placeholderTextColor={colors.textSecondary}
-                className="text-text min-w-0 flex-1 text-sm"
-                value={commentBody}
-                onChangeText={setCommentBody}
-              />
-            </View>
+            <TextField
+              className="bg-background min-w-0 flex-1"
+              placeholder="Add a comment"
+              returnKeyType="send"
+              value={commentBody}
+              onChangeText={setCommentBody}
+              onSubmitEditing={() => {
+                if (canSubmitComment && !addCommentMut.isPending) {
+                  void addCommentMut.mutateAsync({
+                    postId,
+                    body: normalizedCommentBody,
+                  });
+                }
+              }}
+            />
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Post comment"

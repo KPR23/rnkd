@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -13,6 +12,7 @@ import { Stack, useRouter } from "expo-router";
 import { GAMES } from "@repo/types";
 import Button from "@/src/components/Button";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
+import { TextFieldMultiline } from "@/src/components/TextField";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
@@ -85,14 +85,12 @@ export default function PersonalInformationScreen() {
       >
         <View className="flex flex-col gap-2">
           <Text className="text-text font-sans-semibold text-sm">Bio</Text>
-          <TextInput
+          <TextFieldMultiline
+            className="bg-card min-h-24"
             value={bio}
             onChangeText={setBio}
             placeholder="Tell others about yourself"
-            placeholderTextColor="#828083"
-            multiline
             maxLength={MAX_BIO_LENGTH + 50}
-            className="border-border bg-card text-text min-h-24 border p-3 font-sans text-base"
           />
           <FormFieldFeedback
             tone={bioFeedback.tone}

@@ -1,11 +1,11 @@
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 import {
   RIOT_PLATFORM_LABEL,
   RIOT_PLATFORM_ROUTE,
   type RiotPlatformRoute,
 } from "@repo/types";
-import { colors } from "@repo/ui/colors";
+import { TextField } from "@/src/components/TextField";
 
 type LolAccountFormProps = {
   gameName: string;
@@ -32,17 +32,14 @@ export default function LolAccountForm({
         <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
           Summoner name
         </Text>
-        <TextInput
+        <TextField
+          className="bg-card"
           placeholder="e.g. Faker"
-          placeholderTextColor={colors.gray}
-          className="border-border bg-card text-text h-12 border px-3"
           autoCapitalize="none"
-          autoCorrect={false}
           spellCheck={false}
           autoComplete="off"
           accessibilityLabel="Summoner name"
           accessibilityHint="Enter your Riot summoner name, 3 to 16 characters"
-          accessibilityRole="text"
           maxLength={16}
           returnKeyType="next"
           value={gameName}
@@ -54,17 +51,14 @@ export default function LolAccountForm({
         <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
           Tag line
         </Text>
-        <TextInput
+        <TextField
+          className="bg-card"
           placeholder="e.g. KR1"
-          placeholderTextColor={colors.gray}
-          className="border-border bg-card text-text h-12 border px-3"
           autoCapitalize="none"
-          autoCorrect={false}
           spellCheck={false}
           autoComplete="off"
           accessibilityLabel="Riot tag line"
           accessibilityHint="Enter your Riot tag line, 3 to 5 letters or numbers"
-          accessibilityRole="text"
           maxLength={5}
           returnKeyType="done"
           value={tagLine}

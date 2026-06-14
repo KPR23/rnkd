@@ -1,6 +1,6 @@
-import { Text, TextInput, View } from "react-native";
+import { Text, View } from "react-native";
 
-import { colors } from "@repo/ui/colors";
+import { TextField } from "@/src/components/TextField";
 
 type FaceitAccountFormProps = {
   faceitNickname: string;
@@ -18,17 +18,14 @@ export default function FaceitAccountForm({
       <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
         Faceit nickname
       </Text>
-      <TextInput
+      <TextField
+        className="bg-card"
         placeholder="e.g. m0NESY"
-        placeholderTextColor={colors.gray}
-        className="border-border bg-card text-text h-12 border px-3"
         autoCapitalize="none"
-        autoCorrect={false}
         spellCheck={false}
         autoComplete="off"
         accessibilityLabel="Faceit nickname"
         accessibilityHint="Enter your Faceit username"
-        accessibilityRole="text"
         value={faceitNickname}
         onChangeText={setFaceitNickname}
         editable={!isPending}

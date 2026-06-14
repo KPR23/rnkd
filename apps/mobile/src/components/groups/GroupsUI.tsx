@@ -2,10 +2,8 @@ import { useMemo, type RefObject } from "react";
 import {
   Image,
   Pressable,
-  TextInput,
   TouchableOpacity,
   View,
-  type TextInputProps,
 } from "react-native";
 
 import {
@@ -15,7 +13,6 @@ import {
   CaretLeftIcon,
   CheckIcon,
   DotsThreeVerticalIcon,
-  MagnifyingGlassIcon,
   UsersIcon,
   XIcon,
 } from "phosphor-react-native";
@@ -537,37 +534,7 @@ export function GroupsButtonRow({
   );
 }
 
-export function GroupsTextInput({
-  search,
-  onClear,
-  style,
-  ...props
-}: TextInputProps & { search?: boolean; onClear?: () => void }) {
-  return (
-    <View className="border-border h-13.5 flex-row items-center gap-3 border px-4">
-      {search ? (
-        <MagnifyingGlassIcon size={24} color={colors.textSecondary} />
-      ) : null}
-      <TextInput
-        placeholderTextColor={colors.textSecondary}
-        className="text-text h-13.5 min-w-0 flex-1 text-base leading-13.5"
-        style={[{ includeFontPadding: false }, style]}
-        autoCorrect={false}
-        {...props}
-      />
-      {props.value && onClear ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Clear"
-          className="ml-auto size-6 items-center justify-center"
-          onPress={onClear}
-        >
-          <XIcon size={20} color={colors.text} />
-        </Pressable>
-      ) : null}
-    </View>
-  );
-}
+export { TextField as GroupsTextInput } from "@/src/components/TextField";
 
 export function FriendSuggestionRow({
   friend,

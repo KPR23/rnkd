@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
-import { TextInput, View } from "react-native";
+import { View } from "react-native";
 
 import { Stack, useRouter } from "expo-router";
 
-import { colors } from "@repo/ui/colors";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import { BackHeader } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
 import { ScreenFooter } from "@/src/components/ScreenFooter";
+import { TextFieldMultiline } from "@/src/components/TextField";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -76,18 +76,14 @@ export default function FeedCreateScreen() {
       <View className="flex-1 gap-5">
         <BackHeader title="Create post" onBack={() => router.back()} />
         <View className="gap-2">
-          <View className="border-border min-h-40 border px-4 py-3">
-            <TextInput
-              autoFocus
-              multiline
-              placeholder="What's on your mind?"
-              placeholderTextColor={colors.textSecondary}
-              className="text-text min-h-32 flex-1 text-base leading-5"
-              style={{ textAlignVertical: "top" }}
-              value={body}
-              onChangeText={setBody}
-            />
-          </View>
+          <TextFieldMultiline
+            className="min-h-40"
+            autoFocus
+            placeholder="What's on your mind?"
+            style={{ minHeight: 128 }}
+            value={body}
+            onChangeText={setBody}
+          />
           {bodyFeedback ? (
             <FormFieldFeedback
               tone={bodyFeedback.tone}
