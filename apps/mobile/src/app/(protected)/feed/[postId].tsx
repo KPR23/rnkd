@@ -1,8 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  Modal,
   Pressable,
   View,
 } from "react-native";
@@ -12,6 +10,7 @@ import { ArrowUpIcon, XIcon } from "phosphor-react-native";
 
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
+import FeedActionMenu from "@/src/components/feed/FeedActionMenu";
 import FeedCommentThread from "@/src/components/feed/FeedCommentThread";
 import {
   type FeedCommentData,
@@ -26,15 +25,12 @@ import ScreenScroll from "@/src/components/ScreenScroll";
 import { ScreenFooterShell } from "@/src/components/ScreenFooter";
 import { TextField } from "@/src/components/TextField";
 import { groupCommentsByParent } from "@/src/lib/feed/comment-threads";
+import { useFeedDeleteMenu } from "@/src/lib/feed/use-feed-delete-menu";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 const MIN_COMMENT_LENGTH = 1;
 const MAX_COMMENT_LENGTH = 1000;
-
-type MenuTarget =
-  | { type: "post"; postId: string }
-  | { type: "comment"; comment: FeedCommentData };
 
 function normalizePost(post: FeedPostCardData): FeedPostCardData {
   return {
@@ -70,12 +66,24 @@ export default function FeedCommentsScreen() {
   const [pendingLikeCommentId, setPendingLikeCommentId] = useState<
     string | null
   >(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState<{
-    top: number;
-    right: number;
-  } | null>(null);
-  const [menuTarget, setMenuTarget] = useState<MenuTarget | null>(null);
+
+  const invalidateComments = useCallback(async () => {
+    if (!postId) return;
+    await Promise.all([
+      utils.feed.comments.invalidate({ postId }),
+      utils.feed.list.invalidate(),
+    ]);
+  }, [postId, utils.feed.comments, utils.feed.list]);
+
+  const { openPostMenu, openCommentMenu, actionMenuProps } = useFeedDeleteMenu({
+    onPostDeleted: () => router.back(),
+    onCommentDeleted: async (commentId) => {
+      setReplyTarget((current) =>
+        current?.id === commentId ? null : current,
+      );
+      await invalidateComments();
+    },
+  });
 
   const { data: currentUser } = trpc.user.getCurrentUser.useQuery();
   const { data, isLoading, isRefetching } = trpc.feed.comments.useQuery(
@@ -102,26 +110,6 @@ export default function FeedCommentsScreen() {
   const canSubmitComment =
     normalizedCommentBody.length >= MIN_COMMENT_LENGTH &&
     normalizedCommentBody.length <= MAX_COMMENT_LENGTH;
-
-  const invalidateComments = useCallback(async () => {
-    if (!postId) return;
-    await Promise.all([
-      utils.feed.comments.invalidate({ postId }),
-      utils.feed.list.invalidate(),
-    ]);
-  }, [postId, utils.feed.comments, utils.feed.list]);
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-    setMenuAnchor(null);
-    setMenuTarget(null);
-  };
-
-  const openMenu = (anchor: FeedMenuAnchor, target: MenuTarget) => {
-    setMenuAnchor(anchor);
-    setMenuTarget(target);
-    setIsMenuOpen(true);
-  };
 
   const togglePostLikeMut = trpc.feed.togglePostLike.useMutation({
     onMutate: async ({ postId: likedPostId }) => {
@@ -212,30 +200,6 @@ export default function FeedCommentsScreen() {
     },
   });
 
-  const deletePostMut = trpc.feed.deletePost.useMutation({
-    onSuccess: async () => {
-      closeMenu();
-      await utils.feed.list.invalidate();
-      router.back();
-    },
-    onError: () => {
-      showError("Could not remove post. Please try again.");
-    },
-  });
-
-  const deleteCommentMut = trpc.feed.deleteComment.useMutation({
-    onSuccess: async (_data, variables) => {
-      closeMenu();
-      if (replyTarget?.id === variables.commentId) {
-        setReplyTarget(null);
-      }
-      await invalidateComments();
-    },
-    onError: () => {
-      showError("Could not remove comment. Please try again.");
-    },
-  });
-
   const submitComment = () => {
     if (!postId || !canSubmitComment || addCommentMut.isPending) return;
 
@@ -252,50 +216,14 @@ export default function FeedCommentsScreen() {
 
   const handleOpenPostMenu = (anchor: FeedMenuAnchor) => {
     if (!postId) return;
-    openMenu(anchor, { type: "post", postId });
+    openPostMenu(postId, anchor);
   };
 
   const handleOpenCommentMenu = (
     comment: FeedCommentData,
     anchor: FeedMenuAnchor,
   ) => {
-    openMenu(anchor, { type: "comment", comment });
-  };
-
-  const confirmDelete = () => {
-    if (!menuTarget) return;
-    const target = menuTarget;
-    closeMenu();
-
-    if (target.type === "post") {
-      Alert.alert(
-        "Remove post",
-        "Are you sure you want to remove this post? This cannot be undone.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Remove",
-            style: "destructive",
-            onPress: () => deletePostMut.mutate({ postId: target.postId }),
-          },
-        ],
-      );
-      return;
-    }
-
-    Alert.alert(
-      "Remove comment",
-      "Are you sure you want to remove this comment? This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: () =>
-            deleteCommentMut.mutate({ commentId: target.comment.id }),
-        },
-      ],
-    );
+    openCommentMenu(comment.id, anchor);
   };
 
   const isPostOwner = normalizedPost?.author.id === currentUser?.id;
@@ -406,50 +334,7 @@ export default function FeedCommentsScreen() {
         )}
       </ScreenScroll>
 
-      <Modal
-        visible={isMenuOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={closeMenu}
-      >
-        <View className="flex-1">
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Close menu"
-            className="absolute inset-0"
-            onPress={closeMenu}
-          />
-          {menuAnchor ? (
-            <View
-              className="border-muted bg-card absolute min-w-48 border p-2"
-              style={{
-                top: menuAnchor.top,
-                right: menuAnchor.right,
-              }}
-            >
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={
-                  menuTarget?.type === "post"
-                    ? "Remove post"
-                    : "Remove comment"
-                }
-                className="px-3 py-3"
-                disabled={deletePostMut.isPending || deleteCommentMut.isPending}
-                onPress={confirmDelete}
-              >
-                <AppText
-                  className="text-sm"
-                  color={colors.destructiveText}
-                  weight="medium"
-                >
-                  {menuTarget?.type === "post" ? "Remove post" : "Remove comment"}
-                </AppText>
-              </Pressable>
-            </View>
-          ) : null}
-        </View>
-      </Modal>
+      <FeedActionMenu {...actionMenuProps} />
     </Screen>
   );
 }

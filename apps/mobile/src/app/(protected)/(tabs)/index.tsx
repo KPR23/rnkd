@@ -1,9 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  Modal,
-  Pressable,
   RefreshControl,
   ScrollView,
   View,
@@ -11,22 +8,21 @@ import {
 
 import { useRouter } from "expo-router";
 
-import { colors } from "@repo/ui/colors";
-import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
 import ScreenTitle from "@/src/components/ScreenTitle";
+import FeedActionMenu from "@/src/components/feed/FeedActionMenu";
 import FeedEmptyState from "@/src/components/feed/FeedEmptyState";
 import {
   FeedDateHeading,
   FeedOlderPostsDivider,
 } from "@/src/components/feed/FeedDateSection";
 import FeedFloatingActionButton from "@/src/components/feed/FeedFloatingActionButton";
-import type { FeedMenuAnchor } from "@/src/components/feed/FeedCommentRow";
 import FeedPostCard, {
   type FeedPostCardData,
 } from "@/src/components/feed/FeedPostCard";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { groupFeedPostsByDate } from "@/src/lib/feed/feed-time";
+import { useFeedDeleteMenu } from "@/src/lib/feed/use-feed-delete-menu";
 import { trpc } from "@/src/utils/trpc";
 
 function normalizePost(post: {
@@ -54,11 +50,9 @@ export default function HomeTab() {
   const [pendingLikePostId, setPendingLikePostId] = useState<string | null>(
     null,
   );
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState<FeedMenuAnchor | null>(null);
-  const [menuPostId, setMenuPostId] = useState<string | null>(null);
 
   const { data: currentUser } = trpc.user.getCurrentUser.useQuery();
+  const { openPostMenu, actionMenuProps } = useFeedDeleteMenu();
   const { data: groupsData } = trpc.group.list.useQuery();
   const {
     data: posts,
@@ -110,47 +104,6 @@ export default function HomeTab() {
       console.error("Feed pull-to-refresh failed", error);
     }
   }, [utils.feed.list]);
-
-  const closeMenu = useCallback(() => {
-    setIsMenuOpen(false);
-    setMenuAnchor(null);
-    setMenuPostId(null);
-  }, []);
-
-  const deletePostMut = trpc.feed.deletePost.useMutation({
-    onSuccess: async () => {
-      closeMenu();
-      await utils.feed.list.invalidate();
-    },
-    onError: () => {
-      showError("Could not remove post. Please try again.");
-    },
-  });
-
-  const openPostMenu = (postId: string, anchor: FeedMenuAnchor) => {
-    setMenuAnchor(anchor);
-    setMenuPostId(postId);
-    setIsMenuOpen(true);
-  };
-
-  const confirmDeletePost = () => {
-    if (!menuPostId) return;
-    const postId = menuPostId;
-    closeMenu();
-
-    Alert.alert(
-      "Remove post",
-      "Are you sure you want to remove this post? This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: () => deletePostMut.mutate({ postId }),
-        },
-      ],
-    );
-  };
 
   const normalizedPosts = useMemo(
     () => (posts ?? []).map(normalizePost),
@@ -224,46 +177,7 @@ export default function HomeTab() {
         onPress={() => router.push("/feed-create")}
       />
 
-      <Modal
-        visible={isMenuOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={closeMenu}
-      >
-        <View className="flex-1">
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Close menu"
-            className="absolute inset-0"
-            onPress={closeMenu}
-          />
-          {menuAnchor ? (
-            <View
-              className="border-muted bg-card absolute min-w-48 border p-2"
-              style={{
-                top: menuAnchor.top,
-                right: menuAnchor.right,
-              }}
-            >
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Remove post"
-                className="px-3 py-3"
-                disabled={deletePostMut.isPending}
-                onPress={confirmDeletePost}
-              >
-                <AppText
-                  className="text-sm"
-                  color={colors.destructiveText}
-                  weight="medium"
-                >
-                  Remove post
-                </AppText>
-              </Pressable>
-            </View>
-          ) : null}
-        </View>
-      </Modal>
+      <FeedActionMenu {...actionMenuProps} />
     </View>
   );
 }
