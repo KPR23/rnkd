@@ -7,9 +7,9 @@ import {
   GroupCard,
   InviteCodeCard,
   SectionLabel,
-  WizardFooter,
 } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { openGroupAfterWizard } from "@/src/lib/navigation/groups";
 import { trpc } from "@/src/utils/trpc";
 
@@ -34,11 +34,11 @@ export default function GroupsCreatedScreen() {
   return (
     <Screen
       footer={
-        <WizardFooter
-          actionText="View group"
-          step={3}
-          totalSteps={3}
-          onPress={handleViewGroup}
+        <ScreenFooter
+          primaryAction={{
+            text: "View group",
+            onPress: handleViewGroup,
+          }}
         />
       }
     >

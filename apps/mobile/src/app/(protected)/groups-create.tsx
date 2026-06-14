@@ -7,9 +7,10 @@ import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import {
   BackHeader,
   GroupsTextInput,
-  WizardFooter,
 } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
+import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { useDebouncedValue } from "@/src/lib/hooks/useDebouncedValue";
 import { trpc } from "@/src/utils/trpc";
 
@@ -82,23 +83,25 @@ export default function GroupsCreateScreen() {
   return (
     <Screen
       footer={
-        <WizardFooter
-          actionText="Continue"
-          disabled={!canContinue}
-          step={1}
-          totalSteps={3}
-          onPress={() =>
-            router.push({
-              pathname: "/groups-invite",
-              params: { mode: "create", groupName: normalizedGroupName },
-            })
-          }
+        <ScreenFooter
+          primaryAction={{
+            text: "Continue",
+            disabled: !canContinue,
+            onPress: () =>
+              router.push({
+                pathname: "/groups-invite",
+                params: { mode: "create", groupName: normalizedGroupName },
+              }),
+          }}
         />
       }
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <View className="flex-1 gap-5">
-        <BackHeader title="Create new group" onBack={() => router.back()} />
+      <ScreenScroll
+        header={
+          <BackHeader title="Create new group" onBack={() => router.back()} />
+        }
+      >
         <View className="gap-2">
           <GroupsTextInput
             autoCapitalize="words"
@@ -114,7 +117,7 @@ export default function GroupsCreateScreen() {
             />
           ) : null}
         </View>
-      </View>
+      </ScreenScroll>
     </Screen>
   );
 }

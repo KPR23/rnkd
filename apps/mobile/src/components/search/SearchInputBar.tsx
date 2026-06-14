@@ -1,8 +1,9 @@
-import { TextInput, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 
-import { MagnifyingGlassIcon, QrCodeIcon, XIcon } from "phosphor-react-native";
+import { QrCodeIcon } from "phosphor-react-native";
 
 import { colors } from "@repo/ui/colors";
+import { TextField } from "@/src/components/TextField";
 
 interface SearchInputBarProps {
   value: string;
@@ -20,30 +21,18 @@ export default function SearchInputBar({
   onQrPress,
 }: SearchInputBarProps) {
   return (
-    <View className="flex w-full flex-row items-start gap-2.5">
-      <View className="bg-card border-border h-13.5 min-w-0 flex-1 flex-row items-center gap-3 border px-4">
-        <MagnifyingGlassIcon size={24} color={colors.textSecondary} />
-        <TextInput
-          placeholder="Search"
-          placeholderTextColor={colors.textSecondary}
-          className="text-text h-13.5 min-w-0 flex-1 text-base leading-13.5"
-          autoCorrect={false}
-          autoCapitalize="none"
-          value={value}
-          onChangeText={onChangeText}
-          onSubmitEditing={onSubmitEditing}
-          returnKeyType="search"
-        />
-        {value.length > 0 && onClear ? (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            className="size-6 items-center justify-center"
-            onPress={onClear}
-          >
-            <XIcon size={20} color={colors.text} />
-          </TouchableOpacity>
-        ) : null}
-      </View>
+    <View className="w-full flex-row items-start gap-2.5">
+      <TextField
+        search
+        className="bg-card min-w-0 flex-1"
+        placeholder="Search"
+        autoCapitalize="none"
+        returnKeyType="search"
+        value={value}
+        onChangeText={onChangeText}
+        onSubmitEditing={onSubmitEditing}
+        onClear={onClear}
+      />
       <TouchableOpacity
         activeOpacity={0.7}
         className="bg-button border-border size-13.5 items-center justify-center border"

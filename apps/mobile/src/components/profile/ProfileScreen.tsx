@@ -24,6 +24,7 @@ import GameProfileSection from "@/src/components/profile/GameProfileSection";
 import MatchActivityGraph from "@/src/components/profile/MatchActivityGraph";
 import ProfileInfoCard from "@/src/components/profile/ProfileInfoCard";
 import ScreenTitle from "@/src/components/ScreenTitle";
+import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -70,6 +71,7 @@ export default function ProfileScreen({
     right: number;
   } | null>(null);
   const overflowButtonRef = useRef<View>(null);
+  const onStickyHeaderScroll = useStickyHeaderScrollHandler();
 
   const { data: overview } = trpc.profile.getOverview.useQuery({
     userId: user.id,
@@ -186,24 +188,18 @@ export default function ProfileScreen({
     />
   ) : null;
 
-  const overflowButton = isOwnProfile ? (
-    <Button
-      variant="secondary"
-      actionText="···"
-      className="w-12 px-0"
-      onPress={() => router.push("/settings")}
-    />
-  ) : relationship?.status === "friends" ? (
-    <View ref={overflowButtonRef} collapsable={false}>
-      <Button
-        variant="secondary"
-        actionText="···"
-        className="w-12 px-0"
-        disabled={isFriendActionPending}
-        onPress={openActionsMenu}
-      />
-    </View>
-  ) : null;
+  const overflowButton =
+    !isOwnProfile && relationship?.status === "friends" ? (
+      <View ref={overflowButtonRef} collapsable={false}>
+        <Button
+          variant="secondary"
+          actionText="···"
+          className="w-12 px-0"
+          disabled={isFriendActionPending}
+          onPress={openActionsMenu}
+        />
+      </View>
+    ) : null;
 
   const incomingRequestCondition =
     relationship?.status === "pending" &&
@@ -225,14 +221,16 @@ export default function ProfileScreen({
           showSettings={isOwnProfile}
           globalRs={globalRs}
         />
-      ) : (
-        <View className="mt-2" />
-      )}
+      ) : null}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 96, gap: 20 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        scrollEventThrottle={16}
+        onScroll={(event) => {
+          onStickyHeaderScroll?.(event);
+        }}
         refreshControl={
           pullToRefresh ? (
             <RefreshControl

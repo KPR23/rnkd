@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -13,6 +11,10 @@ import { Stack, useRouter } from "expo-router";
 import { GAMES } from "@repo/types";
 import Button from "@/src/components/Button";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
+import { HeaderBar } from "@/src/components/Header";
+import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
+import { TextFieldMultiline } from "@/src/components/TextField";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
@@ -78,29 +80,29 @@ export default function PersonalInformationScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Personal information" }} />
-      <ScrollView
-        className="bg-background flex-1"
-        contentContainerStyle={{ padding: 20, gap: 20 }}
-      >
-        <View className="flex flex-col gap-2">
-          <Text className="text-text font-sans-semibold text-sm">Bio</Text>
-          <TextInput
-            value={bio}
-            onChangeText={setBio}
-            placeholder="Tell others about yourself"
-            placeholderTextColor="#828083"
-            multiline
-            maxLength={MAX_BIO_LENGTH + 50}
-            className="border-border bg-card text-text min-h-24 border p-3 font-sans text-base"
-          />
-          <FormFieldFeedback
-            tone={bioFeedback.tone}
-            message={bioFeedback.message}
-          />
-        </View>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Screen>
+        <ScreenScroll
+          header={
+            <HeaderBar variant="centered" title="Personal information" />
+          }
+        >
+          <View className="flex flex-col gap-2">
+            <Text className="text-text font-sans-semibold text-sm">Bio</Text>
+            <TextFieldMultiline
+              className="bg-card min-h-24"
+              value={bio}
+              onChangeText={setBio}
+              placeholder="Tell others about yourself"
+              maxLength={MAX_BIO_LENGTH + 50}
+            />
+            <FormFieldFeedback
+              tone={bioFeedback.tone}
+              message={bioFeedback.message}
+            />
+          </View>
 
-        <View className="flex flex-col gap-2">
+          <View className="flex flex-col gap-2">
           <Text className="text-text font-sans-semibold text-sm">Region</Text>
           <View className="flex flex-row flex-wrap gap-2">
             {REGIONS.map((item) => (
@@ -110,7 +112,7 @@ export default function PersonalInformationScreen() {
                 className={`rounded-full border px-4 py-2 ${
                   region === item
                     ? "border-primary bg-primary/20"
-                    : "border-border bg-card"
+                    : "border-muted bg-card"
                 }`}
               >
                 <Text className="text-text font-sans-medium text-sm">
@@ -119,9 +121,9 @@ export default function PersonalInformationScreen() {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+          </View>
 
-        <View className="flex flex-col gap-2">
+          <View className="flex flex-col gap-2">
           <Text className="text-text font-sans-semibold text-sm">
             Favorite game
           </Text>
@@ -136,7 +138,7 @@ export default function PersonalInformationScreen() {
                 className={`rounded-full border px-4 py-2 ${
                   favoriteGameId === game.id
                     ? "border-primary bg-primary/20"
-                    : "border-border bg-card"
+                    : "border-muted bg-card"
                 }`}
               >
                 <Text className="text-text font-sans-medium text-sm">
@@ -145,9 +147,9 @@ export default function PersonalInformationScreen() {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+          </View>
 
-        <Button
+          <Button
           variant="primary"
           actionText={updateProfile.isPending ? "Saving…" : "Save changes"}
           className="w-full"
@@ -159,8 +161,9 @@ export default function PersonalInformationScreen() {
               favoriteGameId,
             })
           }
-        />
-      </ScrollView>
+          />
+        </ScreenScroll>
+      </Screen>
     </>
   );
 }

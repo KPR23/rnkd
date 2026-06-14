@@ -3,7 +3,7 @@ import { View } from "react-native";
 
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
 
-import { BOTTOM_DOCK_HEIGHT } from "@/src/constants/bottom-dock";
+import { resolveBottomDockHeight } from "@/src/constants/bottom-dock";
 import { DismissKeyboard } from "@/src/lib/keyboard/dismiss-keyboard";
 import { useKeyboardOffset } from "@/src/lib/keyboard/keyboard-offset-provider";
 
@@ -20,6 +20,7 @@ export default function Screen({
   footer,
 }: ScreenProps) {
   const keyboardOffset = useKeyboardOffset();
+  const footerHeight = resolveBottomDockHeight(keyboardOffset);
 
   return (
     <View className="bg-background flex-1">
@@ -29,7 +30,7 @@ export default function Screen({
           <View
             className="border-muted border-t px-5"
             style={{
-              height: BOTTOM_DOCK_HEIGHT,
+              height: footerHeight,
               marginBottom: keyboardOffset,
             }}
           >

@@ -71,6 +71,7 @@ export default function SearchTab() {
       enabled: debouncedSearch.length >= MIN_SEARCH_LENGTH,
     });
 
+  const { data: groupsData } = trpc.group.list.useQuery();
   const router = useRouter();
 
   const filteredSearchResults = useMemo(() => {
@@ -185,7 +186,11 @@ export default function SearchTab() {
   return (
     <Screen>
       <View className="flex flex-1 flex-col">
-        <ScreenTitle title="Search" globalRs={3443} showRsBadge />
+        <ScreenTitle
+          title="Search"
+          globalRs={groupsData?.currentUserGlobalRs ?? 0}
+          showRsBadge={!!groupsData}
+        />
         <View className="flex flex-1 flex-col gap-3">
           <SearchInputBar
             value={search}

@@ -85,6 +85,27 @@
       "when": 1780858380000,
       "tag": "0011_groups_name_unique",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1781453219296,
+      "tag": "0012_windy_nighthawk",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1781468327160,
+      "tag": "0013_lying_rogue",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1781472000000,
+      "tag": "0014_game_account_rs_points",
+      "breakpoints": true
     }
   ]
 }

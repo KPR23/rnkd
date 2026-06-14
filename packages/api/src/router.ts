@@ -1,4 +1,5 @@
 import { faceitRouter } from "./routers/faceit";
+import { feedRouter } from "./routers/feed";
 import { friendRouter } from "./routers/friend";
 import { gameRouter } from "./routers/game";
 import { gameAccountRouter } from "./routers/gameAccount";
@@ -21,6 +22,7 @@ export const appRouter = router({
   match: matchRouter,
   friend: friendRouter,
   group: groupRouter,
+  feed: feedRouter,
 });
 
 export type AppRouter = typeof appRouter;

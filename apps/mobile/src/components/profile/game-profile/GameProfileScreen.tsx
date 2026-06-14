@@ -5,6 +5,7 @@ import { GAMES, isCs2FaceitGameAccount } from "@repo/types";
 import type { Cs2FaceitMatchHistoryRow } from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
+import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
 import GameProfileOverviewTab from "@/src/components/profile/game-profile/GameProfileOverviewTab";
 import GameProfileTabBar from "@/src/components/profile/game-profile/GameProfileTabBar";
 import { trpc } from "@/src/utils/trpc";
@@ -15,6 +16,7 @@ export default function GameProfileScreen({
   gameAccountId: string;
 }) {
   const [activeTab, setActiveTab] = useState<"overview" | "stats">("overview");
+  const onStickyHeaderScroll = useStickyHeaderScrollHandler();
 
   const {
     data: display,
@@ -63,6 +65,10 @@ export default function GameProfileScreen({
     <ScrollView
       className="flex-1"
       showsVerticalScrollIndicator={false}
+      scrollEventThrottle={16}
+      onScroll={(event) => {
+        onStickyHeaderScroll?.(event);
+      }}
       contentContainerStyle={{ paddingBottom: 32, gap: 20 }}
     >
       <GameProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} />

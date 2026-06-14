@@ -50,7 +50,7 @@ export default function Button({
   const isDisabled = !!touchableProps.disabled;
   const iconContext = {
     size: 20,
-    color: isDisabled ? colors.textSecondary : iconColors[variant],
+    color: isDisabled ? colors.border : iconColors[variant],
     weight: "bold" as const,
   };
 
@@ -59,7 +59,7 @@ export default function Button({
       <TouchableOpacity
         activeOpacity={0.7}
         className={`${baseClassName} ${variantStyles[variant]} ${className ?? ""} ${
-          isDisabled ? "border-text-muted/30 border bg-transparent" : ""
+          isDisabled ? "border-muted bg-background border" : ""
         }`}
         style={
           variant === "destructive"
@@ -71,7 +71,7 @@ export default function Button({
       >
         <AppText
           className="text-sm"
-          color={isDisabled ? colors.textSecondary : textColors[variant]}
+          color={isDisabled ? colors.border : textColors[variant]}
           weight="medium"
         >
           {actionText}

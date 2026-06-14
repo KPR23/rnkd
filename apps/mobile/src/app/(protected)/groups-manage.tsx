@@ -9,8 +9,8 @@ import {
   SectionLabel,
 } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import { useAuth } from "@/src/lib/auth/use-auth";
-import { DismissKeyboardScrollView } from "@/src/lib/keyboard/dismiss-keyboard";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -92,15 +92,16 @@ export default function GroupsManageScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <DismissKeyboardScrollView showsVerticalScrollIndicator={false}>
-        <View className="gap-6 pb-6">
+      <ScreenScroll
+        header={
           <BackHeader
             title="Manage players"
             centered
             onBack={() => router.back()}
           />
-
-          <View className="gap-2.5">
+        }
+      >
+        <View className="gap-2.5">
             <SectionLabel title={data?.group.name ?? "Group"} />
             <View className="gap-2">
               {isLoading ? (
@@ -148,8 +149,7 @@ export default function GroupsManageScreen() {
               )}
             </View>
           </View>
-        </View>
-      </DismissKeyboardScrollView>
+      </ScreenScroll>
     </Screen>
   );
 }

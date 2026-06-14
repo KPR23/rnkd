@@ -1,32 +1,325 @@
-import { ActivityIndicator, Text, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  View,
+} from "react-native";
 
-import { useAuth } from "@/src/lib/auth/use-auth";
+import { useRouter } from "expo-router";
+
+import Screen from "@/src/components/Screen";
+import ScreenTitle from "@/src/components/ScreenTitle";
+import FeedActionMenu from "@/src/components/feed/FeedActionMenu";
+import FeedEmptyState from "@/src/components/feed/FeedEmptyState";
+import {
+  FeedDateHeading,
+  FeedOlderPostsDivider,
+} from "@/src/components/feed/FeedDateSection";
+import FeedFloatingActionButton from "@/src/components/feed/FeedFloatingActionButton";
+import FeedFriendRequestCard, {
+  type FeedFriendRequestCardData,
+} from "@/src/components/feed/FeedFriendRequestCard";
+import FeedPostCard, {
+  type FeedPostCardData,
+} from "@/src/components/feed/FeedPostCard";
+import { useMessage } from "@/src/lib/messages/message-provider";
+import {
+  getFeedTimelineItemDate,
+  getFeedTimelineItemKey,
+  mergeFeedTimelineItems,
+  type FeedTimelineItem,
+} from "@/src/lib/feed/feed-items";
+import { groupFeedPostsByDate } from "@/src/lib/feed/feed-time";
+import { useFeedDeleteMenu } from "@/src/lib/feed/use-feed-delete-menu";
 import { trpc } from "@/src/utils/trpc";
 
+function normalizePost(post: {
+  id: string;
+  body: string;
+  createdAt: Date;
+  author: FeedPostCardData["author"];
+  likeCount: number;
+  commentCount: number;
+  likedByMe: boolean;
+}): FeedPostCardData {
+  return {
+    ...post,
+    createdAt:
+      post.createdAt instanceof Date
+        ? post.createdAt
+        : new Date(post.createdAt),
+  };
+}
+
+function normalizeFriendRequest(request: {
+  id: string;
+  createdAt: Date;
+  requester: FeedFriendRequestCardData["requester"];
+}): FeedFriendRequestCardData {
+  return {
+    ...request,
+    createdAt:
+      request.createdAt instanceof Date
+        ? request.createdAt
+        : new Date(request.createdAt),
+  };
+}
+
 export default function HomeTab() {
-  const { data: session, isPending } = useAuth();
-  const user = trpc.user.getCurrentUser.useQuery(undefined, {
-    enabled: !!session,
+  const router = useRouter();
+  const utils = trpc.useUtils();
+  const { showError } = useMessage();
+  const [pendingLikePostId, setPendingLikePostId] = useState<string | null>(
+    null,
+  );
+  const [pendingFriendRequestId, setPendingFriendRequestId] = useState<
+    string | null
+  >(null);
+
+  const { data: currentUser } = trpc.user.getCurrentUser.useQuery();
+  const { openPostMenu, actionMenuProps } = useFeedDeleteMenu();
+  const { data: groupsData } = trpc.group.list.useQuery();
+  const {
+    data: posts,
+    isLoading: isPostsLoading,
+    isRefetching: isPostsRefetching,
+  } = trpc.feed.list.useQuery();
+  const {
+    data: incomingFriendRequests,
+    isLoading: isIncomingRequestsLoading,
+    isRefetching: isIncomingRequestsRefetching,
+  } = trpc.friend.listIncoming.useQuery();
+
+  const isLoading = isPostsLoading || isIncomingRequestsLoading;
+  const isRefetching = isPostsRefetching || isIncomingRequestsRefetching;
+
+  const invalidateFeedData = useCallback(async () => {
+    await Promise.all([
+      utils.feed.list.invalidate(),
+      utils.friend.listIncoming.invalidate(),
+    ]);
+  }, [utils.feed.list, utils.friend.listIncoming]);
+
+  const removeIncomingRequest = useCallback(
+    (requesterId: string) => {
+      utils.friend.listIncoming.setData(undefined, (current) =>
+        current?.filter((request) => request.requester.id !== requesterId) ??
+        [],
+      );
+    },
+    [utils.friend.listIncoming],
+  );
+
+  const acceptFriendRequestMut = trpc.friend.accept.useMutation({
+    onMutate: async ({ requesterId }) => {
+      setPendingFriendRequestId(requesterId);
+      await utils.friend.listIncoming.cancel();
+      const previous = utils.friend.listIncoming.getData();
+      removeIncomingRequest(requesterId);
+      return { previous };
+    },
+    onError: (error, _input, context) => {
+      if (context?.previous) {
+        utils.friend.listIncoming.setData(undefined, context.previous);
+      }
+      showError(error.message);
+    },
+    onSettled: async () => {
+      setPendingFriendRequestId(null);
+      await invalidateFeedData();
+    },
   });
 
-  if (isPending) {
-    return (
-      <View className="bg-background flex-1 items-center justify-center">
-        <ActivityIndicator />
-      </View>
-    );
-  }
+  const declineFriendRequestMut = trpc.friend.decline.useMutation({
+    onMutate: async ({ requesterId }) => {
+      setPendingFriendRequestId(requesterId);
+      await utils.friend.listIncoming.cancel();
+      const previous = utils.friend.listIncoming.getData();
+      removeIncomingRequest(requesterId);
+      return { previous };
+    },
+    onError: (error, _input, context) => {
+      if (context?.previous) {
+        utils.friend.listIncoming.setData(undefined, context.previous);
+      }
+      showError(error.message);
+    },
+    onSettled: async () => {
+      setPendingFriendRequestId(null);
+      await invalidateFeedData();
+    },
+  });
 
-  if (!session) {
-    return null;
-  }
+  const toggleLikeMut = trpc.feed.togglePostLike.useMutation({
+    onMutate: async ({ postId }) => {
+      setPendingLikePostId(postId);
+      await utils.feed.list.cancel();
+      const previous = utils.feed.list.getData();
+
+      utils.feed.list.setData(undefined, (current) => {
+        if (!current) return current;
+
+        return current.map((post) => {
+          if (post.id !== postId) return post;
+
+          const likedByMe = !post.likedByMe;
+          return {
+            ...post,
+            likedByMe,
+            likeCount: likedByMe
+              ? post.likeCount + 1
+              : Math.max(0, post.likeCount - 1),
+          };
+        });
+      });
+
+      return { previous };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) {
+        utils.feed.list.setData(undefined, context.previous);
+      }
+      showError("Could not update like. Please try again.");
+    },
+    onSettled: async () => {
+      setPendingLikePostId(null);
+      await utils.feed.list.invalidate();
+    },
+  });
+
+  const handlePullRefresh = useCallback(async () => {
+    try {
+      await invalidateFeedData();
+    } catch (error) {
+      console.error("Feed pull-to-refresh failed", error);
+    }
+  }, [invalidateFeedData]);
+
+  const normalizedPosts = useMemo(
+    () => (posts ?? []).map(normalizePost),
+    [posts],
+  );
+
+  const normalizedFriendRequests = useMemo(
+    () => (incomingFriendRequests ?? []).map(normalizeFriendRequest),
+    [incomingFriendRequests],
+  );
+
+  const feedItems = useMemo(
+    () => mergeFeedTimelineItems(normalizedPosts, normalizedFriendRequests),
+    [normalizedPosts, normalizedFriendRequests],
+  );
+
+  const feedItemsByKey = useMemo(
+    () =>
+      new Map(
+        feedItems.map((item) => [getFeedTimelineItemKey(item), item] as const),
+      ),
+    [feedItems],
+  );
+
+  const groupedFeedItems = useMemo(
+    () =>
+      groupFeedPostsByDate(
+        feedItems.map((item) => ({
+          id: getFeedTimelineItemKey(item),
+          createdAt: getFeedTimelineItemDate(item),
+        })),
+      ).map((group) => ({
+        ...group,
+        items: group.posts
+          .map((entry) => feedItemsByKey.get(entry.id))
+          .filter((item): item is FeedTimelineItem => item !== undefined),
+      })),
+    [feedItems, feedItemsByKey],
+  );
 
   return (
-    <View className="bg-background flex-1 items-center justify-center px-6">
-      <Text className="font-sans-semibold mb-2 text-2xl text-white">Rnkd</Text>
-      <Text className="text-center font-sans text-slate-200">
-        Logged in as {user.data?.name}
-      </Text>
+    <View className="bg-background flex-1">
+      <Screen>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={handlePullRefresh}
+            />
+          }
+        >
+          <ScreenTitle
+            title="Feed"
+            globalRs={groupsData?.currentUserGlobalRs ?? 0}
+            showRsBadge={!!groupsData}
+          />
+
+          <View className="gap-5 pb-6">
+            {isLoading ? (
+              <View className="items-center py-10">
+                <ActivityIndicator />
+              </View>
+            ) : groupedFeedItems.length ? (
+              groupedFeedItems.map((group) => (
+                <View key={`${group.label.primary}-${group.label.secondary ?? ""}`} className="gap-2.5">
+                  {group.showOlderDividerBefore ? <FeedOlderPostsDivider /> : null}
+                  <FeedDateHeading label={group.label} />
+                  <View className="gap-2.5">
+                    {group.items.map((item) =>
+                      item.kind === "post" ? (
+                        <FeedPostCard
+                          key={getFeedTimelineItemKey(item)}
+                          post={item.post}
+                          isLikePending={pendingLikePostId === item.post.id}
+                          onToggleLike={() =>
+                            void toggleLikeMut.mutateAsync({
+                              postId: item.post.id,
+                            })
+                          }
+                          onMenuPress={
+                            item.post.author.id === currentUser?.id
+                              ? (anchor) => openPostMenu(item.post.id, anchor)
+                              : undefined
+                          }
+                        />
+                      ) : (
+                        <FeedFriendRequestCard
+                          key={getFeedTimelineItemKey(item)}
+                          request={item.request}
+                          disabled={
+                            pendingFriendRequestId === item.request.requester.id
+                          }
+                          onAccept={() =>
+                            void acceptFriendRequestMut.mutateAsync({
+                              requesterId: item.request.requester.id,
+                            })
+                          }
+                          onDecline={() =>
+                            void declineFriendRequestMut.mutateAsync({
+                              requesterId: item.request.requester.id,
+                            })
+                          }
+                        />
+                      ),
+                    )}
+                  </View>
+                </View>
+              ))
+            ) : (
+              <FeedEmptyState
+                title="Your feed is quiet"
+                description="Create a post or add friends to start seeing activity here."
+              />
+            )}
+          </View>
+        </ScrollView>
+      </Screen>
+
+      <FeedFloatingActionButton
+        onPress={() => router.push("/feed-create")}
+      />
+
+      <FeedActionMenu {...actionMenuProps} />
     </View>
   );
 }

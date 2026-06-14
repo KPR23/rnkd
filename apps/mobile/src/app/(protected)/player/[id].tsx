@@ -4,8 +4,10 @@ import { ActivityIndicator, Text, View } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 
 import type { User } from "@repo/types";
+import { HeaderBar } from "@/src/components/Header";
 import ProfileScreen from "@/src/components/profile/ProfileScreen";
 import Screen from "@/src/components/Screen";
+import StickyHeaderShell from "@/src/components/StickyHeaderShell";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
@@ -72,10 +74,14 @@ export default function PlayerProfileScreen() {
   if (isLoadingUser || isLoadingAccounts) {
     return (
       <>
-        <Stack.Screen options={{ title: "Player" }} />
-        <View className="bg-background flex-1 items-center justify-center">
-          <ActivityIndicator />
-        </View>
+        <Stack.Screen options={{ headerShown: false }} />
+        <Screen>
+          <StickyHeaderShell header={<HeaderBar variant="centered" title="Player" />}>
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator />
+            </View>
+          </StickyHeaderShell>
+        </Screen>
       </>
     );
   }
@@ -83,11 +89,13 @@ export default function PlayerProfileScreen() {
   if (isUserError || !publicUser) {
     return (
       <>
-        <Stack.Screen options={{ title: "Player" }} />
-        <Screen safeAreaEdges={["bottom", "left", "right"]}>
-          <Text className="text-text text-center font-sans">
-            Player not found.
-          </Text>
+        <Stack.Screen options={{ headerShown: false }} />
+        <Screen>
+          <StickyHeaderShell header={<HeaderBar variant="centered" title="Player" />}>
+            <Text className="text-text text-center font-sans">
+              Player not found.
+            </Text>
+          </StickyHeaderShell>
         </Screen>
       </>
     );
@@ -96,20 +104,24 @@ export default function PlayerProfileScreen() {
   const isOwnProfile = session?.user.id === publicUser.id;
 
   return (
-    <Screen safeAreaEdges={["bottom", "left", "right"]}>
-      <Stack.Screen options={{ title: "Player" }} />
-      <ProfileScreen
-        user={toProfileUser(publicUser)}
-        isOwnProfile={isOwnProfile}
-        pullToRefresh={{
-          refreshing: syncPull.isPending || gameAccountsFetching,
-          onRefresh: handlePullRefresh,
-        }}
-        gameAccounts={[
-          ...(gameAccounts?.lol ?? []),
-          ...(gameAccounts?.faceit ?? []),
-        ]}
-      />
-    </Screen>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Screen>
+        <StickyHeaderShell header={<HeaderBar variant="centered" title="Player" />}>
+          <ProfileScreen
+            user={toProfileUser(publicUser)}
+            isOwnProfile={isOwnProfile}
+            pullToRefresh={{
+              refreshing: syncPull.isPending || gameAccountsFetching,
+              onRefresh: handlePullRefresh,
+            }}
+            gameAccounts={[
+              ...(gameAccounts?.lol ?? []),
+              ...(gameAccounts?.faceit ?? []),
+            ]}
+          />
+        </StickyHeaderShell>
+      </Screen>
+    </>
   );
 }

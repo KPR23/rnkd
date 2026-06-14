@@ -74,7 +74,7 @@ function Cs2FaceitAccountBody({
           className="h-12 w-12 rounded-full"
         />
       ) : (
-        <View className="bg-border flex h-12 w-12 items-center justify-center rounded-full">
+        <View className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
           <Text
             className="font-mono-semibold text-text-muted text-[11px] uppercase"
             numberOfLines={1}
@@ -173,7 +173,7 @@ export default function ConnectedAccountCard({
       <IconContext.Provider value={accountRowIconContext}>
         <TouchableOpacity
           activeOpacity={0.7}
-          className="bg-card border-border flex flex-row items-center justify-between border border-t-0 p-5"
+          className="bg-card border-muted flex flex-row items-center justify-between border border-t-0 p-5"
           onPress={() => {
             if (isFaceit) {
               router.push(`/game-profile/${gameAccount.id}`);

@@ -8,11 +8,11 @@ import {
   FriendSuggestionRow,
   GroupsTextInput,
   SectionLabel,
-  WizardFooter,
 } from "@/src/components/groups/GroupsUI";
 import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
-import { DismissKeyboardScrollView } from "@/src/lib/keyboard/dismiss-keyboard";
+import ScreenScroll from "@/src/components/ScreenScroll";
+import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
@@ -109,27 +109,31 @@ export default function GroupsInviteScreen() {
   return (
     <Screen
       footer={
-        <WizardFooter
-          actionText={mode === "create" ? "Create group" : "Invite selected"}
-          disabled={
-            (mode === "invite" && selectedFriendIds.size === 0) || isSubmitting
-          }
-          step={mode === "create" ? 2 : undefined}
-          totalSteps={mode === "create" ? 3 : undefined}
-          onPress={handleInvite}
+        <ScreenFooter
+          loading={isSubmitting}
+          primaryAction={{
+            text: mode === "create" ? "Create group" : "Invite selected",
+            disabled: mode === "invite" && selectedFriendIds.size === 0,
+            onPress: handleInvite,
+          }}
         />
       }
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <DismissKeyboardScrollView showsVerticalScrollIndicator={false}>
-        <View className="gap-6 pb-6">
+      <ScreenScroll
+        header={
           <BackHeader
-            title={mode === "create" ? "Invite friends to your group" : "Invite friends"}
+            title={
+              mode === "create"
+                ? "Invite friends to your group"
+                : "Invite friends"
+            }
             centered={mode !== "create"}
             onBack={() => router.back()}
           />
-
-          <GroupsTextInput
+        }
+      >
+        <GroupsTextInput
             placeholder="Search friends"
             returnKeyType="search"
             search
@@ -163,8 +167,7 @@ export default function GroupsInviteScreen() {
               )}
             </View>
           </View>
-        </View>
-      </DismissKeyboardScrollView>
+      </ScreenScroll>
     </Screen>
   );
 }

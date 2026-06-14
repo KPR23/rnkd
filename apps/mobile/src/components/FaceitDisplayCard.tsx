@@ -29,11 +29,11 @@ export default function FaceitDisplayCard({
     recentRecord !== null && recentRecord.wins + recentRecord.losses > 0;
 
   return (
-    <View className="border-border bg-card flex h-16 w-full flex-row items-center justify-between border px-4 py-2">
+    <View className="border-muted bg-card flex h-16 w-full flex-row items-center justify-between border px-4 py-2">
       <View className="flex flex-1 flex-row items-center gap-3">
         <View className="flex h-12 w-12 shrink-0 items-center justify-center">
           {isLoading ? (
-            <View className="bg-border h-10 w-10 rounded opacity-60" />
+            <View className="bg-muted h-10 w-10 rounded opacity-60" />
           ) : (
             <FaceitLevelBadge level={hasLevel ? skillLevel : 1} size={48} />
           )}

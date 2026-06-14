@@ -87,7 +87,7 @@ export default function Tabs({ gameAccounts }: TabsProps) {
             className={[
               "relative h-9 items-center justify-center px-6",
               useHorizontalScroll ? "min-w-30" : "flex-1",
-              !isLast ? "border-border border-r" : "",
+              !isLast ? "border-muted border-r" : "",
               isActive ? "bg-dark" : "",
             ].join(" ")}
             accessibilityRole="tab"
@@ -114,7 +114,7 @@ export default function Tabs({ gameAccounts }: TabsProps) {
 
   return (
     <View className="mt-8 w-full">
-      <View className="border-border bg-background w-full overflow-hidden border">
+      <View className="border-muted bg-background w-full overflow-hidden border">
         {useHorizontalScroll ? (
           <ScrollView
             horizontal
@@ -127,7 +127,7 @@ export default function Tabs({ gameAccounts }: TabsProps) {
           tabRow
         )}
       </View>
-      <View className="text-text border-border w-full flex-col items-center justify-center gap-5 border-r border-b border-l">
+      <View className="text-text border-muted w-full flex-col items-center justify-center gap-5 border-r border-b border-l">
         {activeAccount && Panel ? <Panel gameAccount={activeAccount} /> : null}
       </View>
     </View>

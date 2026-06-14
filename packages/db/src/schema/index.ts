@@ -1,4 +1,5 @@
 export * from "./auth";
+export * from "./feed";
 export * from "./cs2-faceit-match-players";
 export * from "./cs2-faceit-ranked";
 export * from "./games";
@@ -7,4 +8,5 @@ export * from "./leagues";
 export * from "./lol-ranked";
 export * from "./matches";
 export * from "./relations";
+export * from "./rs-points";
 export * from "./social";

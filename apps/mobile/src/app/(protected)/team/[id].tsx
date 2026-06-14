@@ -2,17 +2,21 @@ import { Text } from "react-native";
 
 import { Stack } from "expo-router";
 
+import { HeaderBar } from "@/src/components/Header";
 import Screen from "@/src/components/Screen";
-import ScreenTitle from "@/src/components/ScreenTitle";
+import ScreenScroll from "@/src/components/ScreenScroll";
 
 export default function TeamProfileScreen() {
   return (
-    <Screen safeAreaEdges={["bottom", "left", "right"]}>
-      <Stack.Screen options={{ title: "Team" }} />
-      <ScreenTitle title="Team" />
-      <Text className="text-text mt-4 text-center font-sans">
-        Team profiles are not available yet.
-      </Text>
-    </Screen>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Screen>
+        <ScreenScroll header={<HeaderBar variant="centered" title="Team" />}>
+          <Text className="text-text text-center font-sans">
+            Team profiles are not available yet.
+          </Text>
+        </ScreenScroll>
+      </Screen>
+    </>
   );
 }

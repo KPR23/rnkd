@@ -2,20 +2,16 @@ import { useMemo, type RefObject } from "react";
 import {
   Image,
   Pressable,
-  TextInput,
   TouchableOpacity,
   View,
-  type TextInputProps,
 } from "react-native";
 
 import {
   ArrowDownIcon,
   ArrowRightIcon,
   ArrowUpIcon,
-  CaretLeftIcon,
   CheckIcon,
   DotsThreeVerticalIcon,
-  MagnifyingGlassIcon,
   UsersIcon,
   XIcon,
 } from "phosphor-react-native";
@@ -23,6 +19,7 @@ import {
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
+import { HeaderBar } from "@/src/components/Header";
 
 export type GroupSummary = {
   id: string;
@@ -86,61 +83,32 @@ export function BackHeader({
   onMenuPress,
   menuButtonRef,
 }: BackHeaderProps) {
-  if (!centered) {
+  if (centered) {
     return (
-      <View className="mt-2 gap-4">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          className="size-6 items-center justify-center"
-          onPress={onBack}
-        >
-          <CaretLeftIcon size={24} color={colors.text} />
-        </Pressable>
-        <AppText className="text-3xl" weight="medium">
-          {title}
-        </AppText>
-      </View>
+      <HeaderBar
+        variant="centered"
+        title={title}
+        onBack={onBack}
+        rightSlot={
+          onMenuPress ? (
+            <Pressable
+              ref={menuButtonRef}
+              accessibilityRole="button"
+              accessibilityLabel="Open group menu"
+              collapsable={false}
+              hitSlop={HEADER_ACTION_HIT_SLOP}
+              onPress={onMenuPress}
+              className="size-6 items-center justify-center"
+            >
+              <DotsThreeVerticalIcon size={22} color={colors.text} weight="bold" />
+            </Pressable>
+          ) : undefined
+        }
+      />
     );
   }
 
-  return (
-    <View className="min-h-12 flex-row items-center">
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-        className="h-12 w-12 items-center justify-center"
-        hitSlop={HEADER_ACTION_HIT_SLOP}
-        onPress={onBack}
-      >
-        <CaretLeftIcon size={24} color={colors.text} />
-      </Pressable>
-      <View className="min-w-0 flex-1 justify-center px-1">
-        <AppText
-          className="text-center text-xl leading-6"
-          numberOfLines={1}
-          weight="medium"
-        >
-          {title}
-        </AppText>
-      </View>
-      {onMenuPress ? (
-        <Pressable
-          ref={menuButtonRef}
-          accessibilityRole="button"
-          accessibilityLabel="Open group menu"
-          className="h-12 w-12 items-center justify-center"
-          collapsable={false}
-          hitSlop={HEADER_ACTION_HIT_SLOP}
-          onPress={onMenuPress}
-        >
-          <DotsThreeVerticalIcon size={22} color={colors.text} weight="bold" />
-        </Pressable>
-      ) : (
-        <View className="h-12 w-12" />
-      )}
-    </View>
-  );
+  return <HeaderBar variant="leading" title={title} onBack={onBack} />;
 }
 
 export function InviteCodeCard({ inviteCode }: { inviteCode: string }) {
@@ -225,7 +193,7 @@ export function RatingSummaryCard({
           color={colors.primary}
           weight="medium"
         >
-          RR
+          RS
         </AppText>
       </AppText>
       <AppText
@@ -426,7 +394,7 @@ export function LeaderboardRow({
               weight="medium"
               style={{ lineHeight: 20 }}
             >
-              {member.rating ? `${member.rating} RR` : "- RR"}
+              {member.rating ? `${member.rating} RS` : "- RS"}
             </AppText>
             {member.trend === null ? null : (
               <TrendIndicator trend={member.trend} />
@@ -490,18 +458,18 @@ export function GroupInviteCard({
       </View>
       <View className="flex-row gap-3">
         <Button
-          actionText="Accept"
-          className="h-9! flex-1"
-          disabled={disabled}
-          variant="primary"
-          onPress={onAccept}
-        />
-        <Button
           actionText="Decline"
           className="h-9! flex-1"
           disabled={disabled}
           variant="secondary"
           onPress={onDecline}
+        />
+        <Button
+          actionText="Accept"
+          className="h-9! flex-1"
+          disabled={disabled}
+          variant="primary"
+          onPress={onAccept}
         />
       </View>
     </View>
@@ -522,52 +490,22 @@ export function GroupsButtonRow({
   return (
     <View className="flex-row gap-3">
       <Button
-        actionText={primaryText}
-        className="h-11 flex-1"
-        variant="primary"
-        onPress={onPrimaryPress}
-      />
-      <Button
         actionText={secondaryText}
         className="h-11 flex-1"
         variant="secondary"
         onPress={onSecondaryPress}
       />
+      <Button
+        actionText={primaryText}
+        className="h-11 flex-1"
+        variant="primary"
+        onPress={onPrimaryPress}
+      />
     </View>
   );
 }
 
-export function GroupsTextInput({
-  search,
-  onClear,
-  style,
-  ...props
-}: TextInputProps & { search?: boolean; onClear?: () => void }) {
-  return (
-    <View className="border-border h-13.5 flex-row items-center gap-3 border px-4">
-      {search ? (
-        <MagnifyingGlassIcon size={24} color={colors.textSecondary} />
-      ) : null}
-      <TextInput
-        placeholderTextColor={colors.textSecondary}
-        className="text-text h-13.5 min-w-0 flex-1 text-base leading-13.5"
-        style={[{ includeFontPadding: false }, style]}
-        autoCorrect={false}
-        {...props}
-      />
-      {props.value && onClear ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Clear"
-          className="ml-auto size-6 items-center justify-center"
-          onPress={onClear}
-        >
-          <XIcon size={20} color={colors.text} />
-        </Pressable>
-      ) : null}
-    </View>
-  );
-}
+export { TextField as GroupsTextInput } from "@/src/components/TextField";
 
 export function FriendSuggestionRow({
   friend,
@@ -610,50 +548,3 @@ export function FriendSuggestionRow({
   );
 }
 
-export function WizardFooter({
-  step,
-  totalSteps,
-  actionText,
-  disabled,
-  onPress,
-}: {
-  step?: number;
-  totalSteps?: number;
-  actionText: string;
-  disabled?: boolean;
-  onPress: () => void;
-}) {
-  const hasSteps = !!(step && totalSteps);
-
-  return (
-    <View className="h-full justify-start">
-      {hasSteps ? (
-        <View className="gap-3">
-          <View className="flex-row justify-center gap-2.5 pt-3">
-            {Array.from({ length: totalSteps }).map((_, index) => (
-              <View
-                key={index}
-                className={`size-2 ${index + 1 === step ? "bg-primary" : "bg-muted"}`}
-              />
-            ))}
-          </View>
-          <Button
-            actionText={actionText}
-            className="h-13.5"
-            disabled={disabled}
-            variant={disabled ? "secondary" : "primary"}
-            onPress={onPress}
-          />
-        </View>
-      ) : (
-        <Button
-          actionText={actionText}
-          className="h-13.5"
-          disabled={disabled}
-          variant={disabled ? "secondary" : "primary"}
-          onPress={onPress}
-        />
-      )}
-    </View>
-  );
-}

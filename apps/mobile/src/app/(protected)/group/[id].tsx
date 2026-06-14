@@ -6,7 +6,6 @@ import {
   Modal,
   Pressable,
   RefreshControl,
-  ScrollView,
   View,
 } from "react-native";
 
@@ -22,6 +21,7 @@ import {
 } from "@/src/components/groups/GroupsUI";
 import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import { copyToClipboard } from "@/src/lib/clipboard";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { goBackFromGroup } from "@/src/lib/navigation/groups";
@@ -168,16 +168,14 @@ export default function GroupDetailsScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
+      <ScreenScroll
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={handlePullRefresh}
           />
         }
-      >
-        <View className="gap-6 pb-6">
+        header={
           <BackHeader
             title={data.group.name}
             centered
@@ -185,8 +183,9 @@ export default function GroupDetailsScreen() {
             onBack={() => goBackFromGroup(router, returnTo)}
             onMenuPress={data.canManage ? openMenu : undefined}
           />
-
-          <View className="gap-3">
+        }
+      >
+        <View className="gap-3">
             <RatingSummaryCard
               rating={data.currentUserRating}
               position={data.currentUserPosition}
@@ -228,8 +227,7 @@ export default function GroupDetailsScreen() {
                 ))}
             </View>
           </View>
-        </View>
-      </ScrollView>
+      </ScreenScroll>
 
       <Modal
         visible={isMenuOpen}
