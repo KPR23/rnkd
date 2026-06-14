@@ -405,7 +405,7 @@ export default function AddLinkedAccountModal({
               className={`border px-4 py-4 ${
                 isSelected
                   ? "border-primary bg-primary/10"
-                  : "border-border bg-card"
+                  : "border-muted bg-card"
               }`}
             >
               <View className="flex flex-row items-center justify-between gap-3">
@@ -425,7 +425,7 @@ export default function AddLinkedAccountModal({
                 </View>
                 <View
                   className={`h-3 w-3 rounded-full ${
-                    isSelected ? "bg-primary" : "bg-border"
+                    isSelected ? "bg-primary" : "bg-muted"
                   }`}
                 />
               </View>
@@ -553,7 +553,7 @@ export default function AddLinkedAccountModal({
           </View>
 
           {isSuggestedPlayersPending ? (
-            <View className="border-border bg-card w-full items-center border py-8">
+            <View className="border-muted bg-card w-full items-center border py-8">
               <ActivityIndicator color={colors.text} />
             </View>
           ) : suggestedPlayers?.length ? (
@@ -561,7 +561,7 @@ export default function AddLinkedAccountModal({
               {suggestedPlayers.map(renderSuggestedPlayer)}
             </View>
           ) : (
-            <View className="border-border bg-card w-full border px-4 py-5">
+            <View className="border-muted bg-card w-full border px-4 py-5">
               <Text className="text-text font-sans-semibold text-sm">
                 No suggestions yet
               </Text>

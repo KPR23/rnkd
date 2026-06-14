@@ -108,7 +108,7 @@ export default function PersonalInformationScreen() {
                 className={`rounded-full border px-4 py-2 ${
                   region === item
                     ? "border-primary bg-primary/20"
-                    : "border-border bg-card"
+                    : "border-muted bg-card"
                 }`}
               >
                 <Text className="text-text font-sans-medium text-sm">
@@ -134,7 +134,7 @@ export default function PersonalInformationScreen() {
                 className={`rounded-full border px-4 py-2 ${
                   favoriteGameId === game.id
                     ? "border-primary bg-primary/20"
-                    : "border-border bg-card"
+                    : "border-muted bg-card"
                 }`}
               >
                 <Text className="text-text font-sans-medium text-sm">

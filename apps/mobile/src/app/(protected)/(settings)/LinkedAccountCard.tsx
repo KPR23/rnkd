@@ -85,7 +85,7 @@ export default function LinkedAccountCard({
 
   return (
     <View className="flex h-16 w-full flex-row items-center">
-      <View className="bg-card border-border h-full w-full flex-1 flex-col items-start justify-center gap-0.5 border px-4">
+      <View className="bg-card border-muted h-full w-full flex-1 flex-col items-start justify-center gap-0.5 border px-4">
         <Text className="font-sans-medium text-text-secondary text-xs">
           {GAME_TITLE[linkedAccount.gameId]}
         </Text>

@@ -89,7 +89,7 @@ export default function LolAccountForm({
               className={`border px-3 py-2 ${
                 platform === p
                   ? "border-primary bg-primary/10"
-                  : "border-border"
+                  : "border-muted"
               }`}
             >
               <Text

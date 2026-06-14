@@ -24,7 +24,7 @@ export function TextField({
 
   return (
     <View
-      className={`border-border h-13.5 flex-row items-center gap-3 border px-4 ${className ?? ""}`}
+      className={`border-muted h-13.5 flex-row items-center gap-3 border px-4 ${className ?? ""}`}
     >
       {search ? (
         <MagnifyingGlassIcon size={24} color={colors.textSecondary} />
@@ -74,7 +74,7 @@ export function TextFieldMultiline({
   ...props
 }: TextFieldMultilineProps) {
   return (
-    <View className={`border-border border px-4 py-3 ${className ?? ""}`}>
+    <View className={`border-muted border px-4 py-3 ${className ?? ""}`}>
       <TextInput
         placeholderTextColor={colors.textSecondary}
         className="text-text min-w-0 flex-1 text-base leading-5"

@@ -25,7 +25,7 @@ export default function SettingsCard({
     <IconContext.Provider value={iconContext}>
       <TouchableOpacity
         activeOpacity={0.7}
-        className="border-border bg-card flex h-12 flex-row items-center justify-between! gap-2 border pr-3 pl-4"
+        className="border-muted bg-card flex h-12 flex-row items-center justify-between! gap-2 border pr-3 pl-4"
         onPress={onPress}
       >
         <View className="flex flex-row items-center gap-3">

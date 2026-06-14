@@ -77,7 +77,7 @@ export default function CustomModal({
           </ScrollView>
           {footer ? (
             <View
-              className="border-border bg-sheet border-t px-5"
+              className="border-muted bg-sheet border-t px-5"
               style={{
                 height: footerHeight,
                 marginBottom: keyboardOffset,
