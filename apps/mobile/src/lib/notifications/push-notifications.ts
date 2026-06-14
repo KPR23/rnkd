@@ -34,8 +34,8 @@ async function getExpoPushToken() {
   }
 
   if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("friend-requests", {
-      name: "Friend requests",
+    await Notifications.setNotificationChannelAsync("social", {
+      name: "Social",
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: "#B8FF4D",
@@ -108,21 +108,32 @@ export function useRegisterPushNotifications(enabled: boolean) {
         const data = response.notification.request.content.data;
 
         if (
-          data.type !== "friend_request" ||
-          typeof data.requesterUserId !== "string"
+          data.type === "friend_request" &&
+          typeof data.requesterUserId === "string"
         ) {
+          void utils.friend.relationship.invalidate({
+            userId: data.requesterUserId,
+          });
+          router.push(`/player/${data.requesterUserId}`);
           return;
         }
 
-        void utils.friend.relationship.invalidate({
-          userId: data.requesterUserId,
-        });
-        router.push(`/player/${data.requesterUserId}`);
+        if (data.type === "group_invite") {
+          void utils.group.pendingInvites.invalidate();
+          void utils.group.list.invalidate();
+          router.push("/groups");
+        }
       },
     );
 
     return () => {
       subscription.remove();
     };
-  }, [enabled, router, utils.friend.relationship]);
+  }, [
+    enabled,
+    router,
+    utils.friend.relationship,
+    utils.group.list,
+    utils.group.pendingInvites,
+  ]);
 }

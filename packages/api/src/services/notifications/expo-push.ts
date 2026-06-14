@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 import { db, pushTokens } from "@repo/db";
 
@@ -10,6 +10,7 @@ type ExpoPushMessage = {
   body: string;
   data?: Record<string, unknown>;
   sound?: "default";
+  channelId?: string;
 };
 
 function isExpoPushToken(token: string) {
@@ -71,6 +72,48 @@ export async function sendFriendRequestNotification({
           requesterUserId,
         },
         sound: "default",
+        channelId: "social",
+      })),
+  );
+}
+
+export async function sendGroupInviteNotifications({
+  recipientUserIds,
+  inviterUserId,
+  inviterName,
+  groupId,
+  groupName,
+}: {
+  recipientUserIds: string[];
+  inviterUserId: string;
+  inviterName: string;
+  groupId: string;
+  groupName: string;
+}) {
+  if (recipientUserIds.length === 0) {
+    return;
+  }
+
+  const tokens = await db
+    .select({ token: pushTokens.token })
+    .from(pushTokens)
+    .where(inArray(pushTokens.userId, recipientUserIds));
+
+  await sendExpoPushMessages(
+    tokens
+      .map(({ token }) => token)
+      .filter(isExpoPushToken)
+      .map((token) => ({
+        to: token,
+        title: "New group invite",
+        body: `${inviterName} invited you to ${groupName}.`,
+        data: {
+          type: "group_invite",
+          groupId,
+          inviterUserId,
+        },
+        sound: "default",
+        channelId: "social",
       })),
   );
 }

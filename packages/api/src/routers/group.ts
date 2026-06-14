@@ -12,6 +12,7 @@ import {
   user,
 } from "@repo/db";
 
+import { sendGroupInviteNotifications } from "../services/notifications/expo-push";
 import { protectedProcedure, router } from "../trpc";
 
 const groupIdInput = z.object({ groupId: z.string().uuid() });
@@ -413,8 +414,12 @@ export const groupRouter = router({
       const inviteUserIds = uniqueValues(input.inviteUserIds).filter(
         (userId) => userId !== currentUserId && friendIds.has(userId),
       );
+      const inviter = await db.query.user.findFirst({
+        columns: { name: true, tag: true },
+        where: eq(user.id, currentUserId),
+      });
 
-      return await db.transaction(async (tx) => {
+      const result = await db.transaction(async (tx) => {
         const [createdGroup] = await tx
           .insert(groupTable)
           .values({
@@ -443,8 +448,10 @@ export const groupRouter = router({
           joinedAt: new Date(),
         });
 
+        let invitedUserIds: string[] = [];
+
         if (inviteUserIds.length > 0) {
-          await tx
+          const invitedRows = await tx
             .insert(groupMembers)
             .values(
               inviteUserIds.map((userId) => ({
@@ -457,16 +464,34 @@ export const groupRouter = router({
             )
             .onConflictDoNothing({
               target: [groupMembers.groupId, groupMembers.userId],
-            });
+            })
+            .returning({ userId: groupMembers.userId });
+          invitedUserIds = invitedRows.map((row) => row.userId);
         }
 
         return {
           groupId: createdGroup.id,
           groupName: createdGroup.name,
           inviteCode: createdGroup.inviteCode,
-          invitedCount: inviteUserIds.length,
+          invitedCount: invitedUserIds.length,
+          invitedUserIds,
         };
       });
+
+      await sendGroupInviteNotifications({
+        recipientUserIds: result.invitedUserIds,
+        inviterUserId: currentUserId,
+        inviterName: inviter?.tag ?? inviter?.name ?? "Someone",
+        groupId: result.groupId,
+        groupName: result.groupName,
+      });
+
+      return {
+        groupId: result.groupId,
+        groupName: result.groupName,
+        inviteCode: result.inviteCode,
+        invitedCount: result.invitedCount,
+      };
     }),
 
   joinByCode: protectedProcedure
@@ -590,7 +615,16 @@ export const groupRouter = router({
         return { invitedCount: 0 };
       }
 
-      await db
+      const group = await db.query.groups.findFirst({
+        columns: { name: true },
+        where: eq(groupTable.id, input.groupId),
+      });
+      const inviter = await db.query.user.findFirst({
+        columns: { name: true, tag: true },
+        where: eq(user.id, currentUserId),
+      });
+
+      const invitedRows = await db
         .insert(groupMembers)
         .values(
           inviteUserIds.map((userId) => ({
@@ -603,9 +637,18 @@ export const groupRouter = router({
         )
         .onConflictDoNothing({
           target: [groupMembers.groupId, groupMembers.userId],
-        });
+        })
+        .returning({ userId: groupMembers.userId });
 
-      return { invitedCount: inviteUserIds.length };
+      await sendGroupInviteNotifications({
+        recipientUserIds: invitedRows.map((row) => row.userId),
+        inviterUserId: currentUserId,
+        inviterName: inviter?.tag ?? inviter?.name ?? "Someone",
+        groupId: input.groupId,
+        groupName: group?.name ?? "a group",
+      });
+
+      return { invitedCount: invitedRows.length };
     }),
 
   approveMember: protectedProcedure
