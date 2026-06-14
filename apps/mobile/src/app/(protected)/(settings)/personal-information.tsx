@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -12,10 +12,12 @@ import { Stack, useRouter } from "expo-router";
 
 import { GAMES } from "@repo/types";
 import Button from "@/src/components/Button";
+import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { trpc } from "@/src/utils/trpc";
 
 const REGIONS = ["EMEA", "NA", "SA", "SEA", "OCE"] as const;
+const MAX_BIO_LENGTH = 500;
 
 export default function PersonalInformationScreen() {
   const router = useRouter();
@@ -45,6 +47,22 @@ export default function PersonalInformationScreen() {
     },
   });
 
+  const bioFeedback = useMemo(() => {
+    if (bio.length <= MAX_BIO_LENGTH) {
+      return {
+        tone: "success" as const,
+        message: `${bio.length}/${MAX_BIO_LENGTH}`,
+      };
+    }
+
+    return {
+      tone: "error" as const,
+      message: `Bio must be ${MAX_BIO_LENGTH} characters or fewer.`,
+    };
+  }, [bio.length]);
+
+  const canSave = bio.length <= MAX_BIO_LENGTH && !updateProfile.isPending;
+
   if (profileQuery.isLoading || !session?.user) {
     return (
       <View className="bg-background flex-1 items-center justify-center">
@@ -68,7 +86,12 @@ export default function PersonalInformationScreen() {
             placeholder="Tell others about yourself"
             placeholderTextColor="#828083"
             multiline
+            maxLength={MAX_BIO_LENGTH + 50}
             className="border-border bg-card text-text min-h-24 border p-3 font-sans text-base"
+          />
+          <FormFieldFeedback
+            tone={bioFeedback.tone}
+            message={bioFeedback.message}
           />
         </View>
 
@@ -123,7 +146,7 @@ export default function PersonalInformationScreen() {
           variant="primary"
           actionText={updateProfile.isPending ? "Saving…" : "Save changes"}
           className="w-full"
-          disabled={updateProfile.isPending}
+          disabled={!canSave}
           onPress={() =>
             void updateProfile.mutateAsync({
               bio: bio.trim() || null,

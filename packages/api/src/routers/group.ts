@@ -47,6 +47,15 @@ async function isGroupNameTaken(name: string) {
   return !!existingGroup;
 }
 
+async function getGroupByInviteCode(code: string) {
+  const normalizedCode = code.trim().toUpperCase();
+
+  return await db.query.groups.findFirst({
+    columns: { id: true, name: true },
+    where: eq(groupTable.inviteCode, normalizedCode),
+  });
+}
+
 async function getAcceptedFriendIds(userId: string) {
   const rows = await db
     .select({
@@ -334,6 +343,50 @@ export const groupRouter = router({
       return { available: !taken };
     }),
 
+  validateInviteCode: protectedProcedure
+    .input(z.object({ code: z.string().trim().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const currentUserId = ctx.session.user.id;
+      const group = await getGroupByInviteCode(input.code);
+
+      if (!group) {
+        return { valid: false as const, reason: "not_found" as const };
+      }
+
+      const existingMembership = await db.query.groupMembers.findFirst({
+        where: and(
+          eq(groupMembers.groupId, group.id),
+          eq(groupMembers.userId, currentUserId),
+        ),
+      });
+
+      if (existingMembership?.status === "active") {
+        return {
+          valid: true as const,
+          reason: "already_member" as const,
+          groupId: group.id,
+          groupName: group.name,
+        };
+      }
+
+      if (
+        existingMembership?.status === "invited" &&
+        existingMembership.invitedByUserId
+      ) {
+        return {
+          valid: false as const,
+          reason: "pending_invitation" as const,
+        };
+      }
+
+      return {
+        valid: true as const,
+        reason: "can_join" as const,
+        groupId: group.id,
+        groupName: group.name,
+      };
+    }),
+
   create: protectedProcedure
     .input(createGroupInput)
     .mutation(async ({ ctx, input }) => {
@@ -410,10 +463,7 @@ export const groupRouter = router({
     .input(z.object({ code: z.string().trim().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const currentUserId = ctx.session.user.id;
-      const normalizedCode = input.code.trim().toUpperCase();
-      const group = await db.query.groups.findFirst({
-        where: eq(groupTable.inviteCode, normalizedCode),
-      });
+      const group = await getGroupByInviteCode(input.code);
 
       if (!group) {
         throw new TRPCError({

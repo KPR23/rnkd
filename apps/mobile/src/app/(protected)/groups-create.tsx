@@ -1,36 +1,27 @@
-import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { useMemo, useState } from "react";
+import { View } from "react-native";
 
 import { Stack, useRouter } from "expo-router";
 
-import { colors } from "@repo/ui/colors";
-import AppText from "@/src/components/AppText";
+import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import {
   BackHeader,
   GroupsTextInput,
   WizardFooter,
 } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
+import { useDebouncedValue } from "@/src/lib/hooks/useDebouncedValue";
 import { trpc } from "@/src/utils/trpc";
 
 const MIN_GROUP_NAME_LENGTH = 2;
 const MAX_GROUP_NAME_LENGTH = 40;
-const NAME_CHECK_DEBOUNCE_MS = 300;
 
 export default function GroupsCreateScreen() {
   const router = useRouter();
   const [groupName, setGroupName] = useState("");
-  const [debouncedGroupName, setDebouncedGroupName] = useState("");
+  const debouncedGroupName = useDebouncedValue(groupName);
   const normalizedGroupName = groupName.trim();
   const normalizedDebouncedName = debouncedGroupName.trim();
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDebouncedGroupName(groupName);
-    }, NAME_CHECK_DEBOUNCE_MS);
-
-    return () => clearTimeout(timeout);
-  }, [groupName]);
 
   const canCheckName =
     normalizedDebouncedName.length >= MIN_GROUP_NAME_LENGTH &&
@@ -116,19 +107,11 @@ export default function GroupsCreateScreen() {
             value={groupName}
             onChangeText={setGroupName}
           />
-          {nameFeedback?.tone === "loading" ? (
-            <ActivityIndicator color={colors.textSecondary} />
-          ) : nameFeedback?.message ? (
-            <AppText
-              className="text-sm"
-              color={
-                nameFeedback.tone === "error"
-                  ? colors.destructiveText
-                  : colors.textSecondary
-              }
-            >
-              {nameFeedback.message}
-            </AppText>
+          {nameFeedback ? (
+            <FormFieldFeedback
+              tone={nameFeedback.tone}
+              message={nameFeedback.message}
+            />
           ) : null}
         </View>
       </View>

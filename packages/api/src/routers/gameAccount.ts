@@ -20,6 +20,8 @@ import { getCs2FaceitProfileDisplay } from "../services/profile/faceit-display";
 import { getLolProfileDisplay } from "../services/profile/lol-display";
 import { syncLatestLolMatchForAccount } from "../services/riot/lol-latest-match-sync";
 import { syncLolForAccount } from "../services/riot/lol-sync-runner";
+import { getAccountByRiotId } from "../services/riot/riot-client";
+import { getFaceitPlayer } from "../services/faceit/faceit-client";
 import { syncTrackedAccountsForUser } from "../services/sync/sync-tracked-for-user";
 import { protectedProcedure, router } from "../trpc";
 import { requireGameAccountAccess } from "../trpc/middleware/require-game-account-access";
@@ -138,6 +140,61 @@ export const gameAccountRouter = router({
 
       const matchesSynced = await syncLolForAccount(existingAccount.id, 5);
       return { success: true, matchesSynced };
+    }),
+  previewLolAccount: protectedProcedure
+    .input(
+      z.object({
+        gameName: z.string().min(3).max(16),
+        tagLine: z.string().min(3).max(5),
+        region: riotRegionalRouteSchema,
+      }),
+    )
+    .query(async ({ input }) => {
+      try {
+        const riotAccount = await getAccountByRiotId(
+          input.gameName,
+          input.tagLine,
+          input.region,
+        );
+
+        const existingAccount = await db.query.gameAccounts.findFirst({
+          where: and(
+            eq(gameAccounts.gameId, GAMES.LOL),
+            eq(gameAccounts.externalId, riotAccount.puuid),
+          ),
+        });
+
+        return {
+          found: true as const,
+          gameName: riotAccount.gameName,
+          tagLine: riotAccount.tagLine,
+          alreadyLinked: !!existingAccount,
+        };
+      } catch {
+        return { found: false as const, alreadyLinked: false as const };
+      }
+    }),
+  previewFaceitAccount: protectedProcedure
+    .input(z.object({ nickname: z.string().trim().min(1) }))
+    .query(async ({ input }) => {
+      const player = await getFaceitPlayer(input.nickname);
+
+      if (!player) {
+        return { found: false as const, alreadyLinked: false as const };
+      }
+
+      const existingAccount = await db.query.gameAccounts.findFirst({
+        where: and(
+          eq(gameAccounts.gameId, GAMES.CS2_FACEIT),
+          eq(gameAccounts.externalId, player.player_id),
+        ),
+      });
+
+      return {
+        found: true as const,
+        player,
+        alreadyLinked: !!existingAccount,
+      };
     }),
   addLolAccount: protectedProcedure
     .input(
