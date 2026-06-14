@@ -77,7 +77,7 @@ export function HeaderBar({
         </HeaderSideSlot>
         <View className="min-w-0 flex-1 justify-center px-1">
           <AppText
-            className="text-center text-xl leading-6"
+            className="text-center text-2xl leading-6"
             numberOfLines={1}
             weight="medium"
           >
@@ -94,7 +94,7 @@ export function HeaderBar({
       {showBack ? <BackButton onPress={handleBack} /> : null}
       <View className="min-w-0 flex-1 justify-center">
         <AppText
-          className="text-xl leading-6"
+          className="text-2xl leading-6"
           numberOfLines={1}
           weight="medium"
         >
