@@ -193,7 +193,7 @@ export function RatingSummaryCard({
           color={colors.primary}
           weight="medium"
         >
-          RR
+          RS
         </AppText>
       </AppText>
       <AppText
@@ -394,7 +394,7 @@ export function LeaderboardRow({
               weight="medium"
               style={{ lineHeight: 20 }}
             >
-              {member.rating ? `${member.rating} RR` : "- RR"}
+              {member.rating ? `${member.rating} RS` : "- RS"}
             </AppText>
             {member.trend === null ? null : (
               <TrendIndicator trend={member.trend} />

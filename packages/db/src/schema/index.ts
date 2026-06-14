@@ -8,4 +8,5 @@ export * from "./leagues";
 export * from "./lol-ranked";
 export * from "./matches";
 export * from "./relations";
+export * from "./rs-points";
 export * from "./social";

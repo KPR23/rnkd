@@ -3,7 +3,6 @@ import { ActivityIndicator, Text, View } from "react-native";
 import { useRouter, Stack } from "expo-router";
 import {
   AsteriskIcon,
-  BellIcon,
   FileTextIcon,
   GlobeIcon,
   HeadsetIcon,
@@ -62,11 +61,6 @@ export default function SettingsScreen() {
     {
       title: "Preferences",
       items: [
-        {
-          title: "Notifications",
-          icon: <BellIcon />,
-          onPress: () => void 0,
-        },
         {
           title: "Appearance",
           icon: <SunIcon />,

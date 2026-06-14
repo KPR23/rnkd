@@ -17,10 +17,19 @@ import {
   FeedOlderPostsDivider,
 } from "@/src/components/feed/FeedDateSection";
 import FeedFloatingActionButton from "@/src/components/feed/FeedFloatingActionButton";
+import FeedFriendRequestCard, {
+  type FeedFriendRequestCardData,
+} from "@/src/components/feed/FeedFriendRequestCard";
 import FeedPostCard, {
   type FeedPostCardData,
 } from "@/src/components/feed/FeedPostCard";
 import { useMessage } from "@/src/lib/messages/message-provider";
+import {
+  getFeedTimelineItemDate,
+  getFeedTimelineItemKey,
+  mergeFeedTimelineItems,
+  type FeedTimelineItem,
+} from "@/src/lib/feed/feed-items";
 import { groupFeedPostsByDate } from "@/src/lib/feed/feed-time";
 import { useFeedDeleteMenu } from "@/src/lib/feed/use-feed-delete-menu";
 import { trpc } from "@/src/utils/trpc";
@@ -43,6 +52,20 @@ function normalizePost(post: {
   };
 }
 
+function normalizeFriendRequest(request: {
+  id: string;
+  createdAt: Date;
+  requester: FeedFriendRequestCardData["requester"];
+}): FeedFriendRequestCardData {
+  return {
+    ...request,
+    createdAt:
+      request.createdAt instanceof Date
+        ? request.createdAt
+        : new Date(request.createdAt),
+  };
+}
+
 export default function HomeTab() {
   const router = useRouter();
   const utils = trpc.useUtils();
@@ -50,15 +73,83 @@ export default function HomeTab() {
   const [pendingLikePostId, setPendingLikePostId] = useState<string | null>(
     null,
   );
+  const [pendingFriendRequestId, setPendingFriendRequestId] = useState<
+    string | null
+  >(null);
 
   const { data: currentUser } = trpc.user.getCurrentUser.useQuery();
   const { openPostMenu, actionMenuProps } = useFeedDeleteMenu();
   const { data: groupsData } = trpc.group.list.useQuery();
   const {
     data: posts,
-    isLoading,
-    isRefetching,
+    isLoading: isPostsLoading,
+    isRefetching: isPostsRefetching,
   } = trpc.feed.list.useQuery();
+  const {
+    data: incomingFriendRequests,
+    isLoading: isIncomingRequestsLoading,
+    isRefetching: isIncomingRequestsRefetching,
+  } = trpc.friend.listIncoming.useQuery();
+
+  const isLoading = isPostsLoading || isIncomingRequestsLoading;
+  const isRefetching = isPostsRefetching || isIncomingRequestsRefetching;
+
+  const invalidateFeedData = useCallback(async () => {
+    await Promise.all([
+      utils.feed.list.invalidate(),
+      utils.friend.listIncoming.invalidate(),
+    ]);
+  }, [utils.feed.list, utils.friend.listIncoming]);
+
+  const removeIncomingRequest = useCallback(
+    (requesterId: string) => {
+      utils.friend.listIncoming.setData(undefined, (current) =>
+        current?.filter((request) => request.requester.id !== requesterId) ??
+        [],
+      );
+    },
+    [utils.friend.listIncoming],
+  );
+
+  const acceptFriendRequestMut = trpc.friend.accept.useMutation({
+    onMutate: async ({ requesterId }) => {
+      setPendingFriendRequestId(requesterId);
+      await utils.friend.listIncoming.cancel();
+      const previous = utils.friend.listIncoming.getData();
+      removeIncomingRequest(requesterId);
+      return { previous };
+    },
+    onError: (error, _input, context) => {
+      if (context?.previous) {
+        utils.friend.listIncoming.setData(undefined, context.previous);
+      }
+      showError(error.message);
+    },
+    onSettled: async () => {
+      setPendingFriendRequestId(null);
+      await invalidateFeedData();
+    },
+  });
+
+  const declineFriendRequestMut = trpc.friend.decline.useMutation({
+    onMutate: async ({ requesterId }) => {
+      setPendingFriendRequestId(requesterId);
+      await utils.friend.listIncoming.cancel();
+      const previous = utils.friend.listIncoming.getData();
+      removeIncomingRequest(requesterId);
+      return { previous };
+    },
+    onError: (error, _input, context) => {
+      if (context?.previous) {
+        utils.friend.listIncoming.setData(undefined, context.previous);
+      }
+      showError(error.message);
+    },
+    onSettled: async () => {
+      setPendingFriendRequestId(null);
+      await invalidateFeedData();
+    },
+  });
 
   const toggleLikeMut = trpc.feed.togglePostLike.useMutation({
     onMutate: async ({ postId }) => {
@@ -99,20 +190,49 @@ export default function HomeTab() {
 
   const handlePullRefresh = useCallback(async () => {
     try {
-      await utils.feed.list.invalidate();
+      await invalidateFeedData();
     } catch (error) {
       console.error("Feed pull-to-refresh failed", error);
     }
-  }, [utils.feed.list]);
+  }, [invalidateFeedData]);
 
   const normalizedPosts = useMemo(
     () => (posts ?? []).map(normalizePost),
     [posts],
   );
 
-  const groupedPosts = useMemo(
-    () => groupFeedPostsByDate(normalizedPosts),
-    [normalizedPosts],
+  const normalizedFriendRequests = useMemo(
+    () => (incomingFriendRequests ?? []).map(normalizeFriendRequest),
+    [incomingFriendRequests],
+  );
+
+  const feedItems = useMemo(
+    () => mergeFeedTimelineItems(normalizedPosts, normalizedFriendRequests),
+    [normalizedPosts, normalizedFriendRequests],
+  );
+
+  const feedItemsByKey = useMemo(
+    () =>
+      new Map(
+        feedItems.map((item) => [getFeedTimelineItemKey(item), item] as const),
+      ),
+    [feedItems],
+  );
+
+  const groupedFeedItems = useMemo(
+    () =>
+      groupFeedPostsByDate(
+        feedItems.map((item) => ({
+          id: getFeedTimelineItemKey(item),
+          createdAt: getFeedTimelineItemDate(item),
+        })),
+      ).map((group) => ({
+        ...group,
+        items: group.posts
+          .map((entry) => feedItemsByKey.get(entry.id))
+          .filter((item): item is FeedTimelineItem => item !== undefined),
+      })),
+    [feedItems, feedItemsByKey],
   );
 
   return (
@@ -139,27 +259,49 @@ export default function HomeTab() {
               <View className="items-center py-10">
                 <ActivityIndicator />
               </View>
-            ) : groupedPosts.length ? (
-              groupedPosts.map((group) => (
+            ) : groupedFeedItems.length ? (
+              groupedFeedItems.map((group) => (
                 <View key={`${group.label.primary}-${group.label.secondary ?? ""}`} className="gap-2.5">
                   {group.showOlderDividerBefore ? <FeedOlderPostsDivider /> : null}
                   <FeedDateHeading label={group.label} />
                   <View className="gap-2.5">
-                    {group.posts.map((post) => (
-                      <FeedPostCard
-                        key={post.id}
-                        post={post}
-                        isLikePending={pendingLikePostId === post.id}
-                        onToggleLike={() =>
-                          void toggleLikeMut.mutateAsync({ postId: post.id })
-                        }
-                        onMenuPress={
-                          post.author.id === currentUser?.id
-                            ? (anchor) => openPostMenu(post.id, anchor)
-                            : undefined
-                        }
-                      />
-                    ))}
+                    {group.items.map((item) =>
+                      item.kind === "post" ? (
+                        <FeedPostCard
+                          key={getFeedTimelineItemKey(item)}
+                          post={item.post}
+                          isLikePending={pendingLikePostId === item.post.id}
+                          onToggleLike={() =>
+                            void toggleLikeMut.mutateAsync({
+                              postId: item.post.id,
+                            })
+                          }
+                          onMenuPress={
+                            item.post.author.id === currentUser?.id
+                              ? (anchor) => openPostMenu(item.post.id, anchor)
+                              : undefined
+                          }
+                        />
+                      ) : (
+                        <FeedFriendRequestCard
+                          key={getFeedTimelineItemKey(item)}
+                          request={item.request}
+                          disabled={
+                            pendingFriendRequestId === item.request.requester.id
+                          }
+                          onAccept={() =>
+                            void acceptFriendRequestMut.mutateAsync({
+                              requesterId: item.request.requester.id,
+                            })
+                          }
+                          onDecline={() =>
+                            void declineFriendRequestMut.mutateAsync({
+                              requesterId: item.request.requester.id,
+                            })
+                          }
+                        />
+                      ),
+                    )}
                   </View>
                 </View>
               ))

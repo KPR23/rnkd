@@ -57,6 +57,35 @@ export async function persistLolRankedEntriesInTx(
   );
 }
 
+export async function refreshLolRankedForAccount(gameAccountId: string) {
+  const account = await db.query.gameAccounts.findFirst({
+    where: eq(gameAccounts.id, gameAccountId),
+    with: { lolProfile: true },
+  });
+
+  if (!account?.lolProfile) {
+    return;
+  }
+
+  const entries = await getLolLeagueEntriesByPuuid(
+    account.externalId,
+    account.lolProfile.platformRoute,
+  );
+  const syncedAt = new Date();
+
+  await db.transaction(async (tx) => {
+    await persistLolRankedEntriesInTx(tx, gameAccountId, entries, syncedAt);
+    await tx
+      .update(gameAccounts)
+      .set({ lastSyncedAt: syncedAt })
+      .where(eq(gameAccounts.id, gameAccountId));
+  });
+
+  if (account.userId) {
+    await recomputeGlobalRs(account.userId);
+  }
+}
+
 export function refreshLolAccountDataInBackground(
   accountId: string,
   externalId: string,

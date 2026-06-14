@@ -132,7 +132,17 @@ async function getGroupMembers(groupId: string) {
       }
 
       if (a.status === "active") {
-        return b.globalRs - a.globalRs;
+        const rsDiff = b.globalRs - a.globalRs;
+        if (rsDiff !== 0) {
+          return rsDiff;
+        }
+
+        const nameDiff = a.name.localeCompare(b.name);
+        if (nameDiff !== 0) {
+          return nameDiff;
+        }
+
+        return a.userId.localeCompare(b.userId);
       }
 
       return a.createdAt.getTime() - b.createdAt.getTime();

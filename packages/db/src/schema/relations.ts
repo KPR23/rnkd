@@ -12,6 +12,7 @@ import {
 import { groupMembers, groups } from "./groups";
 import { leagueMembers, leagueRankings, leagues } from "./leagues";
 import { lolRankedEntries } from "./lol-ranked";
+import { gameAccountRsPoints } from "./rs-points";
 import {
   eloHistory,
   matches,
@@ -68,6 +69,7 @@ export const gameAccountRelations = relations(
     cs2FaceitMatchPlayers: many(cs2FaceitMatchPlayers),
     eloHistory: many(eloHistory),
     lolRankedEntries: many(lolRankedEntries),
+    rsPoints: many(gameAccountRsPoints),
     playerStats: one(playerStats),
   }),
 );
@@ -107,6 +109,16 @@ export const lolRankedEntriesRelations = relations(
   ({ one }) => ({
     account: one(gameAccounts, {
       fields: [lolRankedEntries.gameAccountId],
+      references: [gameAccounts.id],
+    }),
+  }),
+);
+
+export const gameAccountRsPointsRelations = relations(
+  gameAccountRsPoints,
+  ({ one }) => ({
+    account: one(gameAccounts, {
+      fields: [gameAccountRsPoints.gameAccountId],
       references: [gameAccounts.id],
     }),
   }),

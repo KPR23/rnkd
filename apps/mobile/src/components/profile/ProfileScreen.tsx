@@ -188,24 +188,18 @@ export default function ProfileScreen({
     />
   ) : null;
 
-  const overflowButton = isOwnProfile ? (
-    <Button
-      variant="secondary"
-      actionText="···"
-      className="w-12 px-0"
-      onPress={() => router.push("/settings")}
-    />
-  ) : relationship?.status === "friends" ? (
-    <View ref={overflowButtonRef} collapsable={false}>
-      <Button
-        variant="secondary"
-        actionText="···"
-        className="w-12 px-0"
-        disabled={isFriendActionPending}
-        onPress={openActionsMenu}
-      />
-    </View>
-  ) : null;
+  const overflowButton =
+    !isOwnProfile && relationship?.status === "friends" ? (
+      <View ref={overflowButtonRef} collapsable={false}>
+        <Button
+          variant="secondary"
+          actionText="···"
+          className="w-12 px-0"
+          disabled={isFriendActionPending}
+          onPress={openActionsMenu}
+        />
+      </View>
+    ) : null;
 
   const incomingRequestCondition =
     relationship?.status === "pending" &&
