@@ -41,9 +41,7 @@ function getTierIndex(tier: string): number {
     return LOL_TIERS.length;
   }
 
-  const index = LOL_TIERS.indexOf(
-    normalizedTier as (typeof LOL_TIERS)[number],
-  );
+  const index = LOL_TIERS.indexOf(normalizedTier as (typeof LOL_TIERS)[number]);
   return index === -1 ? -1 : index;
 }
 

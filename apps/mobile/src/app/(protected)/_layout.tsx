@@ -1,10 +1,26 @@
+import { useEffect } from "react";
 import { StatusBar } from "react-native";
 
-import { Stack } from "expo-router";
+import { Stack, usePathname, useRouter } from "expo-router";
 
 import { colors } from "@repo/ui/colors";
+import { useAuth } from "@/src/lib/auth/use-auth";
 
 export default function ProtectedLayout() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { data: session } = useAuth();
+
+  useEffect(() => {
+    if (!session?.user || pathname.includes("/onboarding")) {
+      return;
+    }
+
+    if (!session.user.tag) {
+      router.replace("/(protected)/onboarding");
+    }
+  }, [pathname, router, session?.user]);
+
   return (
     <>
       <StatusBar backgroundColor={colors.background} />
@@ -15,6 +31,13 @@ export default function ProtectedLayout() {
           },
         }}
       >
+        <Stack.Screen
+          name="onboarding"
+          options={{
+            headerShown: false,
+            title: "Onboarding",
+          }}
+        />
         <Stack.Screen
           name="(tabs)"
           options={{

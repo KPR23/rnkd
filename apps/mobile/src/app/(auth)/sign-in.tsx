@@ -90,7 +90,9 @@ export default function SignInScreen() {
 
   useEffect(() => {
     if (session) {
-      router.replace("/(protected)/(tabs)");
+      router.replace(
+        session.user.tag ? "/(protected)/(tabs)" : "/(protected)/onboarding",
+      );
     }
   }, [router, session]);
 
