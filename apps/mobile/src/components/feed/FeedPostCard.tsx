@@ -13,6 +13,8 @@ import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import UserProfileImage from "@/src/components/UserProfileImage";
 import { formatFeedRelativeTime } from "@/src/lib/feed/feed-time";
+import { useMessage } from "@/src/lib/messages/message-provider";
+import { shareFeedPost } from "@/src/lib/share/deep-links";
 import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 
 import { toFeedUser } from "./feed-user";
@@ -55,6 +57,7 @@ export default function FeedPostCard({
   onPressComments,
 }: Props) {
   const router = useRouter();
+  const { showError } = useMessage();
   const menuButtonRef = useRef<View>(null);
   const createdAt =
     post.createdAt instanceof Date
@@ -74,6 +77,14 @@ export default function FeedPostCard({
     }
 
     handleOpenPost();
+  };
+
+  const handleSharePost = async () => {
+    try {
+      await shareFeedPost(post);
+    } catch {
+      showError("Could not open sharing options.");
+    }
   };
 
   const cardClassName = "border-muted bg-card gap-3.5 border py-4";
@@ -175,6 +186,7 @@ export default function FeedPostCard({
               accessibilityRole="button"
               accessibilityLabel="Share post"
               className="px-2"
+              onPress={() => void handleSharePost()}
             >
               <ExportIcon size={20} color={colors.textSecondary} />
             </Pressable>

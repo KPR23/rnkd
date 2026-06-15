@@ -25,8 +25,9 @@ import MatchActivityGraph from "@/src/components/profile/MatchActivityGraph";
 import ProfileInfoCard from "@/src/components/profile/ProfileInfoCard";
 import ScreenTitle from "@/src/components/ScreenTitle";
 import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
-import { mergeProfileIdentity } from "@/src/lib/profile/merge-profile-identity";
 import { useMessage } from "@/src/lib/messages/message-provider";
+import { mergeProfileIdentity } from "@/src/lib/profile/merge-profile-identity";
+import { sharePlayerProfile } from "@/src/lib/share/deep-links";
 import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 import { trpc } from "@/src/utils/trpc";
 
@@ -143,6 +144,14 @@ export default function ProfileScreen({
     void removeMut.mutateAsync({ userId: user.id });
   };
 
+  const handleShareProfile = async () => {
+    try {
+      await sharePlayerProfile(displayUser);
+    } catch {
+      showError("Could not open sharing options.");
+    }
+  };
+
   const primaryButton = isOwnProfile ? (
     <Button
       variant="primary"
@@ -194,7 +203,7 @@ export default function ProfileScreen({
       variant="secondary"
       actionText="Share"
       className="flex-1"
-      onPress={() => void 0}
+      onPress={() => void handleShareProfile()}
     />
   ) : null;
 
