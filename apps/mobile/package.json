@@ -47,7 +47,8 @@
     "react-native-screens": "4.16.0",
     "react-native-svg": "^15.12.1",
     "react-native-web": "0.21.0",
-    "superjson": "^2.2.6"
+    "superjson": "^2.2.6",
+    "uploadthing": "^7.7.4"
   },
   "devDependencies": {
     "@repo/api": "workspace:*",
