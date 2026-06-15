@@ -2,6 +2,7 @@ import { type PropsWithChildren } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 import { colors } from "@repo/ui/colors";
+import type { ButtonHaptic } from "@/src/components/Button";
 import Button from "@/src/components/Button";
 import { useKeyboardOffset } from "@/src/lib/keyboard/keyboard-offset-provider";
 
@@ -13,6 +14,7 @@ export type ScreenFooterAction = {
   text: string;
   onPress: () => void;
   disabled?: boolean;
+  haptic?: ButtonHaptic;
 };
 
 export function ScreenFooterShell({ children }: PropsWithChildren) {
@@ -44,6 +46,7 @@ function FooterActions({
           actionText={secondaryAction.text}
           className={FOOTER_BUTTON_CLASS}
           disabled={secondaryAction.disabled}
+          haptic={secondaryAction.haptic}
           variant="secondary"
           onPress={secondaryAction.onPress}
         />
@@ -51,6 +54,7 @@ function FooterActions({
           actionText={primaryAction.text}
           className={FOOTER_BUTTON_CLASS}
           disabled={primaryAction.disabled}
+          haptic={primaryAction.haptic}
           variant={primaryAction.disabled ? "secondary" : "primary"}
           onPress={primaryAction.onPress}
         />
@@ -63,6 +67,7 @@ function FooterActions({
       actionText={primaryAction.text}
       className={FOOTER_SINGLE_BUTTON_CLASS}
       disabled={primaryAction.disabled}
+      haptic={primaryAction.haptic}
       variant={primaryVariant}
       onPress={primaryAction.onPress}
     />

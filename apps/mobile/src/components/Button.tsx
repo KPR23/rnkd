@@ -8,14 +8,17 @@ import { IconContext } from "phosphor-react-native";
 
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
+import { haptics } from "@/src/lib/haptics";
 
 type ButtonVariant = "primary" | "secondary" | "destructive";
+export type ButtonHaptic = "tap" | "impact" | "none";
 
 interface Props extends Pick<TouchableOpacityProps, "onPress" | "disabled"> {
   variant: ButtonVariant;
   className?: string;
   actionText: string;
   icon?: React.ReactNode;
+  haptic?: ButtonHaptic;
   onPress: () => void;
 }
 
@@ -44,10 +47,22 @@ export default function Button({
   className,
   actionText,
   icon,
+  haptic = "tap",
   onPress,
   ...touchableProps
 }: Props) {
   const isDisabled = !!touchableProps.disabled;
+
+  const handlePress = () => {
+    if (!isDisabled && haptic !== "none") {
+      if (haptic === "impact") {
+        void haptics.impact();
+      } else {
+        void haptics.tap();
+      }
+    }
+    onPress();
+  };
   const iconContext = {
     size: 20,
     color: isDisabled ? colors.border : iconColors[variant],
@@ -66,7 +81,7 @@ export default function Button({
             ? { borderColor: colors.destructiveBorder }
             : undefined
         }
-        onPress={onPress}
+        onPress={handlePress}
         {...touchableProps}
       >
         <AppText
