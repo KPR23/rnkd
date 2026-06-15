@@ -156,7 +156,12 @@ export default function ProfileScreen({
       actionText="Invite"
       className="flex-1"
       disabled={isFriendActionPending}
-      onPress={() => router.push("/groups")}
+      onPress={() =>
+        router.push({
+          pathname: "/groups-invite-player",
+          params: { userId: user.id },
+        })
+      }
     />
   ) : relationship?.status === "pending" &&
     relationship?.pendingDirection === "outgoing" ? (

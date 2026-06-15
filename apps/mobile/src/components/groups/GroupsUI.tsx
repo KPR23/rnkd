@@ -203,6 +203,83 @@ export function GroupCard({
   );
 }
 
+export type OwnedGroupInviteStatus =
+  | "available"
+  | "member"
+  | "invited"
+  | "join_request";
+
+function ownedGroupInviteActionLabel(status: OwnedGroupInviteStatus) {
+  switch (status) {
+    case "available":
+      return "Invite";
+    case "member":
+      return "Member";
+    case "invited":
+      return "Invited";
+    case "join_request":
+      return "Requested";
+  }
+}
+
+export function OwnedGroupInviteRow({
+  group,
+  disabled,
+  isInviting = false,
+  onInvite,
+}: {
+  group: {
+    id: string;
+    name: string;
+    members: number;
+    playerStatus: OwnedGroupInviteStatus;
+  };
+  disabled?: boolean;
+  isInviting?: boolean;
+  onInvite?: () => void;
+}) {
+  const canInvite = group.playerStatus === "available" && !isInviting;
+  const actionLabel = isInviting
+    ? "Inviting..."
+    : ownedGroupInviteActionLabel(group.playerStatus);
+  const Container = canInvite ? Pressable : View;
+
+  return (
+    <Container
+      accessibilityRole={canInvite ? "button" : undefined}
+      accessibilityLabel={
+        canInvite ? `Invite to ${group.name}` : `${actionLabel} in ${group.name}`
+      }
+      className="border-muted bg-card min-h-16 justify-center border px-4 py-3"
+      disabled={!canInvite || disabled}
+      onPress={canInvite ? onInvite : undefined}
+    >
+      <View className="flex-row items-center justify-between gap-3">
+        <View className="min-w-0 flex-1">
+          <AppText className="text-base leading-5.5" weight="medium">
+            {group.name}
+          </AppText>
+          <AppText className="text-sm leading-5" color={colors.textSecondary}>
+            {group.members} {group.members === 1 ? "member" : "members"}
+          </AppText>
+        </View>
+        <View className="flex-row items-center gap-1">
+          <AppText
+            className="text-sm leading-5"
+            color={canInvite ? colors.primary : colors.textSecondary}
+            weight={canInvite ? "medium" : "regular"}
+          >
+            {actionLabel}
+          </AppText>
+          {canInvite ? (
+            <ArrowRightIcon size={16} color={colors.primary} />
+          ) : null}
+        </View>
+      </View>
+    </Container>
+  );
+}
+
 export function RatingSummaryCard({
   rating,
   position,

@@ -329,6 +329,89 @@ export const groupRouter = router({
     };
   }),
 
+  ownedGroupsForInvite: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const currentUserId = ctx.session.user.id;
+
+      const ownedGroups = await db
+        .select({
+          id: groupTable.id,
+          name: groupTable.name,
+        })
+        .from(groupMembers)
+        .innerJoin(groupTable, eq(groupMembers.groupId, groupTable.id))
+        .where(
+          and(
+            eq(groupMembers.userId, currentUserId),
+            eq(groupMembers.status, "active"),
+            eq(groupMembers.role, "owner"),
+          ),
+        )
+        .orderBy(asc(groupTable.name), asc(groupTable.id));
+
+      if (ownedGroups.length === 0) {
+        return [];
+      }
+
+      const groupIds = ownedGroups.map((group) => group.id);
+
+      const [memberCounts, targetMemberships] = await Promise.all([
+        db
+          .select({
+            groupId: groupMembers.groupId,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(groupMembers)
+          .where(
+            and(
+              inArray(groupMembers.groupId, groupIds),
+              eq(groupMembers.status, "active"),
+            ),
+          )
+          .groupBy(groupMembers.groupId),
+        db
+          .select({
+            groupId: groupMembers.groupId,
+            status: groupMembers.status,
+            invitedByUserId: groupMembers.invitedByUserId,
+          })
+          .from(groupMembers)
+          .where(
+            and(
+              eq(groupMembers.userId, input.userId),
+              inArray(groupMembers.groupId, groupIds),
+            ),
+          ),
+      ]);
+
+      const countByGroup = new Map(
+        memberCounts.map((row) => [row.groupId, row.count]),
+      );
+      const targetByGroup = new Map(
+        targetMemberships.map((row) => [row.groupId, row]),
+      );
+
+      return ownedGroups.map((group) => {
+        const target = targetByGroup.get(group.id);
+        let playerStatus: "available" | "member" | "invited" | "join_request" =
+          "available";
+
+        if (target?.status === "active") {
+          playerStatus = "member";
+        } else if (target?.status === "invited") {
+          playerStatus = target.invitedByUserId ? "invited" : "join_request";
+        }
+
+        return {
+          id: group.id,
+          name: group.name,
+          members: countByGroup.get(group.id) ?? 0,
+          playerStatus,
+        };
+      });
+    }),
+
   detail: protectedProcedure
     .input(groupIdInput)
     .query(async ({ ctx, input }) => {
