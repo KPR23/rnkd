@@ -1,6 +1,7 @@
+import { useCallback } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
-import { useRouter, Stack } from "expo-router";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
 import {
   AsteriskIcon,
   FileTextIcon,
@@ -20,10 +21,27 @@ import UserHeader from "@/src/components/UserHeader";
 import { authClient } from "@/src/lib/auth/auth-client";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { APP_VERSION, APP_YEAR } from "@/src/lib/constants/app-version";
+import { mergeProfileIdentity } from "@/src/lib/profile/merge-profile-identity";
+import { trpc } from "@/src/utils/trpc";
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { data: session, isPending } = useAuth();
+  const { data: overview, refetch: refetchOverview } =
+    trpc.profile.getOverview.useQuery(
+      { userId: session?.user.id ?? "" },
+      { enabled: !!session?.user.id },
+    );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!session?.user.id) {
+        return;
+      }
+
+      void refetchOverview();
+    }, [refetchOverview, session?.user.id]),
+  );
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -42,12 +60,16 @@ export default function SettingsScreen() {
     return null;
   }
 
+  const headerUser = overview?.user
+    ? mergeProfileIdentity(session.user, overview.user)
+    : session.user;
+
   const settingsSections = [
     {
       title: "Account details",
       items: [
         {
-          title: "Personal information",
+          title: "Edit profile",
           icon: <UserIcon />,
           onPress: () => router.push("/personal-information"),
         },
@@ -99,13 +121,15 @@ export default function SettingsScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <Screen safeAreaEdges={["top"]}>
-        <ScreenScroll header={<HeaderBar variant="centered" title="Settings" />}>
-          <UserHeader user={session.user} />
+        <ScreenScroll
+          header={<HeaderBar variant="centered" title="Settings" />}
+        >
+          <UserHeader user={headerUser} />
 
           <View className="flex flex-col gap-4">
             {settingsSections.map((section) => (
               <View key={section.title} className="flex flex-col gap-2">
-                <Text className="font-sans-semibold text-text text-xs uppercase">
+                <Text className="font-sans-semibold text-text-secondary text-sm">
                   {section.title}
                 </Text>
 

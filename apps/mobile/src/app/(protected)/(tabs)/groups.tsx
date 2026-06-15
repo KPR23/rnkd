@@ -85,26 +85,35 @@ export default function GroupsTab() {
 
           {pendingInvites?.length ? (
             <View className="gap-2.5">
-              {pendingInvites.map((invite) => (
-                <GroupInviteCard
-                  key={invite.membershipId}
-                  invite={{
-                    ...invite,
-                    invitedAt: new Date(invite.invitedAt),
-                  }}
-                  disabled={isInviteActionPending}
-                  onAccept={() =>
-                    void acceptInviteMut.mutateAsync({
-                      groupId: invite.groupId,
-                    })
-                  }
-                  onDecline={() =>
-                    void declineInviteMut.mutateAsync({
-                      groupId: invite.groupId,
-                    })
-                  }
-                />
-              ))}
+              {pendingInvites.map((invite) => {
+                const inviterId = invite.inviter?.id;
+
+                return (
+                  <GroupInviteCard
+                    key={invite.membershipId}
+                    invite={{
+                      ...invite,
+                      invitedAt: new Date(invite.invitedAt),
+                    }}
+                    disabled={isInviteActionPending}
+                    onInviterProfilePress={
+                      inviterId
+                        ? () => router.push(`/player/${inviterId}`)
+                        : undefined
+                    }
+                    onAccept={() =>
+                      void acceptInviteMut.mutateAsync({
+                        groupId: invite.groupId,
+                      })
+                    }
+                    onDecline={() =>
+                      void declineInviteMut.mutateAsync({
+                        groupId: invite.groupId,
+                      })
+                    }
+                  />
+                );
+              })}
             </View>
           ) : null}
 

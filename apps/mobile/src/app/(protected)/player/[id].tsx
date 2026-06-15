@@ -58,6 +58,9 @@ export default function PlayerProfileScreen() {
         await syncPull.mutateAsync();
       }
       await utils.gameAccount.invalidate();
+      if (id && !isOwnRoute) {
+        await utils.friend.relationship.invalidate({ userId: id });
+      }
       await refetchGameAccounts();
     } catch (error) {
       console.error("Player profile pull-to-refresh failed", error);
@@ -65,7 +68,15 @@ export default function PlayerProfileScreen() {
         error instanceof Error ? error.message : "Could not refresh profile.";
       showError(message);
     }
-  }, [refetchGameAccounts, isOwnRoute, showError, syncPull, utils.gameAccount]);
+  }, [
+    id,
+    refetchGameAccounts,
+    isOwnRoute,
+    showError,
+    syncPull,
+    utils.friend.relationship,
+    utils.gameAccount,
+  ]);
 
   if (!id) {
     return null;
@@ -76,7 +87,9 @@ export default function PlayerProfileScreen() {
       <>
         <Stack.Screen options={{ headerShown: false }} />
         <Screen>
-          <StickyHeaderShell header={<HeaderBar variant="centered" title="Player" />}>
+          <StickyHeaderShell
+            header={<HeaderBar variant="centered" title="Player" />}
+          >
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator />
             </View>
@@ -91,7 +104,9 @@ export default function PlayerProfileScreen() {
       <>
         <Stack.Screen options={{ headerShown: false }} />
         <Screen>
-          <StickyHeaderShell header={<HeaderBar variant="centered" title="Player" />}>
+          <StickyHeaderShell
+            header={<HeaderBar variant="centered" title="Player" />}
+          >
             <Text className="text-text text-center font-sans">
               Player not found.
             </Text>
@@ -107,7 +122,9 @@ export default function PlayerProfileScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <Screen>
-        <StickyHeaderShell header={<HeaderBar variant="centered" title="Player" />}>
+        <StickyHeaderShell
+          header={<HeaderBar variant="centered" title="Player" />}
+        >
           <ProfileScreen
             user={toProfileUser(publicUser)}
             isOwnProfile={isOwnProfile}

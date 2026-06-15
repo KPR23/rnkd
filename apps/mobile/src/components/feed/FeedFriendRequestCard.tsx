@@ -6,6 +6,7 @@ import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
 import UserProfileImage from "@/src/components/UserProfileImage";
 import { formatFeedRelativeTime } from "@/src/lib/feed/feed-time";
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 
 import { toFeedUser } from "./feed-user";
 import type { FeedPostAuthor } from "./FeedPostCard";
@@ -35,7 +36,7 @@ export default function FeedFriendRequestCard({
       ? request.createdAt
       : new Date(request.createdAt);
   const relativeTime = formatFeedRelativeTime(createdAt);
-  const displayName = request.requester.tag ?? request.requester.name;
+  const requesterDisplayName = formatUserDisplayName(request.requester);
 
   return (
     <View className="border-muted bg-card gap-3.5 border py-4">
@@ -48,7 +49,7 @@ export default function FeedFriendRequestCard({
         </View>
         <View className="min-w-0 flex-1">
           <AppText className="text-base leading-5" weight="medium">
-            {request.requester.name}
+            {requesterDisplayName}
           </AppText>
           <AppText className="text-sm leading-5" color="#828083">
             Friend request · {relativeTime}
@@ -58,7 +59,7 @@ export default function FeedFriendRequestCard({
 
       <View className="px-5">
         <AppText className="text-base leading-5">
-          {displayName} wants to be your friend.
+          {requesterDisplayName} wants to be your friend.
         </AppText>
       </View>
 

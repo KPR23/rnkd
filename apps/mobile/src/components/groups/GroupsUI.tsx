@@ -1,16 +1,12 @@
-import { useMemo, type RefObject } from "react";
-import {
-  Image,
-  Pressable,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useEffect, useMemo, useState, type RefObject } from "react";
+import { Image, Pressable, TouchableOpacity, View } from "react-native";
 
 import {
   ArrowDownIcon,
   ArrowRightIcon,
   ArrowUpIcon,
   CheckIcon,
+  ClipboardIcon,
   DotsThreeVerticalIcon,
   UsersIcon,
   XIcon,
@@ -20,6 +16,10 @@ import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
 import { HeaderBar } from "@/src/components/Header";
+import { copyToClipboard } from "@/src/lib/clipboard";
+import { useMessage } from "@/src/lib/messages/message-provider";
+import { resolveProfileImageUrl } from "@/src/lib/profile/resolve-profile-image-url";
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 
 export type GroupSummary = {
   id: string;
@@ -32,6 +32,7 @@ export type LeaderboardMember = {
   id: string;
   rank: number;
   name: string;
+  tag?: string | null;
   image?: string | null;
   rating: number | null;
   trend: number | null;
@@ -57,6 +58,7 @@ export type GroupInvite = {
   inviter: {
     id: string;
     name: string;
+    tag?: string | null;
     image?: string | null;
   } | null;
 };
@@ -100,7 +102,11 @@ export function BackHeader({
               onPress={onMenuPress}
               className="size-6 items-center justify-center"
             >
-              <DotsThreeVerticalIcon size={22} color={colors.text} weight="bold" />
+              <DotsThreeVerticalIcon
+                size={22}
+                color={colors.text}
+                weight="bold"
+              />
             </Pressable>
           ) : undefined
         }
@@ -112,12 +118,33 @@ export function BackHeader({
 }
 
 export function InviteCodeCard({ inviteCode }: { inviteCode: string }) {
+  const { showMessage, showError } = useMessage();
   return (
     <View className="border-muted bg-card gap-2 border px-4 py-5">
       <SectionLabel title="Invite code" />
-      <AppText className="text-[28px] leading-8 tracking-[4px]" weight="medium">
-        {inviteCode}
-      </AppText>
+      <View className="flex-row items-center justify-between">
+        <AppText
+          className="text-[28px] leading-8 tracking-[4px]"
+          weight="medium"
+        >
+          {inviteCode}
+        </AppText>
+        <View>
+          <Pressable
+            className="size-6 items-center justify-center"
+            onPress={async () => {
+              const copied = await copyToClipboard(inviteCode);
+              if (copied) {
+                showMessage("Invite code copied to clipboard");
+              } else {
+                showError("Failed to copy invite code");
+              }
+            }}
+          >
+            <ClipboardIcon size={22} color={colors.text} weight="bold" />
+          </Pressable>
+        </View>
+      </View>
       <AppText className="text-sm leading-5" color={colors.textSecondary}>
         Share this code so others can request to join your group.
       </AppText>
@@ -177,6 +204,83 @@ export function GroupCard({
   );
 }
 
+export type OwnedGroupInviteStatus =
+  | "available"
+  | "member"
+  | "invited"
+  | "join_request";
+
+function ownedGroupInviteActionLabel(status: OwnedGroupInviteStatus) {
+  switch (status) {
+    case "available":
+      return "Invite";
+    case "member":
+      return "Member";
+    case "invited":
+      return "Invited";
+    case "join_request":
+      return "Requested";
+  }
+}
+
+export function OwnedGroupInviteRow({
+  group,
+  disabled,
+  isInviting = false,
+  onInvite,
+}: {
+  group: {
+    id: string;
+    name: string;
+    members: number;
+    playerStatus: OwnedGroupInviteStatus;
+  };
+  disabled?: boolean;
+  isInviting?: boolean;
+  onInvite?: () => void;
+}) {
+  const canInvite = group.playerStatus === "available" && !isInviting;
+  const actionLabel = isInviting
+    ? "Inviting..."
+    : ownedGroupInviteActionLabel(group.playerStatus);
+  const Container = canInvite ? Pressable : View;
+
+  return (
+    <Container
+      accessibilityRole={canInvite ? "button" : undefined}
+      accessibilityLabel={
+        canInvite ? `Invite to ${group.name}` : `${actionLabel} in ${group.name}`
+      }
+      className="border-muted bg-card min-h-16 justify-center border px-4 py-3"
+      disabled={!canInvite || disabled}
+      onPress={canInvite ? onInvite : undefined}
+    >
+      <View className="flex-row items-center justify-between gap-3">
+        <View className="min-w-0 flex-1">
+          <AppText className="text-base leading-5.5" weight="medium">
+            {group.name}
+          </AppText>
+          <AppText className="text-sm leading-5" color={colors.textSecondary}>
+            {group.members} {group.members === 1 ? "member" : "members"}
+          </AppText>
+        </View>
+        <View className="flex-row items-center gap-1">
+          <AppText
+            className="text-sm leading-5"
+            color={canInvite ? colors.primary : colors.textSecondary}
+            weight={canInvite ? "medium" : "regular"}
+          >
+            {actionLabel}
+          </AppText>
+          {canInvite ? (
+            <ArrowRightIcon size={16} color={colors.primary} />
+          ) : null}
+        </View>
+      </View>
+    </Container>
+  );
+}
+
 export function RatingSummaryCard({
   rating,
   position,
@@ -218,6 +322,9 @@ function AvatarBubble({
   image?: string | null;
   size?: number;
 }) {
+  const [hasImageError, setHasImageError] = useState(false);
+  const imageUri = resolveProfileImageUrl(image);
+  const showImage = Boolean(imageUri) && !hasImageError;
   const initials = useMemo(
     () =>
       name
@@ -230,13 +337,18 @@ function AvatarBubble({
     [name],
   );
 
-  if (image) {
+  useEffect(() => {
+    setHasImageError(false);
+  }, [image]);
+
+  if (showImage) {
     return (
       <Image
-        source={{ uri: image }}
+        source={{ uri: imageUri ?? undefined }}
         className="rounded-full"
         resizeMode="cover"
         style={{ height: size, width: size }}
+        onError={() => setHasImageError(true)}
       />
     );
   }
@@ -307,6 +419,7 @@ export function LeaderboardRow({
   manage,
   selected,
   isCurrentUser,
+  onProfilePress,
   onAccept,
   onDecline,
   onRemove,
@@ -315,15 +428,46 @@ export function LeaderboardRow({
   manage?: boolean;
   selected?: boolean;
   isCurrentUser?: boolean;
+  onProfilePress?: () => void;
   onAccept?: () => void;
   onDecline?: () => void;
   onRemove?: () => void;
 }) {
+  const memberDisplayName = formatUserDisplayName(member);
+  const profileContent = (
+    <>
+      <AvatarBubble name={member.name} image={member.image} />
+      <View className="min-w-0 justify-center">
+        <AppText className="text-base leading-5.5" weight="medium">
+          {memberDisplayName}
+          {isCurrentUser ? (
+            <AppText
+              className="text-base leading-5.5"
+              color={colors.textSecondary}
+              weight="medium"
+            >
+              {" "}
+              (You)
+            </AppText>
+          ) : null}
+        </AppText>
+        {member.pending ? (
+          <AppText
+            className="text-[13px] leading-4"
+            color={colors.textSecondary}
+          >
+            {member.joinRequest ? "Join request" : "Pending invite"}
+          </AppText>
+        ) : null}
+      </View>
+    </>
+  );
+
   return (
     <View className="border-muted bg-card min-h-15 justify-center border px-3.5 py-3">
       <View className="flex-row items-center justify-between">
         <View className="min-w-0 flex-1 flex-row items-center gap-3">
-          <View className="flex-row items-center gap-3 pl-1">
+          <View className="pl-1">
             <AppText
               className="w-2 text-sm leading-5"
               color={colors.textSecondary}
@@ -331,37 +475,27 @@ export function LeaderboardRow({
             >
               {member.rank}
             </AppText>
-            <AvatarBubble name={member.name} image={member.image} />
           </View>
-          <View className="min-w-0 justify-center">
-            <AppText className="text-base leading-5.5" weight="medium">
-              {member.name}
-              {isCurrentUser ? (
-                <AppText
-                  className="text-base leading-5.5"
-                  color={colors.textSecondary}
-                  weight="medium"
-                >
-                  {" "}
-                  (You)
-                </AppText>
-              ) : null}
-            </AppText>
-            {member.pending ? (
-              <AppText
-                className="text-[13px] leading-4"
-                color={colors.textSecondary}
-              >
-                {member.joinRequest ? "Join request" : "Pending invite"}
-              </AppText>
-            ) : null}
-          </View>
+          {onProfilePress ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`View ${memberDisplayName}'s profile`}
+              className="min-w-0 flex-1 flex-row items-center gap-3"
+              onPress={onProfilePress}
+            >
+              {profileContent}
+            </Pressable>
+          ) : (
+            <View className="min-w-0 flex-1 flex-row items-center gap-3">
+              {profileContent}
+            </View>
+          )}
         </View>
         {manage && member.pending ? (
           <View className="flex-row items-center gap-2">
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Accept ${member.name}`}
+              accessibilityLabel={`Accept ${memberDisplayName}`}
               className="size-8 items-center justify-center"
               onPress={onAccept}
             >
@@ -369,7 +503,7 @@ export function LeaderboardRow({
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Decline ${member.name}`}
+              accessibilityLabel={`Decline ${memberDisplayName}`}
               className="size-8 items-center justify-center"
               onPress={onDecline}
             >
@@ -379,7 +513,7 @@ export function LeaderboardRow({
         ) : manage && member.role !== "owner" ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Remove ${member.name}`}
+            accessibilityLabel={`Remove ${memberDisplayName}`}
             className="size-8 items-center justify-center"
             onPress={onRemove}
           >
@@ -389,13 +523,24 @@ export function LeaderboardRow({
           <View className="size-8" />
         ) : (
           <View className="h-9 items-end justify-center gap-0.5">
-            <AppText
-              className="text-right text-sm"
-              weight="medium"
-              style={{ lineHeight: 20 }}
-            >
-              {member.rating ? `${member.rating} RS` : "- RS"}
-            </AppText>
+            <View className="flex-row items-center gap-1">
+              <AppText
+                className="text-right text-sm"
+                weight="medium"
+                color={member.rating ? colors.text : colors.textSecondary}
+                style={{ lineHeight: 20 }}
+              >
+                {member.rating ? `${member.rating} ` : "-"}
+              </AppText>
+              <AppText
+                className="text-right text-sm"
+                weight="medium"
+                color={member.rating ? colors.primary : colors.textSecondary}
+                style={{ lineHeight: 20 }}
+              >
+                RS
+              </AppText>
+            </View>
             {member.trend === null ? null : (
               <TrendIndicator trend={member.trend} />
             )}
@@ -414,35 +559,70 @@ export function LeaderboardRow({
 export function GroupInviteCard({
   invite,
   disabled,
+  onInviterProfilePress,
   onAccept,
   onDecline,
 }: {
   invite: GroupInvite;
   disabled?: boolean;
+  onInviterProfilePress?: () => void;
   onAccept: () => void;
   onDecline: () => void;
 }) {
-  const inviterName = invite.inviter?.name ?? "Someone";
+  const inviterDisplayName = invite.inviter
+    ? formatUserDisplayName(invite.inviter)
+    : "Someone";
+  const inviterProfileLabel = `View ${inviterDisplayName}'s profile`;
 
   return (
     <View className="border-muted bg-card gap-4 border px-4 py-4">
       <View className="flex-row items-center justify-between">
         <View className="min-w-0 flex-1 flex-row items-center gap-2.5">
-          <AvatarBubble
-            name={inviterName}
-            image={invite.inviter?.image}
-            size={36}
-          />
+          {onInviterProfilePress ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={inviterProfileLabel}
+              hitSlop={8}
+              onPress={onInviterProfilePress}
+            >
+              <AvatarBubble
+                name={invite.inviter?.name ?? inviterDisplayName}
+                image={invite.inviter?.image}
+                size={36}
+              />
+            </Pressable>
+          ) : (
+            <AvatarBubble
+              name={invite.inviter?.name ?? inviterDisplayName}
+              image={invite.inviter?.image}
+              size={36}
+            />
+          )}
           <View className="min-w-0 flex-1 gap-0.5">
             <AppText className="text-base leading-5" weight="medium">
               {invite.groupName}
             </AppText>
-            <AppText
-              className="text-[13px] leading-4"
-              color={colors.textSecondary}
-            >
-              {inviterName} invited you
-            </AppText>
+            {onInviterProfilePress ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={inviterProfileLabel}
+                onPress={onInviterProfilePress}
+              >
+                <AppText
+                  className="text-[13px] leading-4"
+                  color={colors.textSecondary}
+                >
+                  {inviterDisplayName} invited you
+                </AppText>
+              </Pressable>
+            ) : (
+              <AppText
+                className="text-[13px] leading-4"
+                color={colors.textSecondary}
+              >
+                {inviterDisplayName} invited you
+              </AppText>
+            )}
           </View>
         </View>
         <View className="ml-3 flex-row items-center gap-1.5">
@@ -511,40 +691,57 @@ export function FriendSuggestionRow({
   friend,
   selected,
   onPress,
+  onProfilePress,
 }: {
   friend: FriendSuggestion;
   selected: boolean;
   onPress: () => void;
+  onProfilePress?: () => void;
 }) {
+  const friendDisplayName = formatUserDisplayName({
+    name: friend.username,
+    tag: friend.displayName === "Friend" ? null : friend.displayName,
+  });
+
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      className="border-muted bg-card min-h-17 flex-row items-center border pl-4"
-      onPress={onPress}
-    >
-      <View className="min-w-0 flex-1 flex-row items-center gap-3">
+    <View className="border-muted bg-card min-h-17 flex-row items-center border">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={
+          onProfilePress
+            ? `View ${friendDisplayName}'s profile`
+            : selected
+              ? `Deselect ${friendDisplayName}`
+              : `Select ${friendDisplayName}`
+        }
+        className="min-w-0 flex-1 flex-row items-center gap-3 self-stretch pl-4"
+        onPress={onProfilePress ?? onPress}
+      >
         <AvatarBubble name={friend.username} image={friend.image} size={44} />
         <View className="gap-0.5">
           <AppText className="text-base leading-5.5" weight="medium">
-            {friend.displayName}
-          </AppText>
-          <AppText
-            className="text-[13px] leading-4"
-            color={colors.textSecondary}
-          >
-            {friend.username}
+            {friendDisplayName}
           </AppText>
         </View>
-      </View>
+      </Pressable>
       <View className="bg-muted h-11 w-px" />
-      <View className="w-15 items-center">
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={
+          selected
+            ? `Deselect ${friendDisplayName}`
+            : `Select ${friendDisplayName}`
+        }
+        activeOpacity={0.7}
+        className="w-15 items-center justify-center self-stretch"
+        onPress={onPress}
+      >
         <View className="bg-muted size-6 items-center justify-center">
           {selected ? (
             <CheckIcon size={16} color={colors.text} weight="bold" />
           ) : null}
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 }
-

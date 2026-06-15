@@ -12,6 +12,7 @@ import Screen from "@/src/components/Screen";
 import ScreenScroll from "@/src/components/ScreenScroll";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { useMessage } from "@/src/lib/messages/message-provider";
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 import { trpc } from "@/src/utils/trpc";
 
 export default function GroupsManageScreen() {
@@ -46,10 +47,15 @@ export default function GroupsManageScreen() {
     return null;
   }
 
-  const confirmRemoveMember = (member: { id: string; name: string }) => {
+  const confirmRemoveMember = (member: {
+    id: string;
+    name: string;
+    tag?: string | null;
+  }) => {
+    const memberDisplayName = formatUserDisplayName(member);
     Alert.alert(
       "Remove player",
-      `Are you sure you want to remove ${member.name} from the group?`,
+      `Are you sure you want to remove ${memberDisplayName} from the group?`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -65,10 +71,15 @@ export default function GroupsManageScreen() {
     );
   };
 
-  const confirmDeclineMember = (member: { id: string; name: string }) => {
+  const confirmDeclineMember = (member: {
+    id: string;
+    name: string;
+    tag?: string | null;
+  }) => {
+    const memberDisplayName = formatUserDisplayName(member);
     Alert.alert(
       "Decline request",
-      `Are you sure you want to decline ${member.name}'s request to join?`,
+      `Are you sure you want to decline ${memberDisplayName}'s request to join?`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -125,6 +136,9 @@ export default function GroupsManageScreen() {
                           manage
                           isCurrentUser={member.id === currentUserId}
                           member={member}
+                          onProfilePress={() =>
+                            router.push(`/player/${member.id}`)
+                          }
                           onAccept={() => {
                             approveMember.mutate({
                               groupId,
@@ -142,6 +156,7 @@ export default function GroupsManageScreen() {
                       manage
                       isCurrentUser={member.id === currentUserId}
                       member={member}
+                      onProfilePress={() => router.push(`/player/${member.id}`)}
                       onRemove={() => confirmRemoveMember(member)}
                     />
                   ))}

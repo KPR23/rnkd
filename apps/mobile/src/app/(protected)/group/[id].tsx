@@ -223,7 +223,11 @@ export default function GroupDetailsScreen() {
               {data.members
                 .filter((member) => member.status === "active")
                 .map((member) => (
-                  <LeaderboardRow key={member.id} member={member} />
+                  <LeaderboardRow
+                    key={member.id}
+                    member={member}
+                    onProfilePress={() => router.push(`/player/${member.id}`)}
+                  />
                 ))}
             </View>
           </View>

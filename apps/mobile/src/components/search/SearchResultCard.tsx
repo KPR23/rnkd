@@ -8,6 +8,7 @@ import { colors } from "@repo/ui/colors";
 import { getInitialsForFallbackPhoto } from "@repo/ui/components/getInitialsForFallbackPhoto";
 import GameLogo from "@/src/components/games/GameLogo";
 import SearchResultCardContent from "@/src/components/search/SearchResultCardContent";
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 
 interface SearchResultCardProps {
   result: SearchResult;
@@ -79,15 +80,9 @@ export default function SearchResultCard({
   const primaryLine =
     result.type === "game"
       ? result.name
-      : result.tag
-        ? result.tag
-        : result.name;
+      : formatUserDisplayName({ name: result.name, tag: result.tag });
   const secondaryLine =
-    result.type === "game"
-      ? getGamePublisher(result.id)
-      : result.tag
-        ? result.name
-        : "";
+    result.type === "game" ? getGamePublisher(result.id) : "";
 
   return (
     <SearchCardShell onPress={onPress}>

@@ -25,7 +25,9 @@ import MatchActivityGraph from "@/src/components/profile/MatchActivityGraph";
 import ProfileInfoCard from "@/src/components/profile/ProfileInfoCard";
 import ScreenTitle from "@/src/components/ScreenTitle";
 import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
+import { mergeProfileIdentity } from "@/src/lib/profile/merge-profile-identity";
 import { useMessage } from "@/src/lib/messages/message-provider";
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 import { trpc } from "@/src/utils/trpc";
 
 export type ProfilePullToRefresh = {
@@ -110,6 +112,9 @@ export default function ProfileScreen({
   });
 
   const globalRs = overview?.user.globalRs ?? 0;
+  const displayUser = overview?.user
+    ? mergeProfileIdentity(user, overview.user)
+    : user;
   const isFriendActionPending =
     requestMut.isPending ||
     acceptMut.isPending ||
@@ -151,7 +156,12 @@ export default function ProfileScreen({
       actionText="Invite"
       className="flex-1"
       disabled={isFriendActionPending}
-      onPress={() => router.push("/groups")}
+      onPress={() =>
+        router.push({
+          pathname: "/groups-invite-player",
+          params: { userId: user.id },
+        })
+      }
     />
   ) : relationship?.status === "pending" &&
     relationship?.pendingDirection === "outgoing" ? (
@@ -242,7 +252,7 @@ export default function ProfileScreen({
       >
         <View className="flex flex-col gap-2.5">
           <ProfileInfoCard
-            user={user}
+            user={displayUser}
             bio={overview?.user.bio ?? null}
             favoriteGameLabel={favoriteGameLabel(
               overview?.user.favoriteGame?.id,
@@ -283,7 +293,7 @@ export default function ProfileScreen({
           </View>
           {incomingRequestCondition ? (
             <AppText className="text-sm" color={colors.textSecondary}>
-              {user.tag ?? user.name} sent you a friend request. You can accept
+              {formatUserDisplayName(displayUser)} sent you a friend request. You can accept
               or decline it here.
             </AppText>
           ) : null}
@@ -298,13 +308,13 @@ export default function ProfileScreen({
             >
               Match activity
             </AppText>
-            <AppText
+            {/* <AppText
               className="text-right text-sm"
               weight="medium"
               color={colors.primary}
             >
               View details
-            </AppText>
+            </AppText> */}
           </View>
           <View className="border-muted bg-card flex flex-col gap-3 border p-4">
             {activityDays ? <MatchActivityGraph days={activityDays} /> : null}

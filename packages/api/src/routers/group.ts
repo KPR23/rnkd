@@ -12,6 +12,7 @@ import {
   user,
 } from "@repo/db";
 
+import { sendGroupInviteNotifications } from "../services/notifications/expo-push";
 import { protectedProcedure, router } from "../trpc";
 
 const groupIdInput = z.object({ groupId: z.string().uuid() });
@@ -114,6 +115,7 @@ async function getGroupMembers(groupId: string) {
       membershipId: groupMembers.id,
       userId: user.id,
       name: user.name,
+      tag: user.tag,
       image: user.image,
       globalRs: user.globalRs,
       role: groupMembers.role,
@@ -152,6 +154,7 @@ async function getGroupMembers(groupId: string) {
       membershipId: row.membershipId,
       rank: index + 1,
       name: row.name,
+      tag: row.tag,
       image: row.image,
       rating: row.status === "active" ? row.globalRs : null,
       trend: null as number | null,
@@ -198,6 +201,7 @@ export const groupRouter = router({
         invitedAt: groupMembers.createdAt,
         inviterId: user.id,
         inviterName: user.name,
+        inviterTag: user.tag,
         inviterImage: user.image,
       })
       .from(groupMembers)
@@ -233,6 +237,7 @@ export const groupRouter = router({
             ? {
                 id: row.inviterId,
                 name: row.inviterName ?? "Someone",
+                tag: row.inviterTag,
                 image: row.inviterImage,
               }
             : null,
@@ -324,6 +329,89 @@ export const groupRouter = router({
     };
   }),
 
+  ownedGroupsForInvite: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const currentUserId = ctx.session.user.id;
+
+      const ownedGroups = await db
+        .select({
+          id: groupTable.id,
+          name: groupTable.name,
+        })
+        .from(groupMembers)
+        .innerJoin(groupTable, eq(groupMembers.groupId, groupTable.id))
+        .where(
+          and(
+            eq(groupMembers.userId, currentUserId),
+            eq(groupMembers.status, "active"),
+            eq(groupMembers.role, "owner"),
+          ),
+        )
+        .orderBy(asc(groupTable.name), asc(groupTable.id));
+
+      if (ownedGroups.length === 0) {
+        return [];
+      }
+
+      const groupIds = ownedGroups.map((group) => group.id);
+
+      const [memberCounts, targetMemberships] = await Promise.all([
+        db
+          .select({
+            groupId: groupMembers.groupId,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(groupMembers)
+          .where(
+            and(
+              inArray(groupMembers.groupId, groupIds),
+              eq(groupMembers.status, "active"),
+            ),
+          )
+          .groupBy(groupMembers.groupId),
+        db
+          .select({
+            groupId: groupMembers.groupId,
+            status: groupMembers.status,
+            invitedByUserId: groupMembers.invitedByUserId,
+          })
+          .from(groupMembers)
+          .where(
+            and(
+              eq(groupMembers.userId, input.userId),
+              inArray(groupMembers.groupId, groupIds),
+            ),
+          ),
+      ]);
+
+      const countByGroup = new Map(
+        memberCounts.map((row) => [row.groupId, row.count]),
+      );
+      const targetByGroup = new Map(
+        targetMemberships.map((row) => [row.groupId, row]),
+      );
+
+      return ownedGroups.map((group) => {
+        const target = targetByGroup.get(group.id);
+        let playerStatus: "available" | "member" | "invited" | "join_request" =
+          "available";
+
+        if (target?.status === "active") {
+          playerStatus = "member";
+        } else if (target?.status === "invited") {
+          playerStatus = target.invitedByUserId ? "invited" : "join_request";
+        }
+
+        return {
+          id: group.id,
+          name: group.name,
+          members: countByGroup.get(group.id) ?? 0,
+          playerStatus,
+        };
+      });
+    }),
+
   detail: protectedProcedure
     .input(groupIdInput)
     .query(async ({ ctx, input }) => {
@@ -413,8 +501,12 @@ export const groupRouter = router({
       const inviteUserIds = uniqueValues(input.inviteUserIds).filter(
         (userId) => userId !== currentUserId && friendIds.has(userId),
       );
+      const inviter = await db.query.user.findFirst({
+        columns: { name: true, tag: true },
+        where: eq(user.id, currentUserId),
+      });
 
-      return await db.transaction(async (tx) => {
+      const result = await db.transaction(async (tx) => {
         const [createdGroup] = await tx
           .insert(groupTable)
           .values({
@@ -443,8 +535,10 @@ export const groupRouter = router({
           joinedAt: new Date(),
         });
 
+        let invitedUserIds: string[] = [];
+
         if (inviteUserIds.length > 0) {
-          await tx
+          const invitedRows = await tx
             .insert(groupMembers)
             .values(
               inviteUserIds.map((userId) => ({
@@ -457,16 +551,34 @@ export const groupRouter = router({
             )
             .onConflictDoNothing({
               target: [groupMembers.groupId, groupMembers.userId],
-            });
+            })
+            .returning({ userId: groupMembers.userId });
+          invitedUserIds = invitedRows.map((row) => row.userId);
         }
 
         return {
           groupId: createdGroup.id,
           groupName: createdGroup.name,
           inviteCode: createdGroup.inviteCode,
-          invitedCount: inviteUserIds.length,
+          invitedCount: invitedUserIds.length,
+          invitedUserIds,
         };
       });
+
+      await sendGroupInviteNotifications({
+        recipientUserIds: result.invitedUserIds,
+        inviterUserId: currentUserId,
+        inviterName: inviter?.tag ?? inviter?.name ?? "Someone",
+        groupId: result.groupId,
+        groupName: result.groupName,
+      });
+
+      return {
+        groupId: result.groupId,
+        groupName: result.groupName,
+        inviteCode: result.inviteCode,
+        invitedCount: result.invitedCount,
+      };
     }),
 
   joinByCode: protectedProcedure
@@ -590,7 +702,16 @@ export const groupRouter = router({
         return { invitedCount: 0 };
       }
 
-      await db
+      const group = await db.query.groups.findFirst({
+        columns: { name: true },
+        where: eq(groupTable.id, input.groupId),
+      });
+      const inviter = await db.query.user.findFirst({
+        columns: { name: true, tag: true },
+        where: eq(user.id, currentUserId),
+      });
+
+      const invitedRows = await db
         .insert(groupMembers)
         .values(
           inviteUserIds.map((userId) => ({
@@ -603,9 +724,18 @@ export const groupRouter = router({
         )
         .onConflictDoNothing({
           target: [groupMembers.groupId, groupMembers.userId],
-        });
+        })
+        .returning({ userId: groupMembers.userId });
 
-      return { invitedCount: inviteUserIds.length };
+      await sendGroupInviteNotifications({
+        recipientUserIds: invitedRows.map((row) => row.userId),
+        inviterUserId: currentUserId,
+        inviterName: inviter?.tag ?? inviter?.name ?? "Someone",
+        groupId: input.groupId,
+        groupName: group?.name ?? "a group",
+      });
+
+      return { invitedCount: invitedRows.length };
     }),
 
   approveMember: protectedProcedure

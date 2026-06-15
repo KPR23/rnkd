@@ -151,12 +151,13 @@ export default function GroupsInviteScreen() {
                 </View>
               ) : friends.length ? (
                 friends.map((friend) => (
-                <FriendSuggestionRow
-                  key={friend.id}
-                  friend={friend}
-                  selected={selectedFriendIds.has(friend.id)}
-                  onPress={() => toggleFriend(friend.id)}
-                />
+                  <FriendSuggestionRow
+                    key={friend.id}
+                    friend={friend}
+                    selected={selectedFriendIds.has(friend.id)}
+                    onPress={() => toggleFriend(friend.id)}
+                    onProfilePress={() => router.push(`/player/${friend.id}`)}
+                  />
                 ))
               ) : (
                 <View className="border-muted bg-card border px-4 py-6">

@@ -106,6 +106,13 @@
       "when": 1781472000000,
       "tag": "0014_game_account_rs_points",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1781473521289,
+      "tag": "0015_curly_crystal",
+      "breakpoints": true
     }
   ]
 }

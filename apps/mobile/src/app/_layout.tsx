@@ -11,6 +11,7 @@ import { colors } from "@repo/ui/colors";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { KeyboardOffsetProvider } from "@/src/lib/keyboard/keyboard-offset-provider";
 import { MessageProvider } from "@/src/lib/messages/message-provider";
+import { useRegisterPushNotifications } from "@/src/lib/notifications/push-notifications";
 import { TRPCProvider } from "@/src/utils/provider";
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -18,6 +19,7 @@ void SplashScreen.preventAutoHideAsync().catch(() => {});
 function RootNavigator() {
   const { data: session, isPending } = useAuth();
   const splashHiddenRef = useRef(false);
+  useRegisterPushNotifications(!!session);
 
   const [fontsLoaded, fontError] = useFonts({
     "IBM Plex Sans": require("../../assets/fonts/IBMPlexSans-VariableFont_wdth,wght.ttf"),

@@ -15,7 +15,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.rnkd.mobile",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Rnkd needs access to your photo library so you can choose a profile picture."
       }
     },
     "android": {
@@ -31,7 +32,18 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-secure-store", "expo-router", "expo-web-browser"],
+    "plugins": [
+      "expo-notifications",
+      "expo-secure-store",
+      "expo-router",
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Rnkd needs access to your photos so you can choose a profile picture."
+        }
+      ]
+    ],
     "extra": {
       "router": {},
       "eas": {

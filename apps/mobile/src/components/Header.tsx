@@ -94,7 +94,7 @@ export function HeaderBar({
       {showBack ? <BackButton onPress={handleBack} /> : null}
       <View className="min-w-0 flex-1 justify-center">
         <AppText
-          className="text-xl leading-6"
+          className="text-3xl leading-6"
           numberOfLines={1}
           weight="medium"
         >

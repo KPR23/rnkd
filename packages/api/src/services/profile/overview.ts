@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 
 import { db, games, user } from "@repo/db";
 
@@ -56,6 +56,20 @@ export async function getProfileOverview(userId: string) {
   };
 }
 
+async function assertTagAvailable(userId: string, tag: string) {
+  const existing = await db.query.user.findFirst({
+    where: and(eq(user.tag, tag), ne(user.id, userId)),
+    columns: { id: true },
+  });
+
+  if (existing) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: "This nickname is already taken",
+    });
+  }
+}
+
 export async function updateProfile(
   userId: string,
   input: UpdateProfileInput,
@@ -76,9 +90,16 @@ export async function updateProfile(
     }
   }
 
+  if (input.tag) {
+    await assertTagAvailable(userId, input.tag);
+  }
+
   const [updated] = await db
     .update(user)
     .set({
+      ...(input.name !== undefined ? { name: input.name } : {}),
+      ...(input.tag !== undefined ? { tag: input.tag } : {}),
+      ...(input.image !== undefined ? { image: input.image } : {}),
       ...(input.bio !== undefined ? { bio: input.bio } : {}),
       ...(favoriteGameId !== undefined
         ? { favoriteGameId }
