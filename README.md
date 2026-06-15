@@ -14,7 +14,6 @@ Najważniejsza część aplikacji to `global RS`, czyli wspólny wynik gracza li
 - wyszukiwarka graczy, drużyn i gier z lokalną historią wyszukiwań,
 - znajomi, zaproszenia i prosty feed społecznościowy,
 - tworzenie grup, dołączanie kodem oraz zapraszanie graczy,
-- aplikacja mobilna na iOS/Android/Web przez Expo Router.
 
 ## Technologie
 
@@ -151,9 +150,3 @@ Przed oddaniem projektu warto uruchomić:
 pnpm lint
 pnpm check-types
 ```
-
-## Notatki projektowe
-
-- Komentarze w kodzie są dodawane tylko tam, gdzie wyjaśniają decyzję projektową, np. optymistyczne aktualizacje UI albo przeliczanie rankingu.
-- Logika integracji z zewnętrznymi API jest trzymana w `packages/api/src/services`, żeby komponenty mobilne nie musiały znać szczegółów Riot/FACEIT.
-- Typy współdzielone są w `packages/types`, dzięki czemu API, web i mobile korzystają z tych samych kontraktów.
