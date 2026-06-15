@@ -103,7 +103,7 @@ export default function FeedCommentsScreen() {
   });
 
   const { data: currentUser } = trpc.user.getCurrentUser.useQuery();
-  const { data, isLoading, isRefetching } = trpc.feed.comments.useQuery(
+  const { data, isLoading } = trpc.feed.comments.useQuery(
     { postId: postId ?? "" },
     { enabled: !!postId },
   );
@@ -377,12 +377,6 @@ export default function FeedCommentsScreen() {
                 </AppText>
               )}
             </View>
-
-            {isRefetching && hasLoadedOnce ? (
-              <View className="items-center py-2">
-                <ActivityIndicator size="small" />
-              </View>
-            ) : null}
           </>
         ) : (
           <View className="items-center justify-center py-10">

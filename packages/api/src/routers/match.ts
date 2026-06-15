@@ -14,6 +14,7 @@ export const matchRouter = router({
       getMatchHistoryForAccount({
         gameAccountId: input.gameAccountId,
         limit: input.limit,
+        cursor: input.cursor,
       }),
     ),
   getCs2FaceitMatchDetails: protectedProcedure

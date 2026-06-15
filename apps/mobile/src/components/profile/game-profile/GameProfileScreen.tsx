@@ -1,14 +1,27 @@
-import { useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
-import { GAMES, isCs2FaceitGameAccount } from "@repo/types";
-import type { Cs2FaceitMatchHistoryRow } from "@repo/types";
+import {
+  GAMES,
+  isCs2FaceitGameAccount,
+  type Cs2FaceitMatchHistoryRow,
+} from "@repo/types";
 import { colors } from "@repo/ui/colors";
-import AppText from "@/src/components/AppText";
-import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
 import GameProfileOverviewTab from "@/src/components/profile/game-profile/GameProfileOverviewTab";
+import GameProfileStatsTab from "@/src/components/profile/game-profile/GameProfileStatsTab";
 import GameProfileTabBar from "@/src/components/profile/game-profile/GameProfileTabBar";
+import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
 import { trpc } from "@/src/utils/trpc";
+
+const MATCH_HISTORY_PAGE_SIZE = 20;
+const MATCH_HISTORY_LOAD_THRESHOLD = 240;
 
 export default function GameProfileScreen({
   gameAccountId,
@@ -16,6 +29,7 @@ export default function GameProfileScreen({
   gameAccountId: string;
 }) {
   const [activeTab, setActiveTab] = useState<"overview" | "stats">("overview");
+  const fetchNextPageInFlight = useRef(false);
   const onStickyHeaderScroll = useStickyHeaderScrollHandler();
 
   const {
@@ -26,11 +40,62 @@ export default function GameProfileScreen({
     gameAccountId,
   });
 
-  const { data: matchHistory, isLoading: isMatchHistoryLoading } =
-    trpc.gameAccount.getCs2FaceitMatchHistory.useQuery({
+  const {
+    data: matchHistoryPages,
+    isLoading: isMatchHistoryLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = trpc.gameAccount.getCs2FaceitMatchHistoryPage.useInfiniteQuery(
+    {
       gameAccountId,
-      limit: 40,
-    });
+      limit: MATCH_HISTORY_PAGE_SIZE,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    },
+  );
+
+  const matchHistory = useMemo(
+    () =>
+      matchHistoryPages?.pages.flatMap((page) => page.rows) ??
+      ([] as Cs2FaceitMatchHistoryRow[]),
+    [matchHistoryPages],
+  );
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      onStickyHeaderScroll?.(event);
+
+      if (
+        activeTab !== "overview" ||
+        !hasNextPage ||
+        isFetchingNextPage ||
+        fetchNextPageInFlight.current
+      ) {
+        return;
+      }
+
+      const { contentOffset, contentSize, layoutMeasurement } =
+        event.nativeEvent;
+      const distanceFromBottom =
+        contentSize.height - (contentOffset.y + layoutMeasurement.height);
+
+      if (distanceFromBottom <= MATCH_HISTORY_LOAD_THRESHOLD) {
+        fetchNextPageInFlight.current = true;
+        void fetchNextPage().finally(() => {
+          fetchNextPageInFlight.current = false;
+        });
+      }
+    },
+    [
+      activeTab,
+      fetchNextPage,
+      hasNextPage,
+      isFetchingNextPage,
+      onStickyHeaderScroll,
+    ],
+  );
 
   if (isDisplayLoading) {
     return (
@@ -66,9 +131,7 @@ export default function GameProfileScreen({
       className="flex-1"
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
-      onScroll={(event) => {
-        onStickyHeaderScroll?.(event);
-      }}
+      onScroll={handleScroll}
       contentContainerStyle={{ paddingBottom: 32, gap: 20 }}
     >
       <GameProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} />
@@ -77,14 +140,19 @@ export default function GameProfileScreen({
         <GameProfileOverviewTab
           gameAccount={gameAccount}
           display={display}
-          matchHistory={matchHistory as Cs2FaceitMatchHistoryRow[] | undefined}
+          matchHistory={matchHistory}
           isDisplayLoading={isDisplayLoading}
           isMatchHistoryLoading={isMatchHistoryLoading}
+          isFetchingNextPage={isFetchingNextPage}
+          hasNextPage={hasNextPage}
         />
       ) : (
-        <View className="border-muted bg-card border px-4 py-6">
-          <AppText color={colors.textSecondary}>Stats coming soon.</AppText>
-        </View>
+        <GameProfileStatsTab
+          gameAccount={gameAccount}
+          display={display}
+          matchHistory={matchHistory}
+          isMatchHistoryLoading={isMatchHistoryLoading}
+        />
       )}
     </ScrollView>
   );

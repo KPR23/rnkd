@@ -4,6 +4,7 @@ import z from "zod";
 
 import { db, gameAccounts, GAMES } from "@repo/db";
 import { env } from "@repo/env";
+import type { Cs2FaceitMatchHistoryRow } from "@repo/types";
 
 import { findGameAccountsByUserId } from "../repositories/game-accounts.repo";
 import { gameAccountIdSchema, userIdSchema } from "../schemas/common";
@@ -115,6 +116,40 @@ export const gameAccountRouter = router({
       }
 
       return result.rows;
+    }),
+  getCs2FaceitMatchHistoryPage: protectedProcedure
+    .input(
+      gameAccountIdSchema.extend({
+        limit: z.number().int().min(1).max(20).default(20),
+        cursor: z
+          .object({
+            playedAt: z.date(),
+            id: z.string().min(1),
+          })
+          .optional(),
+      }),
+    )
+    .use(requireGameAccountAccess("public-read"))
+    .query(async ({ input }) => {
+      const { getMatchHistoryPageForAccount } =
+        await import("../services/match/history");
+      const result = await getMatchHistoryPageForAccount({
+        gameAccountId: input.gameAccountId,
+        limit: input.limit,
+        cursor: input.cursor,
+      });
+
+      if (result.gameId !== GAMES.CS2_FACEIT) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Not a CS2 (FACEIT) account",
+        });
+      }
+
+      return {
+        rows: result.rows as Cs2FaceitMatchHistoryRow[],
+        nextCursor: result.nextCursor,
+      };
     }),
   getLolDetailsDemo: protectedProcedure
     .input(z.object({ puuid: z.string() }))
