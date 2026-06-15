@@ -9,7 +9,7 @@ export default function UserHeader({ user }: { user: User }) {
     <Frame className="flex-row gap-3! p-4!">
       <UserProfileImage user={user} size={48} />
       <View className="flex-1">
-        <Text className="text-text text-xl font-bold">{user.name}</Text>
+        <Text className="text-text text-xl font-medium">{user.name}</Text>
         <Text className="text-sm text-gray-500">{user.email}</Text>
       </View>
     </Frame>

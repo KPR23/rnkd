@@ -123,28 +123,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {
-        "cs2_faceit_match_players_kills_nonnegative": {
-          "name": "cs2_faceit_match_players_kills_nonnegative",
-          "value": "\"cs2_faceit_match_players\".\"kills\" >= 0"
-        },
-        "cs2_faceit_match_players_deaths_nonnegative": {
-          "name": "cs2_faceit_match_players_deaths_nonnegative",
-          "value": "\"cs2_faceit_match_players\".\"deaths\" >= 0"
-        },
-        "cs2_faceit_match_players_assists_nonnegative": {
-          "name": "cs2_faceit_match_players_assists_nonnegative",
-          "value": "\"cs2_faceit_match_players\".\"assists\" >= 0"
-        },
-        "cs2_faceit_match_players_adr_nonnegative": {
-          "name": "cs2_faceit_match_players_adr_nonnegative",
-          "value": "\"cs2_faceit_match_players\".\"adr\" >= 0"
-        },
-        "cs2_faceit_match_players_headshot_pct_range": {
-          "name": "cs2_faceit_match_players_headshot_pct_range",
-          "value": "\"cs2_faceit_match_players\".\"headshot_pct\" between 0 and 100"
-        }
-      },
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.session": {
@@ -549,7 +528,28 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "cs2_faceit_match_players_kills_nonnegative": {
+          "name": "cs2_faceit_match_players_kills_nonnegative",
+          "value": "\"cs2_faceit_match_players\".\"kills\" >= 0"
+        },
+        "cs2_faceit_match_players_deaths_nonnegative": {
+          "name": "cs2_faceit_match_players_deaths_nonnegative",
+          "value": "\"cs2_faceit_match_players\".\"deaths\" >= 0"
+        },
+        "cs2_faceit_match_players_assists_nonnegative": {
+          "name": "cs2_faceit_match_players_assists_nonnegative",
+          "value": "\"cs2_faceit_match_players\".\"assists\" >= 0"
+        },
+        "cs2_faceit_match_players_adr_nonnegative": {
+          "name": "cs2_faceit_match_players_adr_nonnegative",
+          "value": "\"cs2_faceit_match_players\".\"adr\" >= 0"
+        },
+        "cs2_faceit_match_players_headshot_pct_range": {
+          "name": "cs2_faceit_match_players_headshot_pct_range",
+          "value": "\"cs2_faceit_match_players\".\"headshot_pct\" between 0 and 100"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.cs2_faceit_ranked_entries": {

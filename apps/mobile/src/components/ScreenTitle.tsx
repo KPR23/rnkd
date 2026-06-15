@@ -1,43 +1,53 @@
-import { Text, View } from "react-native";
+import { Pressable } from "react-native";
 
-import { IconContext } from "phosphor-react-native";
+import { useRouter } from "expo-router";
+import { GearSixIcon } from "phosphor-react-native";
 
-import IconButton from "./IconButton";
-
-const titleActionIconContext = {
-  size: 22,
-  color: "white",
-};
-
-export type ScreenTitleAction = {
-  icon: React.ReactNode;
-  onPress: () => void;
-  accessibilityLabel: string;
-};
+import { colors } from "@repo/ui/colors";
+import { HeaderBar } from "@/src/components/Header";
+import RSBadge from "@/src/components/RSBadge";
 
 type Props = {
   title: string;
-  actions?: ScreenTitleAction[];
+  showRsBadge?: boolean;
+  showSettings?: boolean;
+  isBackNavigation?: boolean;
+  globalRs?: number;
 };
 
-export default function ScreenTitle({ title, actions }: Props) {
+export default function ScreenTitle({
+  title,
+  showRsBadge = false,
+  showSettings = false,
+  isBackNavigation = false,
+  globalRs = 0,
+}: Props) {
+  const router = useRouter();
+  const canShowBadge = showRsBadge && !isBackNavigation;
+  const canShowSettings = showSettings && !isBackNavigation;
+
+  const rightSlot = (
+    <>
+      {canShowBadge ? <RSBadge globalRs={globalRs} /> : null}
+      {canShowSettings ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open settings"
+          onPress={() => router.push("/settings")}
+        >
+          <GearSixIcon size={24} color={colors.text} />
+        </Pressable>
+      ) : null}
+    </>
+  );
+
   return (
-    <View className="my-4 flex-row items-center justify-between">
-      <Text className="font-sans-bold text-text text-2xl">{title}</Text>
-      {actions && actions.length > 0 && (
-        <IconContext.Provider value={titleActionIconContext}>
-          <View className="flex-row items-center gap-3">
-            {actions.map((action, index) => (
-              <IconButton
-                key={index}
-                icon={action.icon}
-                onPress={action.onPress}
-                accessibilityLabel={action.accessibilityLabel}
-              />
-            ))}
-          </View>
-        </IconContext.Provider>
-      )}
-    </View>
+    <HeaderBar
+      variant="leading"
+      showBack={false}
+      title={title}
+      rightSlot={rightSlot}
+      className="mb-2"
+    />
   );
 }

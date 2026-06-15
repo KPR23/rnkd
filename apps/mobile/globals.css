@@ -7,14 +7,8 @@
 @import "../../packages/ui/colors.css";
 
 @theme inline {
-  --font-sans: "Inter_400Regular";
-  --font-mono: "JetBrainsMono_400Regular";
-  --font-mono-medium: "JetBrainsMono_600SemiBold";
-  --font-mono-semibold: "JetBrainsMono_600SemiBold";
-  --font-mono-bold: "JetBrainsMono_700Bold";
-  --font-sans-medium: "Inter_500Medium";
-  --font-sans-semibold: "Inter_600SemiBold";
-  --font-sans-bold: "Inter_700Bold";
+  --font-sans: "IBM_Plex_Sans_400Regular";
+  --font-sans-medium: "IBM_Plex_Sans_500Medium";
 
   --spacing: 4px;
 
@@ -30,7 +24,7 @@
   --text-xl--line-height: 1.4;
   --text-2xl: 24px;
   --text-2xl--line-height: 1.333;
-  --text-3xl: 30px;
+  --text-3xl: 28px;
   --text-3xl--line-height: 1.2;
   --text-4xl: 36px;
   --text-4xl--line-height: 1.111;
@@ -62,37 +56,14 @@
   .font-sans-medium {
     font-family: var(--font-sans-medium);
   }
-  .font-sans-semibold {
-    font-family: var(--font-sans-semibold);
-  }
-  .font-sans-bold {
-    font-family: var(--font-sans-bold);
-  }
-  .font-mono {
-    font-family: var(--font-mono);
-  }
-  .font-mono-medium {
-    font-family: var(--font-mono-medium);
-  }
-  .font-mono-semibold {
-    font-family: var(--font-mono-semibold);
-  }
-  .font-mono-bold {
-    font-family: var(--font-mono-bold);
-  }
-  .font-medium {
-    font-family: var(--font-sans-medium);
-  }
-  .font-semibold {
-    font-family: var(--font-sans-semibold);
-  }
-  .font-bold {
-    font-family: var(--font-sans-bold);
-  }
 }
 
 @layer base {
   * {
+    font-family: var(--font-sans);
+  }
+
+  Text {
     font-family: var(--font-sans);
   }
 }

@@ -51,7 +51,7 @@ export default function RankDisplayCard({
   winRateLine,
 }: RankDisplayCardProps) {
   return (
-    <View className="border-border bg-card flex h-16 w-full flex-row items-center justify-between border px-4 py-2">
+    <View className="border-muted bg-card flex h-16 w-full flex-row items-center justify-between border px-4 py-2">
       <View className="flex flex-1 flex-row items-center gap-3">
         <View className="flex h-12 w-12 shrink-0 items-center justify-center">
           <RankEmblem tier={riotTierToEmblemTier(ranked?.tier)} />

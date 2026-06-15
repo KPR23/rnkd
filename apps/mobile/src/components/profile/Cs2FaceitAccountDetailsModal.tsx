@@ -84,7 +84,7 @@ export default function Cs2FaceitAccountDetailsModal({
               className="h-12 w-12 rounded-full"
             />
           ) : (
-            <View className="bg-border flex h-12 w-12 items-center justify-center rounded-full">
+            <View className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
               <Text className="font-mono-semibold text-text-muted text-[11px] uppercase">
                 {faceitNick.slice(0, 2)}
               </Text>

@@ -2,8 +2,9 @@ import { ActivityIndicator, Text, View } from "react-native";
 
 import { Stack, useLocalSearchParams } from "expo-router";
 
+import { HeaderBar } from "@/src/components/Header";
 import Screen from "@/src/components/Screen";
-import ScreenTitle from "@/src/components/ScreenTitle";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import { trpc } from "@/src/utils/trpc";
 
 export default function GameDetailScreen() {
@@ -22,30 +23,45 @@ export default function GameDetailScreen() {
   if (isLoading) {
     return (
       <>
-        <Stack.Screen options={{ title: "Game" }} />
-        <View className="bg-background flex-1 items-center justify-center">
-          <ActivityIndicator />
-        </View>
+        <Stack.Screen options={{ headerShown: false }} />
+        <Screen>
+          <ScreenScroll header={<HeaderBar variant="centered" title="Game" />}>
+            <View className="flex-1 items-center justify-center py-8">
+              <ActivityIndicator />
+            </View>
+          </ScreenScroll>
+        </Screen>
       </>
     );
   }
 
   if (isError || !game) {
     return (
-      <Screen safeAreaEdges={["bottom", "left", "right"]}>
-        <Stack.Screen options={{ title: "Game" }} />
-        <ScreenTitle title="Game" />
-        <Text className="text-text mt-4 text-center font-sans">
-          Game not found.
-        </Text>
-      </Screen>
+      <>
+        <Stack.Screen options={{ headerShown: false }} />
+        <Screen>
+          <ScreenScroll header={<HeaderBar variant="centered" title="Game" />}>
+            <Text className="text-text text-center font-sans">
+              Game not found.
+            </Text>
+          </ScreenScroll>
+        </Screen>
+      </>
     );
   }
 
   return (
-    <Screen safeAreaEdges={["bottom", "left", "right"]}>
-      <Stack.Screen options={{ title: game.name }} />
-      <ScreenTitle title={game.name} />
-    </Screen>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Screen>
+        <ScreenScroll
+          header={<HeaderBar variant="centered" title={game.name} />}
+        >
+          <Text className="text-text text-center font-sans">
+            Game details coming soon.
+          </Text>
+        </ScreenScroll>
+      </Screen>
+    </>
   );
 }

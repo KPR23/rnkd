@@ -19,7 +19,7 @@ export default function IconButton({
     <TouchableOpacity
       activeOpacity={0.7}
       {...touchableProps}
-      className={`border-dark items-center justify-center border ${className}`}
+      className={`border-border items-center justify-center border ${className}`}
       style={[{ width: size, height: size }, style]}
     >
       {icon}

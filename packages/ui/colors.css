@@ -1,17 +1,21 @@
 @theme {
   --color-primary: #6d28d9;
-  --color-text: #f5f2f5;
-  --color-text-secondary: #9e99a8;
-  --color-text-muted: #6f6a7d;
-  --color-gray: #6f6a7d;
-  --color-dark: #1d1826;
-  --color-border: #241f2b;
-  --color-background: #0f0b14;
-  --color-sheet: #131018;
-  --color-card: #17121f;
+  --color-text: #f6f3f7;
+  --color-text-secondary: #828083;
+  --color-text-muted: #828083;
+  --color-gray: #828083;
+  --color-dark: #29262a;
+  --color-border: #4e4c4f;
+  --color-background: #131013;
+  --color-sheet: #1c1a1d;
+  --color-card: #1c1a1d;
+  --color-muted: #282828;
+  --color-button: #29262a;
   --color-games-lol: #c28f2b;
   --color-games-cs2: #2a377e;
-  --color-destructive: #dc2626;
+  --color-destructive: #c12527;
   --color-destructive-border: #7f1d1d;
   --color-destructive-text: #fca5a5;
+  --color-success: #16a34a;
+  --color-faceit-branding: #ff6309;
 }

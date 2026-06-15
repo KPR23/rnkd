@@ -1,9 +1,10 @@
 import { TRPCError } from "@trpc/server";
-import { and, asc, eq, inArray, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, or } from "drizzle-orm";
 import z from "zod";
 
 import { db, friendships, user } from "@repo/db";
 
+import { sendFriendRequestNotification } from "../services/notifications/expo-push";
 import { protectedProcedure, router } from "../trpc";
 
 const userIdInput = z.object({ userId: z.string() });
@@ -84,7 +85,12 @@ export const friendRouter = router({
 
       await requireUser(input.userId);
 
-      return await db.transaction(async (tx) => {
+      const requester = await db.query.user.findFirst({
+        columns: { name: true, tag: true },
+        where: eq(user.id, me),
+      });
+
+      const result = await db.transaction(async (tx) => {
         const inversePending = await tx.query.friendships.findFirst({
           where: and(
             eq(friendships.requesterUserId, input.userId),
@@ -137,6 +143,16 @@ export const friendRouter = router({
 
         return { outcome: "pending" as const };
       });
+
+      if (result.outcome === "pending") {
+        await sendFriendRequestNotification({
+          recipientUserId: input.userId,
+          requesterUserId: me,
+          requesterName: requester?.tag ?? requester?.name ?? "Someone",
+        });
+      }
+
+      return result;
     }),
 
   accept: protectedProcedure
@@ -255,6 +271,40 @@ export const friendRouter = router({
 
       return { ok: true as const };
     }),
+
+  listIncoming: protectedProcedure.query(async ({ ctx }) => {
+    const me = ctx.session.user.id;
+
+    const rows = await db
+      .select({
+        id: friendships.id,
+        createdAt: friendships.createdAt,
+        requesterId: user.id,
+        requesterName: user.name,
+        requesterTag: user.tag,
+        requesterImage: user.image,
+      })
+      .from(friendships)
+      .innerJoin(user, eq(friendships.requesterUserId, user.id))
+      .where(
+        and(
+          eq(friendships.addresseeUserId, me),
+          eq(friendships.status, "pending"),
+        ),
+      )
+      .orderBy(desc(friendships.createdAt), desc(friendships.id));
+
+    return rows.map((row) => ({
+      id: row.id,
+      createdAt: row.createdAt,
+      requester: {
+        id: row.requesterId,
+        name: row.requesterName,
+        tag: row.requesterTag,
+        image: row.requesterImage,
+      },
+    }));
+  }),
 
   list: protectedProcedure.query(async ({ ctx }) => {
     const me = ctx.session.user.id;

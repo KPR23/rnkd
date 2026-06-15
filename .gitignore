@@ -5,6 +5,7 @@ node_modules
 .pnp
 .pnp.js
 .cursor/
+.pnpm-store/
 
 # Local env files
 .env
@@ -27,6 +28,7 @@ coverage
 out/
 build
 dist
+apps/web/public/uploads/
 
 
 # Debug

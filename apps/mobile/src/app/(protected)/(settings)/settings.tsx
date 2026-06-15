@@ -1,9 +1,9 @@
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { useCallback } from "react";
+import { ActivityIndicator, Text, View } from "react-native";
 
-import { useRouter } from "expo-router";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
 import {
   AsteriskIcon,
-  BellIcon,
   FileTextIcon,
   GlobeIcon,
   HeadsetIcon,
@@ -13,15 +13,35 @@ import {
 } from "phosphor-react-native";
 
 import Button from "@/src/components/Button";
+import { HeaderBar } from "@/src/components/Header";
+import Screen from "@/src/components/Screen";
+import ScreenScroll from "@/src/components/ScreenScroll";
 import SettingsCard from "@/src/components/settings/SettingsCard";
 import UserHeader from "@/src/components/UserHeader";
 import { authClient } from "@/src/lib/auth/auth-client";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { APP_VERSION, APP_YEAR } from "@/src/lib/constants/app-version";
+import { mergeProfileIdentity } from "@/src/lib/profile/merge-profile-identity";
+import { trpc } from "@/src/utils/trpc";
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { data: session, isPending } = useAuth();
+  const { data: overview, refetch: refetchOverview } =
+    trpc.profile.getOverview.useQuery(
+      { userId: session?.user.id ?? "" },
+      { enabled: !!session?.user.id },
+    );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!session?.user.id) {
+        return;
+      }
+
+      void refetchOverview();
+    }, [refetchOverview, session?.user.id]),
+  );
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -40,14 +60,18 @@ export default function SettingsScreen() {
     return null;
   }
 
+  const headerUser = overview?.user
+    ? mergeProfileIdentity(session.user, overview.user)
+    : session.user;
+
   const settingsSections = [
     {
       title: "Account details",
       items: [
         {
-          title: "Personal information",
+          title: "Edit profile",
           icon: <UserIcon />,
-          onPress: () => void 0,
+          onPress: () => router.push("/personal-information"),
         },
         {
           title: "Linked accounts",
@@ -59,11 +83,6 @@ export default function SettingsScreen() {
     {
       title: "Preferences",
       items: [
-        {
-          title: "Notifications",
-          icon: <BellIcon />,
-          onPress: () => void 0,
-        },
         {
           title: "Appearance",
           icon: <SunIcon />,
@@ -99,44 +118,48 @@ export default function SettingsScreen() {
   ];
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ gap: 20, padding: 20 }}
-    >
-      <UserHeader user={session.user} />
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Screen safeAreaEdges={["top"]}>
+        <ScreenScroll
+          header={<HeaderBar variant="centered" title="Settings" />}
+        >
+          <UserHeader user={headerUser} />
 
-      <View className="flex flex-col gap-4">
-        {settingsSections.map((section) => (
-          <View key={section.title} className="flex flex-col gap-2">
-            <Text className="font-sans-semibold text-text text-xs uppercase">
-              {section.title}
-            </Text>
+          <View className="flex flex-col gap-4">
+            {settingsSections.map((section) => (
+              <View key={section.title} className="flex flex-col gap-2">
+                <Text className="font-sans-semibold text-text-secondary text-sm">
+                  {section.title}
+                </Text>
 
-            {section.items.map((item) => (
-              <SettingsCard
-                key={item.title}
-                title={item.title}
-                icon={item.icon}
-                onPress={item.onPress}
-              />
+                {section.items.map((item) => (
+                  <SettingsCard
+                    key={item.title}
+                    title={item.title}
+                    icon={item.icon}
+                    onPress={item.onPress}
+                  />
+                ))}
+              </View>
             ))}
           </View>
-        ))}
-      </View>
-      <Button
-        variant="destructive"
-        actionText="Sign out"
-        className="w-full"
-        onPress={handleSignOut}
-      />
-      <View className="items-center">
-        <Text className="text-text-muted text-center text-sm">
-          Version {APP_VERSION}
-        </Text>
-        <Text className="text-text-muted text-center text-sm">
-          © {APP_YEAR} KPR&apos;s Lab. All rights reserved.
-        </Text>
-      </View>
-    </ScrollView>
+          <Button
+            variant="destructive"
+            actionText="Sign out"
+            className="w-full"
+            onPress={handleSignOut}
+          />
+          <View className="items-center">
+            <Text className="text-text-muted text-center text-sm">
+              Version {APP_VERSION}
+            </Text>
+            <Text className="text-text-muted text-center text-sm">
+              © {APP_YEAR} KPR&apos;s Lab. All rights reserved.
+            </Text>
+          </View>
+        </ScreenScroll>
+      </Screen>
+    </>
   );
 }

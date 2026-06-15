@@ -3,8 +3,11 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 
 import { CaretRightIcon, IconContext } from "phosphor-react-native";
 
+import { useRouter } from "expo-router";
+
 import {
   GAMES,
+  isCs2FaceitGameAccount,
   isLolGameAccount,
   type Cs2FaceitGameAccount,
   type GameAccount,
@@ -71,7 +74,7 @@ function Cs2FaceitAccountBody({
           className="h-12 w-12 rounded-full"
         />
       ) : (
-        <View className="bg-border flex h-12 w-12 items-center justify-center rounded-full">
+        <View className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
           <Text
             className="font-mono-semibold text-text-muted text-[11px] uppercase"
             numberOfLines={1}
@@ -152,8 +155,10 @@ export default function ConnectedAccountCard({
 }: {
   gameAccount: GameAccount;
 }) {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { bgClass, label, body } = accountCardPresentation(gameAccount);
+  const isFaceit = isCs2FaceitGameAccount(gameAccount);
 
   return (
     <View className="flex flex-col">
@@ -168,8 +173,12 @@ export default function ConnectedAccountCard({
       <IconContext.Provider value={accountRowIconContext}>
         <TouchableOpacity
           activeOpacity={0.7}
-          className="bg-card border-border flex flex-row items-center justify-between border border-t-0 p-5"
+          className="bg-card border-muted flex flex-row items-center justify-between border border-t-0 p-5"
           onPress={() => {
+            if (isFaceit) {
+              router.push(`/game-profile/${gameAccount.id}`);
+              return;
+            }
             setIsModalOpen(true);
           }}
         >
@@ -180,11 +189,13 @@ export default function ConnectedAccountCard({
         </TouchableOpacity>
       </IconContext.Provider>
 
-      <AccountDetailsModal
-        gameAccount={gameAccount}
-        visible={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      {!isFaceit ? (
+        <AccountDetailsModal
+          gameAccount={gameAccount}
+          visible={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      ) : null}
     </View>
   );
 }

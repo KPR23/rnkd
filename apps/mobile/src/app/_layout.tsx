@@ -1,19 +1,7 @@
 import "@/globals.css";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
-import {
-  JetBrainsMono_400Regular,
-  JetBrainsMono_500Medium,
-  JetBrainsMono_600SemiBold,
-  JetBrainsMono_700Bold,
-} from "@expo-google-fonts/jetbrains-mono";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -21,31 +9,32 @@ import { StatusBar } from "expo-status-bar";
 
 import { colors } from "@repo/ui/colors";
 import { useAuth } from "@/src/lib/auth/use-auth";
+import { KeyboardOffsetProvider } from "@/src/lib/keyboard/keyboard-offset-provider";
+import { MessageProvider } from "@/src/lib/messages/message-provider";
+import { useRegisterPushNotifications } from "@/src/lib/notifications/push-notifications";
 import { TRPCProvider } from "@/src/utils/provider";
 
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootNavigator() {
   const { data: session, isPending } = useAuth();
+  const splashHiddenRef = useRef(false);
+  useRegisterPushNotifications(!!session);
 
   const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    JetBrainsMono_400Regular,
-    JetBrainsMono_500Medium,
-    JetBrainsMono_600SemiBold,
-    JetBrainsMono_700Bold,
+    "IBM Plex Sans": require("../../assets/fonts/IBMPlexSans-VariableFont_wdth,wght.ttf"),
   });
 
   const fontsReady = fontsLoaded || !!fontError;
   const ready = fontsReady && !isPending;
 
   useEffect(() => {
-    if (ready) {
-      void SplashScreen.hideAsync();
+    if (!ready || splashHiddenRef.current) {
+      return;
     }
+
+    splashHiddenRef.current = true;
+    void SplashScreen.hideAsync().catch(() => {});
   }, [ready]);
 
   if (!ready) {
@@ -88,7 +77,11 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <TRPCProvider>
-      <RootNavigator />
+      <KeyboardOffsetProvider>
+        <MessageProvider>
+          <RootNavigator />
+        </MessageProvider>
+      </KeyboardOffsetProvider>
     </TRPCProvider>
   );
 }

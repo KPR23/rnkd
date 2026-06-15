@@ -41,8 +41,8 @@ const RIOT_PLATFORM_ROUTE = [
   "tw2",
   "vn2",
 ] as const;
-const regionalRouteEnum = pgEnum("regional_route", RIOT_REGIONAL_ROUTE);
-const platformRouteEnum = pgEnum("platform_route", RIOT_PLATFORM_ROUTE);
+export const regionalRouteEnum = pgEnum("regional_route", RIOT_REGIONAL_ROUTE);
+export const platformRouteEnum = pgEnum("platform_route", RIOT_PLATFORM_ROUTE);
 
 export const games = pgTable("games", {
   id: text("id").primaryKey(),

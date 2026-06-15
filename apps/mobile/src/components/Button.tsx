@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Text,
   TouchableOpacity,
   type TouchableOpacityProps,
 } from "react-native";
@@ -8,6 +7,7 @@ import {
 import { IconContext } from "phosphor-react-native";
 
 import { colors } from "@repo/ui/colors";
+import AppText from "@/src/components/AppText";
 
 type ButtonVariant = "primary" | "secondary" | "destructive";
 
@@ -23,14 +23,14 @@ const baseClassName = "h-12 flex-row items-center justify-center gap-2";
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary: "bg-primary",
-  secondary: "bg-dark border border-border",
+  secondary: "bg-button border border-border",
   destructive: "bg-destructive border border-destructiveBorder",
 };
 
 const textColors: Record<ButtonVariant, string> = {
-  primary: "text-text",
-  secondary: "text-text",
-  destructive: "text-text",
+  primary: colors.text,
+  secondary: colors.text,
+  destructive: colors.text,
 };
 
 const iconColors: Record<ButtonVariant, string> = {
@@ -50,7 +50,7 @@ export default function Button({
   const isDisabled = !!touchableProps.disabled;
   const iconContext = {
     size: 20,
-    color: isDisabled ? colors.textSecondary : iconColors[variant],
+    color: isDisabled ? colors.border : iconColors[variant],
     weight: "bold" as const,
   };
 
@@ -59,7 +59,7 @@ export default function Button({
       <TouchableOpacity
         activeOpacity={0.7}
         className={`${baseClassName} ${variantStyles[variant]} ${className ?? ""} ${
-          isDisabled ? "border-text-muted/30 border bg-transparent" : ""
+          isDisabled ? "border-muted bg-background border" : ""
         }`}
         style={
           variant === "destructive"
@@ -69,12 +69,13 @@ export default function Button({
         onPress={onPress}
         {...touchableProps}
       >
-        <Text
-          className={`${isDisabled ? "text-text-muted/50" : textColors[variant]} text-sm uppercase`}
-          style={{ fontFamily: "JetBrainsMono_600SemiBold" }}
+        <AppText
+          className="text-sm"
+          color={isDisabled ? colors.border : textColors[variant]}
+          weight="medium"
         >
           {actionText}
-        </Text>
+        </AppText>
         {icon}
       </TouchableOpacity>
     </IconContext.Provider>

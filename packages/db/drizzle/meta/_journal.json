@@ -43,6 +43,76 @@
       "when": 1778508560000,
       "tag": "0005_seed_cs2_faceit_game",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779792422888,
+      "tag": "0006_sparkling_angel",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779900000000,
+      "tag": "0007_match_map_name",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1779900100000,
+      "tag": "0008_player_stats_avg_kd",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1779900200000,
+      "tag": "0009_elo_history_account_match_unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1780855740000,
+      "tag": "0010_groups",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1780858380000,
+      "tag": "0011_groups_name_unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1781453219296,
+      "tag": "0012_windy_nighthawk",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1781468327160,
+      "tag": "0013_lying_rogue",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1781472000000,
+      "tag": "0014_game_account_rs_points",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1781473521289,
+      "tag": "0015_curly_crystal",
+      "breakpoints": true
     }
   ]
 }

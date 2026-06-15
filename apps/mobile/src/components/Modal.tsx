@@ -1,18 +1,13 @@
 import { PropsWithChildren, ReactNode } from "react";
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Modal, ScrollView, TouchableOpacity, View } from "react-native";
 
 import { XIcon } from "phosphor-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { colors } from "@repo/ui/colors";
+import AppText from "@/src/components/AppText";
+import { resolveBottomDockHeight } from "@/src/constants/bottom-dock";
+import { useKeyboardOffset } from "@/src/lib/keyboard/keyboard-offset-provider";
 
 export default function CustomModal({
   children,
@@ -28,6 +23,9 @@ export default function CustomModal({
   headerCenter?: ReactNode;
   footer?: ReactNode;
 }>) {
+  const keyboardOffset = useKeyboardOffset();
+  const footerHeight = resolveBottomDockHeight(keyboardOffset);
+
   return (
     <Modal
       visible={visible}
@@ -36,25 +34,22 @@ export default function CustomModal({
       animationType="slide"
     >
       <View className="bg-sheet flex-1">
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
-        >
-          <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
-            <View className="relative flex flex-row items-center justify-between px-6 py-4">
-              {title ? (
-                <Text className="text-text font-sans-bold z-10 text-lg">
-                  {title}
-                </Text>
-              ) : (
-                <View className="h-6 w-6" />
-              )}
-              {headerCenter ? (
-                <View className="absolute right-0 left-0 items-center">
-                  {headerCenter}
-                </View>
-              ) : null}
+        <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+          <View className="border-muted border-b px-5 py-2">
+            <View className="mb-3 items-center">
+              <View className="bg-muted h-1 w-10 rounded-full" />
+            </View>
+            <View className="flex-row items-center">
+              <View className="w-10" />
+              <View className="min-h-10 flex-1 items-center justify-center px-2">
+                {headerCenter ? (
+                  headerCenter
+                ) : title ? (
+                  <AppText className="text-center text-lg" weight="medium">
+                    {title}
+                  </AppText>
+                ) : null}
+              </View>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={onClose}
@@ -62,28 +57,36 @@ export default function CustomModal({
                 accessibilityRole="button"
                 accessible
                 importantForAccessibility="yes"
-                className="z-10"
+                className="h-10 w-10 items-center justify-center"
               >
-                <XIcon size={24} color={colors.textMuted} weight="bold" />
+                <XIcon size={22} color={colors.textMuted} weight="bold" />
               </TouchableOpacity>
             </View>
-            <ScrollView
-              className="flex-1"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 20,
-                paddingBottom: 24,
+          </View>
+          <ScrollView
+            className="flex-1"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingHorizontal: 20,
+              paddingTop: 20,
+              paddingBottom: 24,
+            }}
+          >
+            {children}
+          </ScrollView>
+          {footer ? (
+            <View
+              className="border-muted bg-sheet border-t px-5"
+              style={{
+                height: footerHeight,
+                marginBottom: keyboardOffset,
               }}
             >
-              {children}
-            </ScrollView>
-            {footer ? (
-              <View className="border-border bg-sheet border-t px-5 py-4">
-                {footer}
-              </View>
-            ) : null}
-          </SafeAreaView>
-        </KeyboardAvoidingView>
+              {footer}
+            </View>
+          ) : null}
+        </SafeAreaView>
       </View>
     </Modal>
   );

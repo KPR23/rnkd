@@ -26,6 +26,9 @@ export const userRouter = router({
         name: row.name,
         tag: row.tag,
         image: row.image,
+        bio: row.bio,
+        region: row.region,
+        globalRs: row.globalRs,
       };
     }),
 });

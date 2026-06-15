@@ -4,19 +4,23 @@ import { account, session, user } from "./auth";
 import { cs2FaceitMatchPlayers } from "./cs2-faceit-match-players";
 import { cs2FaceitRankedEntries } from "./cs2-faceit-ranked";
 import {
+  feedCommentLikes,
+  feedPostComments,
+  feedPostLikes,
+  feedPosts,
+} from "./feed";
+import {
   cs2FaceitGameAccountProfiles,
   gameAccounts,
   games,
   lolGameAccountProfiles,
 } from "./games";
+import { groupMembers, groups } from "./groups";
 import { leagueMembers, leagueRankings, leagues } from "./leagues";
 import { lolRankedEntries } from "./lol-ranked";
-import {
-  eloHistory,
-  matches,
-  matchParticipants,
-  playerStats,
-} from "./matches";
+import { eloHistory, matches, matchParticipants, playerStats } from "./matches";
+import { pushTokens } from "./notifications";
+import { gameAccountRsPoints } from "./rs-points";
 import { friendships } from "./social";
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -29,6 +33,13 @@ export const userRelations = relations(user, ({ many }) => ({
   friendshipsReceived: many(friendships, {
     relationName: "friendshipsAddressee",
   }),
+  feedPosts: many(feedPosts),
+  feedPostLikes: many(feedPostLikes),
+  feedPostComments: many(feedPostComments),
+  feedCommentLikes: many(feedCommentLikes),
+  pushTokens: many(pushTokens),
+  ownedGroups: many(groups),
+  groupMemberships: many(groupMembers),
 }));
 
 export const gameAccountRelations = relations(
@@ -55,6 +66,7 @@ export const gameAccountRelations = relations(
     cs2FaceitMatchPlayers: many(cs2FaceitMatchPlayers),
     eloHistory: many(eloHistory),
     lolRankedEntries: many(lolRankedEntries),
+    rsPoints: many(gameAccountRsPoints),
     playerStats: one(playerStats),
   }),
 );
@@ -94,6 +106,16 @@ export const lolRankedEntriesRelations = relations(
   ({ one }) => ({
     account: one(gameAccounts, {
       fields: [lolRankedEntries.gameAccountId],
+      references: [gameAccounts.id],
+    }),
+  }),
+);
+
+export const gameAccountRsPointsRelations = relations(
+  gameAccountRsPoints,
+  ({ one }) => ({
+    account: one(gameAccounts, {
+      fields: [gameAccountRsPoints.gameAccountId],
       references: [gameAccounts.id],
     }),
   }),
@@ -154,6 +176,63 @@ export const eloHistoryRelations = relations(eloHistory, ({ one }) => ({
   }),
 }));
 
+export const feedPostsRelations = relations(feedPosts, ({ one, many }) => ({
+  author: one(user, {
+    fields: [feedPosts.authorUserId],
+    references: [user.id],
+  }),
+  likes: many(feedPostLikes),
+  comments: many(feedPostComments),
+}));
+
+export const feedPostLikesRelations = relations(feedPostLikes, ({ one }) => ({
+  post: one(feedPosts, {
+    fields: [feedPostLikes.postId],
+    references: [feedPosts.id],
+  }),
+  user: one(user, {
+    fields: [feedPostLikes.userId],
+    references: [user.id],
+  }),
+}));
+
+export const feedPostCommentsRelations = relations(
+  feedPostComments,
+  ({ one, many }) => ({
+    post: one(feedPosts, {
+      fields: [feedPostComments.postId],
+      references: [feedPosts.id],
+    }),
+    parent: one(feedPostComments, {
+      fields: [feedPostComments.parentCommentId],
+      references: [feedPostComments.id],
+      relationName: "commentReplies",
+    }),
+    replies: many(feedPostComments, {
+      relationName: "commentReplies",
+    }),
+    author: one(user, {
+      fields: [feedPostComments.authorUserId],
+      references: [user.id],
+    }),
+    likes: many(feedCommentLikes),
+  }),
+);
+
+export const feedCommentLikesRelations = relations(
+  feedCommentLikes,
+  ({ one }) => ({
+    comment: one(feedPostComments, {
+      fields: [feedCommentLikes.commentId],
+      references: [feedPostComments.id],
+    }),
+    user: one(user, {
+      fields: [feedCommentLikes.userId],
+      references: [user.id],
+    }),
+  }),
+);
+
 export const friendshipsRelations = relations(friendships, ({ one }) => ({
   requester: one(user, {
     fields: [friendships.requesterUserId],
@@ -164,6 +243,29 @@ export const friendshipsRelations = relations(friendships, ({ one }) => ({
     fields: [friendships.addresseeUserId],
     references: [user.id],
     relationName: "friendshipsAddressee",
+  }),
+}));
+
+export const groupsRelations = relations(groups, ({ one, many }) => ({
+  owner: one(user, {
+    fields: [groups.ownerUserId],
+    references: [user.id],
+  }),
+  members: many(groupMembers),
+}));
+
+export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
+  group: one(groups, {
+    fields: [groupMembers.groupId],
+    references: [groups.id],
+  }),
+  user: one(user, {
+    fields: [groupMembers.userId],
+    references: [user.id],
+  }),
+  invitedBy: one(user, {
+    fields: [groupMembers.invitedByUserId],
+    references: [user.id],
   }),
 }));
 
@@ -206,6 +308,13 @@ export const gameRelations = relations(games, ({ many }) => ({
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, {
     fields: [session.userId],
+    references: [user.id],
+  }),
+}));
+
+export const pushTokenRelations = relations(pushTokens, ({ one }) => ({
+  user: one(user, {
+    fields: [pushTokens.userId],
     references: [user.id],
   }),
 }));
