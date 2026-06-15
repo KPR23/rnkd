@@ -19,7 +19,7 @@ import { refetchAuthSession, useAuth } from "@/src/lib/auth/use-auth";
 import { useAuthAccounts } from "@/src/lib/auth/use-auth-accounts";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { pickProfileImageFromLibrary } from "@/src/lib/profile/pick-profile-image";
-import { uploadAvatarLocalDev } from "@/src/lib/profile/upload-avatar-local-dev";
+import { uploadAvatar } from "@/src/lib/profile/upload-avatar";
 import { mobileServerUrl } from "@/src/lib/server-url";
 import { trpc } from "@/src/utils/trpc";
 
@@ -214,7 +214,7 @@ export default function PersonalInformationScreen() {
     setIsUploadingAvatar(true);
 
     try {
-      const uploadedUrl = await uploadAvatarLocalDev(asset.uri);
+      const uploadedUrl = await uploadAvatar(asset.uri);
       setImage(uploadedUrl);
     } catch (error) {
       const message =

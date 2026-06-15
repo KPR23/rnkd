@@ -73,6 +73,7 @@ export default function FeedFriendRequestCard({
           actionText="Accept"
           className="h-9! flex-1"
           disabled={disabled}
+          haptic="impact"
           onPress={onAccept}
         />
         <Button

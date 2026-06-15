@@ -13,6 +13,7 @@ import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import UserProfileImage from "@/src/components/UserProfileImage";
 import { formatFeedRelativeTime } from "@/src/lib/feed/feed-time";
+import { haptics } from "@/src/lib/haptics";
 import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 
 import { toFeedUser } from "./feed-user";
@@ -74,6 +75,12 @@ export default function FeedCommentRow({
     });
   };
 
+  const handleToggleLike = () => {
+    if (isLikePending) return;
+    void haptics.impact();
+    onToggleLike?.();
+  };
+
   return (
     <View className={`gap-2.5 ${indentClassName}`}>
       <View className="flex-row items-start gap-4">
@@ -107,7 +114,7 @@ export default function FeedCommentRow({
           accessibilityLabel="Like comment"
           className="pt-5"
           disabled={isLikePending}
-          onPress={onToggleLike}
+          onPress={handleToggleLike}
         >
           <HeartStraightIcon
             size={20}

@@ -23,6 +23,7 @@ import AppText from "@/src/components/AppText";
 import Screen from "@/src/components/Screen";
 import ScreenScroll from "@/src/components/ScreenScroll";
 import { copyToClipboard } from "@/src/lib/clipboard";
+import { haptics } from "@/src/lib/haptics";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { goBackFromGroup } from "@/src/lib/navigation/groups";
 import { trpc } from "@/src/utils/trpc";
@@ -110,6 +111,7 @@ export default function GroupDetailsScreen() {
 
   const handleCopyInviteCode = async () => {
     closeMenu();
+    void haptics.tap();
     const inviteCode = data?.group.inviteCode ?? "";
     const copied = await copyToClipboard(inviteCode);
 

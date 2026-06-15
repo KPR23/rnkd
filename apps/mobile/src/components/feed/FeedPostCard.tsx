@@ -13,6 +13,7 @@ import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import UserProfileImage from "@/src/components/UserProfileImage";
 import { formatFeedRelativeTime } from "@/src/lib/feed/feed-time";
+import { haptics } from "@/src/lib/haptics";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { shareFeedPost } from "@/src/lib/share/deep-links";
 import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
@@ -35,6 +36,7 @@ export type FeedPostCardData = {
   likeCount: number;
   commentCount: number;
   likedByMe: boolean;
+  isPending?: boolean;
 };
 
 type Props = {
@@ -81,13 +83,20 @@ export default function FeedPostCard({
 
   const handleSharePost = async () => {
     try {
+      void haptics.tap();
       await shareFeedPost(post);
     } catch {
       showError("Could not open sharing options.");
     }
   };
 
-  const cardClassName = "border-muted bg-card gap-3.5 border py-4";
+  const handleToggleLike = () => {
+    if (isLikePending) return;
+    void haptics.impact();
+    onToggleLike?.();
+  };
+
+  const cardClassName = `border-muted bg-card gap-3.5 border py-4${post.isPending ? " opacity-70" : ""}`;
 
   const handleMenuPress = () => {
     menuButtonRef.current?.measureInWindow((x, y, width, height) => {
@@ -148,7 +157,7 @@ export default function FeedPostCard({
               accessibilityLabel="Like post"
               className="flex-row items-center gap-1 px-2"
               disabled={isLikePending}
-              onPress={onToggleLike}
+              onPress={handleToggleLike}
             >
               <HeartStraightIcon
                 size={20}

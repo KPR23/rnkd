@@ -26,6 +26,7 @@ import ProfileInfoCard from "@/src/components/profile/ProfileInfoCard";
 import ScreenTitle from "@/src/components/ScreenTitle";
 import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
 import { useMessage } from "@/src/lib/messages/message-provider";
+import { haptics } from "@/src/lib/haptics";
 import { mergeProfileIdentity } from "@/src/lib/profile/merge-profile-identity";
 import { sharePlayerProfile } from "@/src/lib/share/deep-links";
 import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
@@ -93,24 +94,58 @@ export default function ProfileScreen({
     await utils.friend.relationship.invalidate({ userId: user.id });
   }, [utils.friend.relationship, user.id]);
 
-  const requestMut = trpc.friend.request.useMutation({
-    onSuccess: invalidateRelationship,
-  });
-  const acceptMut = trpc.friend.accept.useMutation({
-    onSuccess: invalidateRelationship,
-  });
-  const declineMut = trpc.friend.decline.useMutation({
-    onSuccess: invalidateRelationship,
-  });
-  const cancelMut = trpc.friend.cancelRequest.useMutation({
-    onSuccess: invalidateRelationship,
-  });
-  const removeMut = trpc.friend.remove.useMutation({
-    onSuccess: invalidateRelationship,
-    onError: (error) => {
-      showError(error.message);
+  type RelationshipData = NonNullable<
+    ReturnType<typeof utils.friend.relationship.getData>
+  >;
+
+  const setRelationshipOptimistic = useCallback(
+    (next: RelationshipData) => {
+      utils.friend.relationship.setData({ userId: user.id }, next);
     },
-  });
+    [utils.friend.relationship, user.id],
+  );
+
+  const withRelationshipOptimism = useCallback(
+    (
+      next: RelationshipData,
+      mutate: () => Promise<unknown>,
+      options?: { successHaptic?: boolean },
+    ) => {
+      void (async () => {
+        await utils.friend.relationship.cancel({ userId: user.id });
+        const previous = utils.friend.relationship.getData({ userId: user.id });
+        setRelationshipOptimistic(next);
+        try {
+          await mutate();
+          if (options?.successHaptic) {
+            void haptics.success();
+          }
+          await invalidateRelationship();
+        } catch (error) {
+          if (previous) {
+            utils.friend.relationship.setData({ userId: user.id }, previous);
+          }
+          void haptics.warning();
+          if (error instanceof Error) {
+            showError(error.message);
+          }
+        }
+      })();
+    },
+    [
+      invalidateRelationship,
+      setRelationshipOptimistic,
+      showError,
+      user.id,
+      utils.friend.relationship,
+    ],
+  );
+
+  const requestMut = trpc.friend.request.useMutation();
+  const acceptMut = trpc.friend.accept.useMutation();
+  const declineMut = trpc.friend.decline.useMutation();
+  const cancelMut = trpc.friend.cancelRequest.useMutation();
+  const removeMut = trpc.friend.remove.useMutation();
 
   const globalRs = overview?.user.globalRs ?? 0;
   const displayUser = overview?.user
@@ -141,11 +176,16 @@ export default function ProfileScreen({
 
   const handleRemoveFriend = () => {
     closeActionsMenu();
-    void removeMut.mutateAsync({ userId: user.id });
+    withRelationshipOptimism(
+      { status: "default", pendingDirection: undefined },
+      () => removeMut.mutateAsync({ userId: user.id }),
+      { successHaptic: true },
+    );
   };
 
   const handleShareProfile = async () => {
     try {
+      void haptics.tap();
       await sharePlayerProfile(displayUser);
     } catch {
       showError("Could not open sharing options.");
@@ -155,9 +195,9 @@ export default function ProfileScreen({
   const primaryButton = isOwnProfile ? (
     <Button
       variant="primary"
-      actionText="Invite"
+      actionText="Edit profile"
       className="flex-1"
-      onPress={() => void 0}
+      onPress={() => router.push("/personal-information")}
     />
   ) : relationship?.status === "friends" ? (
     <Button
@@ -179,7 +219,12 @@ export default function ProfileScreen({
       actionText="Cancel invite"
       className="flex-1"
       disabled={isFriendActionPending}
-      onPress={() => void cancelMut.mutateAsync({ userId: user.id })}
+      onPress={() =>
+        withRelationshipOptimism(
+          { status: "default", pendingDirection: undefined },
+          () => cancelMut.mutateAsync({ userId: user.id }),
+        )
+      }
     />
   ) : relationship?.status === "default" ? (
     <Button
@@ -187,7 +232,12 @@ export default function ProfileScreen({
       actionText="Add friend"
       className="flex-1"
       disabled={isFriendActionPending}
-      onPress={() => void requestMut.mutateAsync({ userId: user.id })}
+      onPress={() =>
+        withRelationshipOptimism(
+          { status: "pending", pendingDirection: "outgoing" },
+          () => requestMut.mutateAsync({ userId: user.id }),
+        )
+      }
     />
   ) : null;
 
@@ -278,8 +328,12 @@ export default function ProfileScreen({
                   actionText="Accept"
                   className="flex-1"
                   disabled={isFriendActionPending}
+                  haptic="impact"
                   onPress={() =>
-                    void acceptMut.mutateAsync({ requesterId: user.id })
+                    withRelationshipOptimism(
+                      { status: "friends", pendingDirection: undefined },
+                      () => acceptMut.mutateAsync({ requesterId: user.id }),
+                    )
                   }
                 />
                 <Button
@@ -288,7 +342,11 @@ export default function ProfileScreen({
                   className="flex-1"
                   disabled={isFriendActionPending}
                   onPress={() =>
-                    void declineMut.mutateAsync({ requesterId: user.id })
+                    withRelationshipOptimism(
+                      { status: "default", pendingDirection: undefined },
+                      () => declineMut.mutateAsync({ requesterId: user.id }),
+                      { successHaptic: false },
+                    )
                   }
                 />
               </>
