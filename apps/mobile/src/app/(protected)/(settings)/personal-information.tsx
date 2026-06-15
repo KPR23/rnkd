@@ -167,7 +167,7 @@ export default function PersonalInformationScreen() {
 
   const updateProfile = trpc.profile.update.useMutation({
     onSuccess: async () => {
-      await utils.profile.invalidate();
+      await Promise.all([utils.profile.invalidate(), utils.group.invalidate()]);
       await refetchSession({ query: { disableCookieCache: true } });
       await refetchAuthSession();
       router.back();

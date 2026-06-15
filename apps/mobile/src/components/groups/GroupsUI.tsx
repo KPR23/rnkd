@@ -1,4 +1,4 @@
-import { useMemo, type RefObject } from "react";
+import { useEffect, useMemo, useState, type RefObject } from "react";
 import { Image, Pressable, TouchableOpacity, View } from "react-native";
 
 import {
@@ -18,6 +18,7 @@ import Button from "@/src/components/Button";
 import { HeaderBar } from "@/src/components/Header";
 import { copyToClipboard } from "@/src/lib/clipboard";
 import { useMessage } from "@/src/lib/messages/message-provider";
+import { resolveProfileImageUrl } from "@/src/lib/profile/resolve-profile-image-url";
 import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 
 export type GroupSummary = {
@@ -321,6 +322,9 @@ function AvatarBubble({
   image?: string | null;
   size?: number;
 }) {
+  const [hasImageError, setHasImageError] = useState(false);
+  const imageUri = resolveProfileImageUrl(image);
+  const showImage = Boolean(imageUri) && !hasImageError;
   const initials = useMemo(
     () =>
       name
@@ -333,13 +337,18 @@ function AvatarBubble({
     [name],
   );
 
-  if (image) {
+  useEffect(() => {
+    setHasImageError(false);
+  }, [image]);
+
+  if (showImage) {
     return (
       <Image
-        source={{ uri: image }}
+        source={{ uri: imageUri ?? undefined }}
         className="rounded-full"
         resizeMode="cover"
         style={{ height: size, width: size }}
+        onError={() => setHasImageError(true)}
       />
     );
   }
