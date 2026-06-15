@@ -9,13 +9,16 @@ import {
   isLolGameAccount,
   type Cs2FaceitMatchHistoryRow,
   type GameAccount,
+  type LolMatchHistoryRow,
 } from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
 import FaceitLevelProgressCard from "@/src/components/profile/FaceitLevelProgressCard";
 import MatchDetailsModal from "@/src/components/profile/game-profile/MatchDetailsModal";
+import LolProfileRecentMatchCard from "@/src/components/profile/LolProfileRecentMatchCard";
 import ProfileRecentMatchCard from "@/src/components/profile/ProfileRecentMatchCard";
+import RankDisplayCard from "@/src/components/RankDisplayCard";
 import { trpc } from "@/src/utils/trpc";
 
 function gameTitle(gameId: string) {
@@ -49,6 +52,16 @@ export default function GameProfileSection({
     { enabled: isFaceit },
   );
 
+  const lolDisplay = trpc.gameAccount.getLolProfileDisplay.useQuery(
+    { gameAccountId: gameAccount.id },
+    { enabled: isLol },
+  );
+
+  const lolMatches = trpc.riot.getMatchHistory.useQuery(
+    { gameAccountId: gameAccount.id },
+    { enabled: isLol },
+  );
+
   let nickname = gameAccount.externalId;
   if (isFaceit && gameAccount.profile?.faceitNickname?.trim()) {
     nickname = gameAccount.profile.faceitNickname.trim();
@@ -58,7 +71,19 @@ export default function GameProfileSection({
 
   const recentFaceitRows = (faceitMatches.data?.rows ??
     []) as Cs2FaceitMatchHistoryRow[];
+  const recentLolRows = ((lolMatches.data ?? []) as LolMatchHistoryRow[]).slice(
+    0,
+    2,
+  );
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const lolRanked = lolDisplay.data?.ranked;
+  const lolRankedPlayed = lolRanked
+    ? lolRanked.wins + lolRanked.losses
+    : 0;
+  const lolWinRateLine =
+    lolRanked && lolRankedPlayed > 0
+      ? `${((lolRanked.wins / lolRankedPlayed) * 100).toFixed(0)}%`
+      : "—";
 
   return (
     <>
@@ -83,6 +108,22 @@ export default function GameProfileSection({
                 row={row}
                 onPress={() => setSelectedMatchId(row.matches.id)}
               />
+            ))}
+          </View>
+        ) : null}
+
+        {isLol ? (
+          <RankDisplayCard
+            ranked={lolRanked}
+            accountLabel="Ranked Solo/Duo"
+            winRateLine={lolWinRateLine}
+          />
+        ) : null}
+
+        {isLol && recentLolRows.length > 0 ? (
+          <View className="flex flex-row gap-2.5">
+            {recentLolRows.map((row) => (
+              <LolProfileRecentMatchCard key={row.matches.id} row={row} />
             ))}
           </View>
         ) : null}
