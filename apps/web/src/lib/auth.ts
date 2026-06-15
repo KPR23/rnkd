@@ -5,6 +5,8 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@repo/db";
 import { env } from "@repo/env";
 
+const mobileServerUrl = process.env.EXPO_PUBLIC_SERVER_URL?.replace(/\/+$/, "");
+
 const socialProviders =
   env.OAUTH_GITHUB_CLIENT_ID && env.OAUTH_GITHUB_CLIENT_SECRET
     ? {
@@ -22,15 +24,17 @@ export const auth = betterAuth({
   }),
   trustedOrigins: Array.from(
     new Set(
-      env.NODE_ENV === "development"
+      (env.NODE_ENV === "development"
         ? [
             env.BETTER_AUTH_URL,
+            mobileServerUrl,
             "http://localhost:3000",
             "exp://",
             "rnkd://",
             "com.rnkd.mobile://",
           ]
-        : [env.BETTER_AUTH_URL, "rnkd://", "com.rnkd.mobile://"],
+        : [env.BETTER_AUTH_URL, "rnkd://", "com.rnkd.mobile://"]
+      ).filter((origin): origin is string => Boolean(origin)),
     ),
   ),
   user: {
