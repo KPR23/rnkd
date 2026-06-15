@@ -6,12 +6,14 @@ import {
   type View as ViewType,
 } from "react-native";
 
+import { useRouter } from "expo-router";
 import { DotsThreeIcon, HeartStraightIcon, XIcon } from "phosphor-react-native";
 
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import UserProfileImage from "@/src/components/UserProfileImage";
 import { formatFeedRelativeTime } from "@/src/lib/feed/feed-time";
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 
 import { toFeedUser } from "./feed-user";
 import type { FeedPostAuthor } from "./FeedPostCard";
@@ -52,7 +54,9 @@ export default function FeedCommentRow({
   isReplyActive = false,
   isLikePending = false,
 }: Props) {
+  const router = useRouter();
   const menuButtonRef = useRef<ViewType>(null);
+  const authorDisplayName = formatUserDisplayName(comment.author);
   const createdAt =
     comment.createdAt instanceof Date
       ? comment.createdAt
@@ -73,14 +77,17 @@ export default function FeedCommentRow({
   return (
     <View className={`gap-2.5 ${indentClassName}`}>
       <View className="flex-row items-start gap-4">
-        <View className="min-w-0 flex-1 flex-row items-start gap-2.5">
+        <Pressable
+          className="min-w-0 flex-1 flex-row items-start gap-2.5"
+          onPress={() => router.push(`/player/${comment.author.id}`)}
+        >
           <View className="size-10 overflow-hidden rounded-full">
             <UserProfileImage user={toFeedUser(comment.author)} size={40} />
           </View>
           <View className="min-w-0 flex-1">
             <View className="flex-row flex-wrap items-center">
               <AppText className="text-base leading-5" weight="medium">
-                {comment.author.name}
+                {authorDisplayName}
               </AppText>
               <AppText className="text-base leading-5" color="#828083">
                 {" "}
@@ -94,7 +101,7 @@ export default function FeedCommentRow({
               {comment.body}
             </AppText>
           </View>
-        </View>
+        </Pressable>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Like comment"
@@ -121,8 +128,8 @@ export default function FeedCommentRow({
             accessibilityRole="button"
             accessibilityLabel={
               isReplyActive
-                ? `Cancel reply to ${comment.author.name}`
-                : `Reply to ${comment.author.name}`
+                ? `Cancel reply to ${authorDisplayName}`
+                : `Reply to ${authorDisplayName}`
             }
             className="flex-row items-center gap-1"
             onPress={onReply}

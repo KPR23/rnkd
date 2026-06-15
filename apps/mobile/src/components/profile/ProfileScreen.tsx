@@ -27,6 +27,7 @@ import ScreenTitle from "@/src/components/ScreenTitle";
 import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
 import { mergeProfileIdentity } from "@/src/lib/profile/merge-profile-identity";
 import { useMessage } from "@/src/lib/messages/message-provider";
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 import { trpc } from "@/src/utils/trpc";
 
 export type ProfilePullToRefresh = {
@@ -287,7 +288,7 @@ export default function ProfileScreen({
           </View>
           {incomingRequestCondition ? (
             <AppText className="text-sm" color={colors.textSecondary}>
-              {displayUser.tag ?? displayUser.name} sent you a friend request. You can accept
+              {formatUserDisplayName(displayUser)} sent you a friend request. You can accept
               or decline it here.
             </AppText>
           ) : null}

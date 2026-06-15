@@ -7,6 +7,7 @@ import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import UserProfileImage from "@/src/components/UserProfileImage";
 import { formatRelativeLastActive } from "@/src/lib/helper/profileTime";
+import { normalizeUserTag } from "@/src/lib/user/format-user-display-name";
 
 type ProfileInfoCardProps = {
   user: User;
@@ -46,7 +47,7 @@ export default function ProfileInfoCard({
         <UserProfileImage user={user} size={64} />
         <View className="flex-1 flex-col gap-0">
           <AppText className="text-xl" weight="medium">
-            {user.tag}
+            {user.tag ? normalizeUserTag(user.tag) : user.name}
           </AppText>
           <AppText
             className="text-base"

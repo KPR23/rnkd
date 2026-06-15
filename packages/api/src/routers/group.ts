@@ -115,6 +115,7 @@ async function getGroupMembers(groupId: string) {
       membershipId: groupMembers.id,
       userId: user.id,
       name: user.name,
+      tag: user.tag,
       image: user.image,
       globalRs: user.globalRs,
       role: groupMembers.role,
@@ -153,6 +154,7 @@ async function getGroupMembers(groupId: string) {
       membershipId: row.membershipId,
       rank: index + 1,
       name: row.name,
+      tag: row.tag,
       image: row.image,
       rating: row.status === "active" ? row.globalRs : null,
       trend: null as number | null,
@@ -199,6 +201,7 @@ export const groupRouter = router({
         invitedAt: groupMembers.createdAt,
         inviterId: user.id,
         inviterName: user.name,
+        inviterTag: user.tag,
         inviterImage: user.image,
       })
       .from(groupMembers)
@@ -234,6 +237,7 @@ export const groupRouter = router({
             ? {
                 id: row.inviterId,
                 name: row.inviterName ?? "Someone",
+                tag: row.inviterTag,
                 image: row.inviterImage,
               }
             : null,

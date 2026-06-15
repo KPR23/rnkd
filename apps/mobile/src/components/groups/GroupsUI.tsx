@@ -18,6 +18,7 @@ import Button from "@/src/components/Button";
 import { HeaderBar } from "@/src/components/Header";
 import { copyToClipboard } from "@/src/lib/clipboard";
 import { useMessage } from "@/src/lib/messages/message-provider";
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 
 export type GroupSummary = {
   id: string;
@@ -30,6 +31,7 @@ export type LeaderboardMember = {
   id: string;
   rank: number;
   name: string;
+  tag?: string | null;
   image?: string | null;
   rating: number | null;
   trend: number | null;
@@ -55,6 +57,7 @@ export type GroupInvite = {
   inviter: {
     id: string;
     name: string;
+    tag?: string | null;
     image?: string | null;
   } | null;
 };
@@ -344,12 +347,13 @@ export function LeaderboardRow({
   onDecline?: () => void;
   onRemove?: () => void;
 }) {
+  const memberDisplayName = formatUserDisplayName(member);
   const profileContent = (
     <>
       <AvatarBubble name={member.name} image={member.image} />
       <View className="min-w-0 justify-center">
         <AppText className="text-base leading-5.5" weight="medium">
-          {member.name}
+          {memberDisplayName}
           {isCurrentUser ? (
             <AppText
               className="text-base leading-5.5"
@@ -389,7 +393,7 @@ export function LeaderboardRow({
           {onProfilePress ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`View ${member.name}'s profile`}
+              accessibilityLabel={`View ${memberDisplayName}'s profile`}
               className="min-w-0 flex-1 flex-row items-center gap-3"
               onPress={onProfilePress}
             >
@@ -405,7 +409,7 @@ export function LeaderboardRow({
           <View className="flex-row items-center gap-2">
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Accept ${member.name}`}
+              accessibilityLabel={`Accept ${memberDisplayName}`}
               className="size-8 items-center justify-center"
               onPress={onAccept}
             >
@@ -413,7 +417,7 @@ export function LeaderboardRow({
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Decline ${member.name}`}
+              accessibilityLabel={`Decline ${memberDisplayName}`}
               className="size-8 items-center justify-center"
               onPress={onDecline}
             >
@@ -423,7 +427,7 @@ export function LeaderboardRow({
         ) : manage && member.role !== "owner" ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Remove ${member.name}`}
+            accessibilityLabel={`Remove ${memberDisplayName}`}
             className="size-8 items-center justify-center"
             onPress={onRemove}
           >
@@ -479,8 +483,10 @@ export function GroupInviteCard({
   onAccept: () => void;
   onDecline: () => void;
 }) {
-  const inviterName = invite.inviter?.name ?? "Someone";
-  const inviterProfileLabel = `View ${inviterName}'s profile`;
+  const inviterDisplayName = invite.inviter
+    ? formatUserDisplayName(invite.inviter)
+    : "Someone";
+  const inviterProfileLabel = `View ${inviterDisplayName}'s profile`;
 
   return (
     <View className="border-muted bg-card gap-4 border px-4 py-4">
@@ -494,14 +500,14 @@ export function GroupInviteCard({
               onPress={onInviterProfilePress}
             >
               <AvatarBubble
-                name={inviterName}
+                name={invite.inviter?.name ?? inviterDisplayName}
                 image={invite.inviter?.image}
                 size={36}
               />
             </Pressable>
           ) : (
             <AvatarBubble
-              name={inviterName}
+              name={invite.inviter?.name ?? inviterDisplayName}
               image={invite.inviter?.image}
               size={36}
             />
@@ -520,7 +526,7 @@ export function GroupInviteCard({
                   className="text-[13px] leading-4"
                   color={colors.textSecondary}
                 >
-                  {inviterName} invited you
+                  {inviterDisplayName} invited you
                 </AppText>
               </Pressable>
             ) : (
@@ -528,7 +534,7 @@ export function GroupInviteCard({
                 className="text-[13px] leading-4"
                 color={colors.textSecondary}
               >
-                {inviterName} invited you
+                {inviterDisplayName} invited you
               </AppText>
             )}
           </View>
@@ -606,16 +612,21 @@ export function FriendSuggestionRow({
   onPress: () => void;
   onProfilePress?: () => void;
 }) {
+  const friendDisplayName = formatUserDisplayName({
+    name: friend.username,
+    tag: friend.displayName === "Friend" ? null : friend.displayName,
+  });
+
   return (
     <View className="border-muted bg-card min-h-17 flex-row items-center border">
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={
           onProfilePress
-            ? `View ${friend.displayName}'s profile`
+            ? `View ${friendDisplayName}'s profile`
             : selected
-              ? `Deselect ${friend.displayName}`
-              : `Select ${friend.displayName}`
+              ? `Deselect ${friendDisplayName}`
+              : `Select ${friendDisplayName}`
         }
         className="min-w-0 flex-1 flex-row items-center gap-3 self-stretch pl-4"
         onPress={onProfilePress ?? onPress}
@@ -623,13 +634,7 @@ export function FriendSuggestionRow({
         <AvatarBubble name={friend.username} image={friend.image} size={44} />
         <View className="gap-0.5">
           <AppText className="text-base leading-5.5" weight="medium">
-            {friend.displayName}
-          </AppText>
-          <AppText
-            className="text-[13px] leading-4"
-            color={colors.textSecondary}
-          >
-            {friend.username}
+            {friendDisplayName}
           </AppText>
         </View>
       </Pressable>
@@ -638,8 +643,8 @@ export function FriendSuggestionRow({
         accessibilityRole="button"
         accessibilityLabel={
           selected
-            ? `Deselect ${friend.displayName}`
-            : `Select ${friend.displayName}`
+            ? `Deselect ${friendDisplayName}`
+            : `Select ${friendDisplayName}`
         }
         activeOpacity={0.7}
         className="w-15 items-center justify-center self-stretch"

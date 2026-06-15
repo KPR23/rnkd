@@ -13,6 +13,7 @@ import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import UserProfileImage from "@/src/components/UserProfileImage";
 import { formatFeedRelativeTime } from "@/src/lib/feed/feed-time";
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 
 import { toFeedUser } from "./feed-user";
 import type { FeedMenuAnchor } from "./FeedCommentRow";
@@ -60,6 +61,7 @@ export default function FeedPostCard({
       ? post.createdAt
       : new Date(post.createdAt);
   const relativeTime = formatFeedRelativeTime(createdAt);
+  const authorDisplayName = formatUserDisplayName(post.author);
 
   const handleOpenPost = () => {
     router.push(`/feed/${post.id}`);
@@ -98,7 +100,7 @@ export default function FeedPostCard({
           </View>
           <View className="min-w-0 flex-1">
             <AppText className="text-base leading-5" weight="medium">
-              {post.author.name}
+              {authorDisplayName}
             </AppText>
             <AppText className="text-sm leading-5" color="#828083">
               Post · {relativeTime}

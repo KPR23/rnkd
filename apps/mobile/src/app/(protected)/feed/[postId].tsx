@@ -28,6 +28,7 @@ import { TextField } from "@/src/components/TextField";
 import { groupCommentsByParent } from "@/src/lib/feed/comment-threads";
 import { useFeedDeleteMenu } from "@/src/lib/feed/use-feed-delete-menu";
 import { useMessage } from "@/src/lib/messages/message-provider";
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 import { trpc } from "@/src/utils/trpc";
 
 const MIN_COMMENT_LENGTH = 1;
@@ -240,7 +241,7 @@ export default function FeedCommentsScreen() {
 
   const isPostOwner = normalizedPost?.author.id === currentUser?.id;
   const commentPlaceholder = replyTarget
-    ? `Reply to ${replyTarget.author.name}`
+    ? `Reply to ${formatUserDisplayName(replyTarget.author)}`
     : "Add a comment";
 
   if (!postId) {
