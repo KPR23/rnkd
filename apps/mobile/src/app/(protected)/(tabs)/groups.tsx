@@ -17,11 +17,14 @@ import {
 } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
 import ScreenTitle from "@/src/components/ScreenTitle";
+import { haptics } from "@/src/lib/haptics";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 export default function GroupsTab() {
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { showError } = useMessage();
   const {
     data,
     isLoading,
@@ -45,15 +48,53 @@ export default function GroupsTab() {
     }
   }, [invalidateGroups]);
 
+  const removePendingInvite = useCallback(
+    (groupId: string) => {
+      utils.group.pendingInvites.setData(undefined, (current) =>
+        current?.filter((invite) => invite.groupId !== groupId) ?? [],
+      );
+    },
+    [utils.group.pendingInvites],
+  );
+
   const acceptInviteMut = trpc.group.acceptInvite.useMutation({
+    onMutate: async ({ groupId }) => {
+      await utils.group.pendingInvites.cancel();
+      const previous = utils.group.pendingInvites.getData();
+      removePendingInvite(groupId);
+      return { previous, groupId };
+    },
     onSuccess: async ({ groupId }) => {
       await invalidateGroups();
       router.push(`/group/${groupId}`);
     },
+    onError: (error, _input, context) => {
+      if (context?.previous) {
+        utils.group.pendingInvites.setData(undefined, context.previous);
+      }
+      void haptics.warning();
+      showError(error.message);
+    },
+    onSettled: async () => {
+      await invalidateGroups();
+    },
   });
 
   const declineInviteMut = trpc.group.declineInvite.useMutation({
-    onSuccess: invalidateGroups,
+    onMutate: async ({ groupId }) => {
+      await utils.group.pendingInvites.cancel();
+      const previous = utils.group.pendingInvites.getData();
+      removePendingInvite(groupId);
+      return { previous };
+    },
+    onError: (error, _input, context) => {
+      if (context?.previous) {
+        utils.group.pendingInvites.setData(undefined, context.previous);
+      }
+      void haptics.warning();
+      showError(error.message);
+    },
+    onSettled: invalidateGroups,
   });
 
   const isInviteActionPending =
@@ -120,7 +161,7 @@ export default function GroupsTab() {
           <View className="gap-2.5">
             <SectionLabel title="Your groups" />
             <View className="gap-2.5">
-              {isLoading ? (
+              {isLoading && !data ? (
                 <View className="items-center py-6">
                   <ActivityIndicator />
                 </View>

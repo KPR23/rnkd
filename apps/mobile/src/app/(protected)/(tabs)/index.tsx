@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -23,7 +23,12 @@ import FeedFriendRequestCard, {
 import FeedPostCard, {
   type FeedPostCardData,
 } from "@/src/components/feed/FeedPostCard";
-import { useMessage } from "@/src/lib/messages/message-provider";
+import {
+  restoreFeedCaches,
+  snapshotFeedCaches,
+  togglePostLikeInCaches,
+} from "@/src/lib/feed/feed-cache";
+import { useFeedDeleteMenu } from "@/src/lib/feed/use-feed-delete-menu";
 import {
   getFeedTimelineItemDate,
   getFeedTimelineItemKey,
@@ -31,7 +36,8 @@ import {
   type FeedTimelineItem,
 } from "@/src/lib/feed/feed-items";
 import { groupFeedPostsByDate } from "@/src/lib/feed/feed-time";
-import { useFeedDeleteMenu } from "@/src/lib/feed/use-feed-delete-menu";
+import { haptics } from "@/src/lib/haptics";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
 
 function normalizePost(post: {
@@ -76,6 +82,7 @@ export default function HomeTab() {
   const [pendingFriendRequestId, setPendingFriendRequestId] = useState<
     string | null
   >(null);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   const { data: currentUser } = trpc.user.getCurrentUser.useQuery();
   const { openPostMenu, actionMenuProps } = useFeedDeleteMenu();
@@ -91,7 +98,14 @@ export default function HomeTab() {
     isRefetching: isIncomingRequestsRefetching,
   } = trpc.friend.listIncoming.useQuery();
 
-  const isLoading = isPostsLoading || isIncomingRequestsLoading;
+  useEffect(() => {
+    if (posts !== undefined || incomingFriendRequests !== undefined) {
+      setHasLoadedOnce(true);
+    }
+  }, [posts, incomingFriendRequests]);
+
+  const isInitialLoading =
+    !hasLoadedOnce && (isPostsLoading || isIncomingRequestsLoading);
   const isRefetching = isPostsRefetching || isIncomingRequestsRefetching;
 
   const invalidateFeedData = useCallback(async () => {
@@ -123,6 +137,7 @@ export default function HomeTab() {
       if (context?.previous) {
         utils.friend.listIncoming.setData(undefined, context.previous);
       }
+      void haptics.warning();
       showError(error.message);
     },
     onSettled: async () => {
@@ -143,6 +158,7 @@ export default function HomeTab() {
       if (context?.previous) {
         utils.friend.listIncoming.setData(undefined, context.previous);
       }
+      void haptics.warning();
       showError(error.message);
     },
     onSettled: async () => {
@@ -155,31 +171,15 @@ export default function HomeTab() {
     onMutate: async ({ postId }) => {
       setPendingLikePostId(postId);
       await utils.feed.list.cancel();
-      const previous = utils.feed.list.getData();
-
-      utils.feed.list.setData(undefined, (current) => {
-        if (!current) return current;
-
-        return current.map((post) => {
-          if (post.id !== postId) return post;
-
-          const likedByMe = !post.likedByMe;
-          return {
-            ...post,
-            likedByMe,
-            likeCount: likedByMe
-              ? post.likeCount + 1
-              : Math.max(0, post.likeCount - 1),
-          };
-        });
-      });
-
-      return { previous };
+      const previous = snapshotFeedCaches(utils, postId);
+      togglePostLikeInCaches(utils, postId);
+      return { previous, postId };
     },
     onError: (_error, _input, context) => {
       if (context?.previous) {
-        utils.feed.list.setData(undefined, context.previous);
+        restoreFeedCaches(utils, context.previous, context.postId);
       }
+      void haptics.warning();
       showError("Could not update like. Please try again.");
     },
     onSettled: async () => {
@@ -255,7 +255,7 @@ export default function HomeTab() {
           />
 
           <View className="gap-5 pb-6">
-            {isLoading ? (
+            {isInitialLoading ? (
               <View className="items-center py-10">
                 <ActivityIndicator />
               </View>
@@ -277,7 +277,8 @@ export default function HomeTab() {
                             })
                           }
                           onMenuPress={
-                            item.post.author.id === currentUser?.id
+                            item.post.author.id === currentUser?.id &&
+                            !item.post.isPending
                               ? (anchor) => openPostMenu(item.post.id, anchor)
                               : undefined
                           }

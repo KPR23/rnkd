@@ -26,7 +26,19 @@ import ScreenScroll from "@/src/components/ScreenScroll";
 import { ScreenFooterShell } from "@/src/components/ScreenFooter";
 import { TextField } from "@/src/components/TextField";
 import { groupCommentsByParent } from "@/src/lib/feed/comment-threads";
+import {
+  appendCommentToCache,
+  createLocalId,
+  incrementPostCommentCountInCaches,
+  removeCommentFromCache,
+  replaceCommentInCache,
+  restoreFeedCaches,
+  snapshotFeedCaches,
+  toggleCommentLikeInCache,
+  togglePostLikeInCaches,
+} from "@/src/lib/feed/feed-cache";
 import { useFeedDeleteMenu } from "@/src/lib/feed/use-feed-delete-menu";
+import { haptics } from "@/src/lib/haptics";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
 import { trpc } from "@/src/utils/trpc";
@@ -68,6 +80,7 @@ export default function FeedCommentsScreen() {
   const [pendingLikeCommentId, setPendingLikeCommentId] = useState<
     string | null
   >(null);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const commentInputRef = useRef<TextInput>(null);
 
   const invalidateComments = useCallback(async () => {
@@ -79,6 +92,7 @@ export default function FeedCommentsScreen() {
   }, [postId, utils.feed.comments, utils.feed.list]);
 
   const { openPostMenu, openCommentMenu, actionMenuProps } = useFeedDeleteMenu({
+    postId,
     onPostDeleted: () => router.back(),
     onCommentDeleted: async (commentId) => {
       setReplyTarget((current) =>
@@ -93,6 +107,12 @@ export default function FeedCommentsScreen() {
     { postId: postId ?? "" },
     { enabled: !!postId },
   );
+
+  useEffect(() => {
+    if (data !== undefined) {
+      setHasLoadedOnce(true);
+    }
+  }, [data]);
 
   const normalizedPost = useMemo(
     () => (data?.post ? normalizePost(data.post) : null),
@@ -119,30 +139,16 @@ export default function FeedCommentsScreen() {
       if (!postId) return;
       setPendingLikePostId(likedPostId);
       await utils.feed.comments.cancel({ postId });
-      const previous = utils.feed.comments.getData({ postId });
-
-      utils.feed.comments.setData({ postId }, (current) => {
-        if (!current) return current;
-
-        const likedByMe = !current.post.likedByMe;
-        return {
-          ...current,
-          post: {
-            ...current.post,
-            likedByMe,
-            likeCount: likedByMe
-              ? current.post.likeCount + 1
-              : Math.max(0, current.post.likeCount - 1),
-          },
-        };
-      });
-
-      return { previous };
+      await utils.feed.list.cancel();
+      const previous = snapshotFeedCaches(utils, postId);
+      togglePostLikeInCaches(utils, likedPostId);
+      return { previous, postId: likedPostId };
     },
     onError: (_error, _input, context) => {
       if (postId && context?.previous) {
-        utils.feed.comments.setData({ postId }, context.previous);
+        restoreFeedCaches(utils, context.previous, postId);
       }
+      void haptics.warning();
       showError("Could not update like. Please try again.");
     },
     onSettled: async () => {
@@ -157,33 +163,14 @@ export default function FeedCommentsScreen() {
       setPendingLikeCommentId(commentId);
       await utils.feed.comments.cancel({ postId });
       const previous = utils.feed.comments.getData({ postId });
-
-      utils.feed.comments.setData({ postId }, (current) => {
-        if (!current) return current;
-
-        return {
-          ...current,
-          comments: current.comments.map((comment) => {
-            if (comment.id !== commentId) return comment;
-
-            const likedByMe = !comment.likedByMe;
-            return {
-              ...comment,
-              likedByMe,
-              likeCount: likedByMe
-                ? comment.likeCount + 1
-                : Math.max(0, comment.likeCount - 1),
-            };
-          }),
-        };
-      });
-
+      toggleCommentLikeInCache(utils, postId, commentId);
       return { previous };
     },
     onError: (_error, _input, context) => {
       if (postId && context?.previous) {
         utils.feed.comments.setData({ postId }, context.previous);
       }
+      void haptics.warning();
       showError("Could not update like. Please try again.");
     },
     onSettled: async () => {
@@ -193,19 +180,86 @@ export default function FeedCommentsScreen() {
   });
 
   const addCommentMut = trpc.feed.addComment.useMutation({
-    onSuccess: async () => {
+    onMutate: async ({ body, parentCommentId }) => {
+      if (!postId || !currentUser) {
+        throw new Error("Missing post or user");
+      }
+
+      const savedBody = body;
+      const savedReplyTarget = replyTarget;
+
+      await utils.feed.comments.cancel({ postId });
+      await utils.feed.list.cancel();
+
+      const previous = snapshotFeedCaches(utils, postId);
+      const tempId = createLocalId("comment");
+
+      const optimisticComment: FeedCommentData = {
+        id: tempId,
+        body: savedBody,
+        createdAt: new Date(),
+        parentCommentId: parentCommentId ?? null,
+        author: {
+          id: currentUser.id,
+          name: currentUser.name,
+          tag: currentUser.tag,
+          image: currentUser.image,
+        },
+        likeCount: 0,
+        likedByMe: false,
+      };
+
+      appendCommentToCache(utils, postId, optimisticComment);
+      incrementPostCommentCountInCaches(utils, postId);
       setCommentBody("");
       setReplyTarget(null);
-      await invalidateComments();
+
+      return {
+        previous,
+        tempId,
+        savedBody,
+        savedReplyTarget,
+      };
     },
-    onError: () => {
+    onSuccess: (created, _input, context) => {
+      if (!postId || !context?.tempId) return;
+
+      replaceCommentInCache(
+        utils,
+        postId,
+        context.tempId,
+        normalizeComment(created),
+      );
+      void haptics.success();
+    },
+    onError: (_error, _input, context) => {
+      if (!postId) return;
+
+      if (context?.tempId) {
+        removeCommentFromCache(utils, postId, context.tempId);
+      } else if (context?.previous) {
+        restoreFeedCaches(utils, context.previous, postId);
+      }
+
+      if (context?.savedBody) {
+        setCommentBody(context.savedBody);
+      }
+      if (context?.savedReplyTarget) {
+        setReplyTarget(context.savedReplyTarget);
+      }
+
+      void haptics.warning();
       showError("Could not add comment. Please try again.");
+    },
+    onSettled: async () => {
+      await invalidateComments();
     },
   });
 
   const submitComment = () => {
     if (!postId || !canSubmitComment || addCommentMut.isPending) return;
 
+    void haptics.impact();
     void addCommentMut.mutateAsync({
       postId,
       body: normalizedCommentBody,
@@ -248,6 +302,8 @@ export default function FeedCommentsScreen() {
     return null;
   }
 
+  const showInitialLoader = !hasLoadedOnce && isLoading;
+
   return (
     <Screen
       footer={
@@ -285,7 +341,7 @@ export default function FeedCommentsScreen() {
           <BackHeader title="Comments" centered onBack={() => router.back()} />
         }
       >
-        {isLoading ? (
+        {showInitialLoader ? (
           <View className="items-center justify-center py-10">
             <ActivityIndicator />
           </View>
@@ -322,7 +378,7 @@ export default function FeedCommentsScreen() {
               )}
             </View>
 
-            {isRefetching ? (
+            {isRefetching && hasLoadedOnce ? (
               <View className="items-center py-2">
                 <ActivityIndicator size="small" />
               </View>

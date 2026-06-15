@@ -17,6 +17,7 @@ import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
 import { HeaderBar } from "@/src/components/Header";
 import { copyToClipboard } from "@/src/lib/clipboard";
+import { haptics } from "@/src/lib/haptics";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { resolveProfileImageUrl } from "@/src/lib/profile/resolve-profile-image-url";
 import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
@@ -133,6 +134,7 @@ export function InviteCodeCard({ inviteCode }: { inviteCode: string }) {
           <Pressable
             className="size-6 items-center justify-center"
             onPress={async () => {
+              void haptics.tap();
               const copied = await copyToClipboard(inviteCode);
               if (copied) {
                 showMessage("Invite code copied to clipboard");
@@ -648,6 +650,7 @@ export function GroupInviteCard({
           actionText="Accept"
           className="h-9! flex-1"
           disabled={disabled}
+          haptic="impact"
           variant="primary"
           onPress={onAccept}
         />
