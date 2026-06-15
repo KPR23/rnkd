@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, max, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lt, max, or, sql } from "drizzle-orm";
 
 import {
   cs2FaceitMatchPlayers,
@@ -10,9 +10,26 @@ import {
 } from "@repo/db";
 import type { Cs2FaceitMatchHistoryRow } from "@repo/types";
 
+export type MatchHistoryCursor = {
+  playedAt: Date;
+  id: string;
+};
+
+function buildMatchHistoryCursorFilter(cursor: MatchHistoryCursor | undefined) {
+  if (!cursor) {
+    return undefined;
+  }
+
+  return or(
+    lt(matches.playedAt, cursor.playedAt),
+    and(eq(matches.playedAt, cursor.playedAt), lt(matches.id, cursor.id)),
+  );
+}
+
 export async function listLolMatchHistory(
   gameAccountId: string,
   limit: number,
+  cursor?: MatchHistoryCursor,
 ) {
   return db
     .select()
@@ -22,15 +39,17 @@ export async function listLolMatchHistory(
       and(
         eq(matches.gameId, GAMES.LOL),
         eq(matchParticipants.gameAccountId, gameAccountId),
+        buildMatchHistoryCursorFilter(cursor),
       ),
     )
-    .orderBy(desc(matches.playedAt))
+    .orderBy(desc(matches.playedAt), desc(matches.id))
     .limit(limit);
 }
 
 export async function listCs2FaceitMatchHistory(
   gameAccountId: string,
   limit: number,
+  cursor?: MatchHistoryCursor,
 ): Promise<Cs2FaceitMatchHistoryRow[]> {
   const rows = await db
     .select({
@@ -46,9 +65,10 @@ export async function listCs2FaceitMatchHistory(
       and(
         eq(matches.gameId, GAMES.CS2_FACEIT),
         eq(cs2FaceitMatchPlayers.gameAccountId, gameAccountId),
+        buildMatchHistoryCursorFilter(cursor),
       ),
     )
-    .orderBy(desc(matches.playedAt))
+    .orderBy(desc(matches.playedAt), desc(matches.id))
     .limit(limit);
 
   return rows;

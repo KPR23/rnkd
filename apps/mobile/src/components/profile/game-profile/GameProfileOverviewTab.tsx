@@ -32,12 +32,16 @@ export default function GameProfileOverviewTab({
   matchHistory,
   isDisplayLoading,
   isMatchHistoryLoading,
+  isFetchingNextPage,
+  hasNextPage,
 }: {
   gameAccount: Cs2FaceitGameAccount;
   display: DisplayData | undefined;
   matchHistory: Cs2FaceitMatchHistoryRow[] | undefined;
   isDisplayLoading: boolean;
   isMatchHistoryLoading: boolean;
+  isFetchingNextPage: boolean;
+  hasNextPage: boolean | undefined;
 }) {
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
 
@@ -69,6 +73,18 @@ export default function GameProfileOverviewTab({
                 onPress={() => setSelectedMatchId(row.matches.id)}
               />
             ))}
+            {isFetchingNextPage ? (
+              <View className="py-2">
+                <ActivityIndicator color={colors.primary} />
+              </View>
+            ) : null}
+            {!hasNextPage && matchHistory.length > 0 ? (
+              <View className="items-center py-2">
+                <AppText className="text-xs" color={colors.textSecondary}>
+                  All matches loaded.
+                </AppText>
+              </View>
+            ) : null}
           </View>
         ) : (
           <View className="border-muted bg-card border px-3.5 py-4">
