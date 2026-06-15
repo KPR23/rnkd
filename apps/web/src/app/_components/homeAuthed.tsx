@@ -2,7 +2,11 @@
 
 import { RiotDetailsTester, useAddFaceitAccountForm } from "@repo/forms";
 
-import { authClient, signInWithGithub } from "../../lib/auth-client";
+import {
+  authClient,
+  signInWithGithub,
+  signInWithGoogle,
+} from "../../lib/auth-client";
 import { trpc } from "../../trpc/client";
 
 function AddFaceitAccountForm() {
@@ -85,8 +89,14 @@ export function HomeAuthed() {
           You must be signed in to view this page.
         </p>
         <button
-          onClick={signInWithGithub}
+          onClick={signInWithGoogle}
           className="border border-black bg-black px-4 py-2 text-xs font-semibold tracking-[0.18em] text-white uppercase shadow-[3px_3px_0_0_#000] transition hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_0_#000]"
+        >
+          Sign in with Google
+        </button>
+        <button
+          onClick={signInWithGithub}
+          className="border border-black bg-white px-4 py-2 text-xs font-semibold tracking-[0.18em] text-black uppercase shadow-[3px_3px_0_0_#000] transition hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_0_#000]"
         >
           Sign in with GitHub
         </button>
