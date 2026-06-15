@@ -3,13 +3,13 @@ import { View } from "react-native";
 
 import { Stack, useRouter } from "expo-router";
 
+import type { FeedPostCardData } from "@/src/components/feed/FeedPostCard";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
 import { BackHeader } from "@/src/components/groups/GroupsUI";
 import Screen from "@/src/components/Screen";
 import { ScreenFooter } from "@/src/components/ScreenFooter";
 import ScreenScroll from "@/src/components/ScreenScroll";
 import { TextFieldMultiline } from "@/src/components/TextField";
-import type { FeedPostCardData } from "@/src/components/feed/FeedPostCard";
 import {
   createLocalId,
   prependPostToFeedList,
@@ -137,7 +137,13 @@ export default function FeedCreateScreen() {
     >
       <Stack.Screen options={{ headerShown: false }} />
       <ScreenScroll
-        header={<BackHeader title="Create post" onBack={() => router.back()} />}
+        header={
+          <BackHeader
+            centered
+            title="Create post"
+            onBack={() => router.back()}
+          />
+        }
       >
         <View className="gap-2">
           <TextFieldMultiline

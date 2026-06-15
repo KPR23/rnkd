@@ -195,9 +195,9 @@ export default function ProfileScreen({
   const primaryButton = isOwnProfile ? (
     <Button
       variant="primary"
-      actionText="Invite"
+      actionText="Edit profile"
       className="flex-1"
-      onPress={() => void 0}
+      onPress={() => router.push("/personal-information")}
     />
   ) : relationship?.status === "friends" ? (
     <Button
