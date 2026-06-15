@@ -83,6 +83,7 @@ export default function HomeTab() {
     string | null
   >(null);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
   const { data: currentUser } = trpc.user.getCurrentUser.useQuery();
   const { openPostMenu, actionMenuProps } = useFeedDeleteMenu();
@@ -90,12 +91,10 @@ export default function HomeTab() {
   const {
     data: posts,
     isLoading: isPostsLoading,
-    isRefetching: isPostsRefetching,
   } = trpc.feed.list.useQuery();
   const {
     data: incomingFriendRequests,
     isLoading: isIncomingRequestsLoading,
-    isRefetching: isIncomingRequestsRefetching,
   } = trpc.friend.listIncoming.useQuery();
 
   useEffect(() => {
@@ -106,8 +105,6 @@ export default function HomeTab() {
 
   const isInitialLoading =
     !hasLoadedOnce && (isPostsLoading || isIncomingRequestsLoading);
-  const isRefetching = isPostsRefetching || isIncomingRequestsRefetching;
-
   const invalidateFeedData = useCallback(async () => {
     await Promise.all([
       utils.feed.list.invalidate(),
@@ -189,10 +186,13 @@ export default function HomeTab() {
   });
 
   const handlePullRefresh = useCallback(async () => {
+    setIsPullRefreshing(true);
     try {
       await invalidateFeedData();
     } catch (error) {
       console.error("Feed pull-to-refresh failed", error);
+    } finally {
+      setIsPullRefreshing(false);
     }
   }, [invalidateFeedData]);
 
@@ -243,7 +243,7 @@ export default function HomeTab() {
           contentContainerStyle={{ paddingBottom: 120 }}
           refreshControl={
             <RefreshControl
-              refreshing={isRefetching}
+              refreshing={isPullRefreshing}
               onRefresh={handlePullRefresh}
             />
           }

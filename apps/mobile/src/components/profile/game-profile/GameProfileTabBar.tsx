@@ -23,11 +23,11 @@ export default function GameProfileTabBar({
           Overview
         </AppText>
       </Pressable>
-      <Pressable disabled>
+      <Pressable onPress={() => onTabChange("stats")}>
         <AppText
           className="text-lg"
           weight="medium"
-          color={colors.textSecondary}
+          color={activeTab === "stats" ? colors.text : colors.textSecondary}
         >
           Stats
         </AppText>
