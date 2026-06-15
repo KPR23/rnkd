@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
-import { GAMES, isCs2FaceitGameAccount } from "@repo/types";
-import type { Cs2FaceitMatchHistoryRow } from "@repo/types";
+import {
+  GAMES,
+  isCs2FaceitGameAccount,
+  type Cs2FaceitMatchHistoryRow,
+} from "@repo/types";
 import { colors } from "@repo/ui/colors";
-import AppText from "@/src/components/AppText";
-import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
 import GameProfileOverviewTab from "@/src/components/profile/game-profile/GameProfileOverviewTab";
+import GameProfileStatsTab from "@/src/components/profile/game-profile/GameProfileStatsTab";
 import GameProfileTabBar from "@/src/components/profile/game-profile/GameProfileTabBar";
+import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
 import { trpc } from "@/src/utils/trpc";
 
 export default function GameProfileScreen({
@@ -29,7 +32,7 @@ export default function GameProfileScreen({
   const { data: matchHistory, isLoading: isMatchHistoryLoading } =
     trpc.gameAccount.getCs2FaceitMatchHistory.useQuery({
       gameAccountId,
-      limit: 40,
+      limit: 100,
     });
 
   if (isDisplayLoading) {
@@ -82,9 +85,12 @@ export default function GameProfileScreen({
           isMatchHistoryLoading={isMatchHistoryLoading}
         />
       ) : (
-        <View className="border-muted bg-card border px-4 py-6">
-          <AppText color={colors.textSecondary}>Stats coming soon.</AppText>
-        </View>
+        <GameProfileStatsTab
+          gameAccount={gameAccount}
+          display={display}
+          matchHistory={matchHistory as Cs2FaceitMatchHistoryRow[] | undefined}
+          isMatchHistoryLoading={isMatchHistoryLoading}
+        />
       )}
     </ScrollView>
   );
