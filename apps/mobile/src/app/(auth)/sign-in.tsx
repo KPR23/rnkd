@@ -13,12 +13,14 @@ import {
 
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
-import { ScreenFooter } from "@/src/components/ScreenFooter";
 import Screen from "@/src/components/Screen";
-import { APP_YEAR } from "@/src/lib/constants/app-version";
+import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { authClient } from "@/src/lib/auth/auth-client";
 import { useAuth } from "@/src/lib/auth/use-auth";
+import { APP_YEAR } from "@/src/lib/constants/app-version";
 import { useMessage } from "@/src/lib/messages/message-provider";
+
+type AuthProvider = "github" | "google";
 
 type Feature = {
   title: string;
@@ -82,7 +84,9 @@ export default function SignInScreen() {
   const router = useRouter();
   const { data: session } = useAuth();
   const { showError } = useMessage();
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loggingInProvider, setLoggingInProvider] =
+    useState<AuthProvider | null>(null);
+  const isLoggingIn = loggingInProvider !== null;
 
   useEffect(() => {
     if (session) {
@@ -90,16 +94,16 @@ export default function SignInScreen() {
     }
   }, [router, session]);
 
-  const handleLogin = async () => {
+  const handleLogin = async (provider: AuthProvider) => {
     if (isLoggingIn) {
       return;
     }
 
-    setIsLoggingIn(true);
+    setLoggingInProvider(provider);
 
     try {
       const result = await authClient.signIn.social({
-        provider: "github",
+        provider,
         callbackURL: "/",
       });
 
@@ -113,7 +117,7 @@ export default function SignInScreen() {
       console.error("LOGIN EXCEPTION", error);
       showError(message);
     } finally {
-      setIsLoggingIn(false);
+      setLoggingInProvider(null);
     }
   };
 
@@ -127,8 +131,13 @@ export default function SignInScreen() {
           <ScreenFooter
             loading={isLoggingIn}
             primaryAction={{
+              text: "Continue with Google",
+              onPress: () => handleLogin("google"),
+              disabled: isLoggingIn,
+            }}
+            secondaryAction={{
               text: "Continue with GitHub",
-              onPress: handleLogin,
+              onPress: () => handleLogin("github"),
               disabled: isLoggingIn,
             }}
           />
@@ -178,7 +187,8 @@ export default function SignInScreen() {
               className="max-w-75 text-center text-sm leading-5"
               color={colors.textSecondary}
             >
-              Sign in with GitHub to create your account and sync your profile.
+              Sign in with Google or GitHub to create your account and sync your
+              profile.
             </AppText>
             <AppText className="text-text-muted text-center text-sm">
               © {APP_YEAR} KPR&apos;s Lab

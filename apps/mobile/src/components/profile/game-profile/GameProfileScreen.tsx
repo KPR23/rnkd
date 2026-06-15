@@ -82,10 +82,34 @@ export default function GameProfileScreen({
         contentSize.height - (contentOffset.y + layoutMeasurement.height);
 
       if (distanceFromBottom <= MATCH_HISTORY_LOAD_THRESHOLD) {
-        fetchNextPageInFlight.current = true;
-        void fetchNextPage().finally(() => {
-          fetchNextPageInFlight.current = false;
+        console.log("[match-history] near bottom", {
+          activeTab,
+          distanceFromBottom,
+          hasNextPage,
+          isFetchingNextPage,
+          pages: matchHistoryPages?.pages.length ?? 0,
+          rows: matchHistory.length,
         });
+      }
+
+      if (distanceFromBottom <= MATCH_HISTORY_LOAD_THRESHOLD) {
+        fetchNextPageInFlight.current = true;
+        console.log("[match-history] fetching next page");
+        void fetchNextPage()
+          .then((result) => {
+            console.log("[match-history] fetch next page result", {
+              pages: result.data?.pages.length ?? 0,
+              rows:
+                result.data?.pages.reduce(
+                  (count, page) => count + page.rows.length,
+                  0,
+                ) ?? 0,
+              error: result.error?.message,
+            });
+          })
+          .finally(() => {
+            fetchNextPageInFlight.current = false;
+          });
       }
     },
     [
@@ -93,6 +117,8 @@ export default function GameProfileScreen({
       fetchNextPage,
       hasNextPage,
       isFetchingNextPage,
+      matchHistory.length,
+      matchHistoryPages?.pages.length,
       onStickyHeaderScroll,
     ],
   );
