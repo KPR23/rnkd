@@ -1,19 +1,24 @@
 import { useMemo, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
-import { PlusIcon } from "phosphor-react-native";
+import {
+  CheckCircleIcon,
+  CheckIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+} from "phosphor-react-native";
 
 import {
   FaceitPlayer,
   FaceitSuggestedPlayer,
   GAMES,
-  RIOT_PLATFORM_TO_REGIONAL_ROUTE,
   type GameId,
   type RiotPlatformRoute,
 } from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import FaceitAccountPreviewCard from "@/src/app/(protected)/(settings)/FaceitAccountPreviewCard";
 import FormFieldFeedback from "@/src/components/FormFieldFeedback";
+import GameLogo from "@/src/components/games/GameLogo";
 import CustomModal from "@/src/components/Modal";
 import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { useDebouncedValue } from "@/src/lib/hooks/useDebouncedValue";
@@ -28,6 +33,11 @@ type ModalStep = "game" | "input" | "confirm" | "success";
 const MIN_SUMMONER_NAME_LENGTH = 3;
 const MAX_SUMMONER_NAME_LENGTH = 16;
 const TAG_LINE_PATTERN = /^[a-zA-Z0-9]{3,5}$/;
+const STEP_ORDER: ModalStep[] = ["game", "input", "confirm", "success"];
+const GAME_TITLE: Record<GameId, string> = {
+  [GAMES.LOL]: "League of Legends",
+  [GAMES.CS2_FACEIT]: "Counter-Strike 2",
+};
 
 function isLolInputShapeValid(gameName: string, tagLine: string) {
   const trimmedGameName = gameName.trim();
@@ -78,8 +88,6 @@ export default function AddLinkedAccountModal({
   const trimmedDebouncedFaceitNickname = debouncedFaceitNickname.trim();
   const trimmedFaceitNickname = faceitNickname.trim();
 
-  const region = RIOT_PLATFORM_TO_REGIONAL_ROUTE[platform];
-
   const canPreviewLol =
     isLolInputShapeValid(trimmedDebouncedGameName, trimmedDebouncedTagLine) &&
     trimmedDebouncedGameName === trimmedGameName &&
@@ -89,7 +97,7 @@ export default function AddLinkedAccountModal({
     {
       gameName: trimmedDebouncedGameName,
       tagLine: trimmedDebouncedTagLine,
-      region,
+      platform,
     },
     {
       enabled:
@@ -221,7 +229,7 @@ export default function AddLinkedAccountModal({
       addLol({
         gameName: trimmedGameName,
         tagLine: trimmedTagLine,
-        region,
+        platform,
       });
     }
 
@@ -382,6 +390,30 @@ export default function AddLinkedAccountModal({
     faceitPreview.data?.found === true &&
     faceitPreview.data.alreadyLinked === false;
 
+  const renderStepProgress = () => {
+    const currentStepIndex = STEP_ORDER.indexOf(step);
+    const visibleSteps =
+      step === "success" ? STEP_ORDER : STEP_ORDER.slice(0, 3);
+
+    return (
+      <View className="flex-row items-center gap-2">
+        {visibleSteps.map((wizardStep, index) => {
+          const isCurrent = wizardStep === step;
+          const isComplete = index < currentStepIndex || step === "success";
+
+          return (
+            <View
+              key={wizardStep}
+              className={`h-1.5 flex-1 rounded-full ${
+                isCurrent || isComplete ? "bg-primary" : "bg-muted"
+              }`}
+            />
+          );
+        })}
+      </View>
+    );
+  };
+
   const renderGameStep = () => {
     return (
       <View className="flex flex-col gap-3">
@@ -403,14 +435,21 @@ export default function AddLinkedAccountModal({
                   : "border-muted bg-card"
               }`}
             >
-              <View className="flex flex-row items-center justify-between gap-3">
+              <View className="flex flex-row items-center justify-between gap-4">
+                <View
+                  className={`border-muted bg-background h-12 w-16 items-center justify-center border ${
+                    isSelected ? "border-primary" : ""
+                  }`}
+                >
+                  <GameLogo gameId={g} maxHeight={22} />
+                </View>
                 <View className="flex-1 gap-1">
                   <Text
                     className={`font-sans-semibold text-base ${
                       isSelected ? "text-text" : "text-text-secondary"
                     }`}
                   >
-                    {g === GAMES.LOL ? "League of Legends" : "Counter-Strike 2"}
+                    {GAME_TITLE[g]}
                   </Text>
                   <Text className="text-text-muted font-sans-medium text-sm">
                     {g === GAMES.LOL
@@ -418,11 +457,15 @@ export default function AddLinkedAccountModal({
                       : "Connect your Faceit profile."}
                   </Text>
                 </View>
-                <View
-                  className={`h-3 w-3 rounded-full ${
-                    isSelected ? "bg-primary" : "bg-muted"
-                  }`}
-                />
+                {isSelected ? (
+                  <CheckCircleIcon
+                    color={colors.primary}
+                    size={24}
+                    weight="fill"
+                  />
+                ) : (
+                  <View className="border-muted h-5 w-5 rounded-full border" />
+                )}
               </View>
             </TouchableOpacity>
           );
@@ -483,9 +526,22 @@ export default function AddLinkedAccountModal({
           : `${trimmedGameName}#${trimmedTagLine}`;
 
       return (
-        <Text className="text-text-secondary text-sm">
-          Connect {resolvedName}?
-        </Text>
+        <View className="border-muted bg-card border p-4">
+          <View className="flex-row items-center gap-4">
+            <View className="border-muted bg-background h-12 w-16 items-center justify-center border">
+              <GameLogo gameId={GAMES.LOL} maxHeight={22} />
+            </View>
+            <View className="min-w-0 flex-1 gap-1">
+              <Text className="text-text font-sans-semibold text-base">
+                {resolvedName}
+              </Text>
+              <Text className="text-text-secondary font-sans-medium text-sm">
+                League of Legends account
+              </Text>
+            </View>
+            <ShieldCheckIcon color={colors.primary} size={24} weight="bold" />
+          </View>
+        </View>
       );
     }
     if (game === GAMES.CS2_FACEIT) {
@@ -633,8 +689,24 @@ export default function AddLinkedAccountModal({
 
   return (
     <CustomModal visible={visible} onClose={handleClose} footer={footer}>
-      <View className="flex flex-col gap-8 pt-1">
+      <View className="flex flex-col gap-7 pt-1">
+        {renderStepProgress()}
+
         <View className="gap-3">
+          <View className="flex-row items-center gap-2">
+            <View className="bg-muted h-8 w-8 items-center justify-center rounded-full">
+              {step === "success" ? (
+                <CheckIcon color={colors.primary} size={18} weight="bold" />
+              ) : (
+                <Text className="text-text font-sans-semibold text-sm">
+                  {STEP_ORDER.indexOf(step) + 1}
+                </Text>
+              )}
+            </View>
+            <Text className="text-text-muted font-sans-semibold text-xs uppercase">
+              Add game account
+            </Text>
+          </View>
           <Text className="text-text font-sans-medium text-3xl leading-tight">
             {stepCopy.title}
           </Text>
