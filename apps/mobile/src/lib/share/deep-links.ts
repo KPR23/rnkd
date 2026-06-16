@@ -1,4 +1,4 @@
-import { Share } from "react-native";
+import { Platform, Share } from "react-native";
 
 const APP_SCHEME = "rnkd";
 
@@ -14,6 +14,19 @@ export const appDeepLinks = {
     createAppLink(`/game-profile/${gameAccountId}`),
 };
 
+async function shareAppLink(url: string) {
+  await Share.share(
+    Platform.select({
+      ios: {
+        url,
+      },
+      default: {
+        message: url,
+      },
+    }),
+  );
+}
+
 export async function sharePlayerProfile(user: {
   id: string;
   name: string;
@@ -21,10 +34,7 @@ export async function sharePlayerProfile(user: {
 }) {
   const url = appDeepLinks.player(user.id);
 
-  await Share.share({
-    message: url,
-    url,
-  });
+  await shareAppLink(url);
 }
 
 export async function shareFeedPost(post: {
@@ -36,19 +46,13 @@ export async function shareFeedPost(post: {
 }) {
   const url = appDeepLinks.feedPost(post.id);
 
-  await Share.share({
-    message: url,
-    url,
-  });
+  await shareAppLink(url);
 }
 
 export async function shareGroup(group: { id: string; name: string }) {
   const url = appDeepLinks.group(group.id);
 
-  await Share.share({
-    message: url,
-    url,
-  });
+  await shareAppLink(url);
 }
 
 export async function shareGameProfile(gameProfile: {
@@ -57,8 +61,5 @@ export async function shareGameProfile(gameProfile: {
 }) {
   const url = appDeepLinks.gameProfile(gameProfile.id);
 
-  await Share.share({
-    message: url,
-    url,
-  });
+  await shareAppLink(url);
 }
