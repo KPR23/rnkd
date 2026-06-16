@@ -71,8 +71,8 @@ Wymagania lokalne:
 - Node.js 18 lub nowszy,
 - pnpm 10,
 - dostęp do PostgreSQL albo baza Neon,
-- klucze API: Riot oraz opcjonalnie FACEIT,
-- konto OAuth GitHub skonfigurowane dla Better Auth.
+- klucze API: Riot oraz FACEIT,
+- klucze CLIENT_ID oraz Secret dla GitHub i Google OAuth
 
 1. Zainstaluj zależności:
 
