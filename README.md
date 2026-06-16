@@ -4,6 +4,26 @@ RNKD to aplikacja dla graczy, którzy chcą mieć w jednym miejscu profil, ranki
 
 Najważniejsza część aplikacji to `global RS`, czyli wspólny wynik gracza liczony na podstawie podłączonych kont League of Legends i FACEIT CS2. Dzięki temu użytkownik nie musi porównywać osobno rang, poziomów i ELO z różnych gier.
 
+| Onboarding | | |
+| :---: | :---: | :---: |
+| ![Konfiguracja profilu](docs/screenshots/onboarding-profile.png) | ![Avatar i bio](docs/screenshots/onboarding-details.png) | ![Podłączone konta](docs/screenshots/onboarding-games.png) |
+| **Profil** | **Szczegóły** | **Gry** |
+
+| Aplikacja | | |
+| :---: | :---: | :---: |
+| ![Feed](docs/screenshots/feed.png) | ![Wyszukiwarka](docs/screenshots/search.png) | ![Profil gracza](docs/screenshots/profile.png) |
+| **Feed** | **Wyszukiwarka** | **Profil** |
+
+| Konta i grupy | | |
+| :---: | :---: | :---: |
+| ![Podłączanie konta](docs/screenshots/link-account.png) | ![Nowa grupa](docs/screenshots/group-created.png) | ![Ranking grupy](docs/screenshots/group-leaderboard.png) |
+| **Podłączanie konta** | **Nowa grupa** | **Ranking grupy** |
+
+| Profil gry |
+| :---: |
+| ![Profil CS2 FACEIT](docs/screenshots/game-profile.png) |
+| **Profil gry** |
+
 ## Funkcje
 
 - logowanie i sesje użytkownika przez Better Auth,
