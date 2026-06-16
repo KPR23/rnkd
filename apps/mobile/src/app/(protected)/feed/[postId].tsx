@@ -130,6 +130,7 @@ export default function FeedCommentsScreen() {
   );
 
   const normalizedCommentBody = commentBody.trim();
+  const replyTargetId = replyTarget?.id ?? null;
   const canSubmitComment =
     normalizedCommentBody.length >= MIN_COMMENT_LENGTH &&
     normalizedCommentBody.length <= MAX_COMMENT_LENGTH;
@@ -263,7 +264,7 @@ export default function FeedCommentsScreen() {
     void addCommentMut.mutateAsync({
       postId,
       body: normalizedCommentBody,
-      parentCommentId: replyTarget?.id,
+      parentCommentId: replyTargetId ?? undefined,
     });
   };
 
@@ -272,14 +273,14 @@ export default function FeedCommentsScreen() {
   };
 
   useEffect(() => {
-    if (!replyTarget) return;
+    if (!replyTargetId) return;
 
     const frame = requestAnimationFrame(() => {
       commentInputRef.current?.focus();
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [replyTarget?.id]);
+  }, [replyTargetId]);
 
   const handleOpenPostMenu = (anchor: FeedMenuAnchor) => {
     if (!postId) return;
@@ -364,7 +365,7 @@ export default function FeedCommentsScreen() {
                   repliesByParent={repliesByParent}
                   currentUserId={currentUser?.id}
                   pendingLikeCommentId={pendingLikeCommentId}
-                  replyTargetId={replyTarget?.id ?? null}
+                  replyTargetId={replyTargetId}
                   onToggleLike={(commentId) =>
                     void toggleCommentLikeMut.mutateAsync({ commentId })
                   }
