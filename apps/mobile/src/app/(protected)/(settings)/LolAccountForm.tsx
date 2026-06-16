@@ -27,13 +27,13 @@ export default function LolAccountForm({
   setPlatform,
 }: LolAccountFormProps) {
   return (
-    <View className="flex flex-col gap-3">
+    <View className="flex flex-col gap-4">
       <View>
         <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
           Summoner name
         </Text>
         <TextField
-          className="bg-card"
+          className="bg-background"
           placeholder="e.g. Faker"
           autoCapitalize="none"
           spellCheck={false}
@@ -52,7 +52,7 @@ export default function LolAccountForm({
           Tag line
         </Text>
         <TextField
-          className="bg-card"
+          className="bg-background"
           placeholder="e.g. KR1"
           autoCapitalize="none"
           spellCheck={false}
@@ -72,7 +72,7 @@ export default function LolAccountForm({
         <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
           Platform
         </Text>
-        <View className="flex flex-row flex-wrap gap-2">
+        <View className="border-muted bg-card flex flex-row flex-wrap gap-2 border p-2">
           {RIOT_PLATFORM_ROUTE.map((p) => (
             <TouchableOpacity
               key={p}
@@ -89,7 +89,7 @@ export default function LolAccountForm({
               className={`border px-3 py-2 ${
                 platform === p
                   ? "border-primary bg-primary/10"
-                  : "border-muted"
+                  : "bg-background border-transparent"
               }`}
             >
               <Text

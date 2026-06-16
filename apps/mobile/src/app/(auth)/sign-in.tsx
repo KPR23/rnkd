@@ -18,6 +18,7 @@ import { ScreenFooter } from "@/src/components/ScreenFooter";
 import { authClient } from "@/src/lib/auth/auth-client";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { APP_YEAR } from "@/src/lib/constants/app-version";
+import { getUserFacingErrorMessage } from "@/src/lib/errors/user-facing-error";
 import { useMessage } from "@/src/lib/messages/message-provider";
 
 type AuthProvider = "github" | "google";
@@ -108,14 +109,11 @@ export default function SignInScreen() {
       });
 
       if (result.error) {
-        showError(
-          result.error.message || `HTTP ${result.error.status ?? "unknown"}`,
-        );
+        showError(getUserFacingErrorMessage(result.error));
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
       console.error("LOGIN EXCEPTION", error);
-      showError(message);
+      showError(getUserFacingErrorMessage(error));
     } finally {
       setLoggingInProvider(null);
     }

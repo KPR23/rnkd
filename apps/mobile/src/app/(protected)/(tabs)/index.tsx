@@ -2,20 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
-  ScrollView,
+  SectionList,
   View,
 } from "react-native";
 
 import { useRouter } from "expo-router";
 
-import Screen from "@/src/components/Screen";
-import ScreenTitle from "@/src/components/ScreenTitle";
 import FeedActionMenu from "@/src/components/feed/FeedActionMenu";
-import FeedEmptyState from "@/src/components/feed/FeedEmptyState";
 import {
   FeedDateHeading,
   FeedOlderPostsDivider,
 } from "@/src/components/feed/FeedDateSection";
+import FeedEmptyState from "@/src/components/feed/FeedEmptyState";
 import FeedFloatingActionButton from "@/src/components/feed/FeedFloatingActionButton";
 import FeedFriendRequestCard, {
   type FeedFriendRequestCardData,
@@ -23,19 +21,24 @@ import FeedFriendRequestCard, {
 import FeedPostCard, {
   type FeedPostCardData,
 } from "@/src/components/feed/FeedPostCard";
+import Screen from "@/src/components/Screen";
+import ScreenTitle from "@/src/components/ScreenTitle";
 import {
   restoreFeedCaches,
   snapshotFeedCaches,
   togglePostLikeInCaches,
 } from "@/src/lib/feed/feed-cache";
-import { useFeedDeleteMenu } from "@/src/lib/feed/use-feed-delete-menu";
 import {
   getFeedTimelineItemDate,
   getFeedTimelineItemKey,
   mergeFeedTimelineItems,
   type FeedTimelineItem,
 } from "@/src/lib/feed/feed-items";
-import { groupFeedPostsByDate } from "@/src/lib/feed/feed-time";
+import {
+  type FeedDateSectionLabel,
+  groupFeedPostsByDate,
+} from "@/src/lib/feed/feed-time";
+import { useFeedDeleteMenu } from "@/src/lib/feed/use-feed-delete-menu";
 import { haptics } from "@/src/lib/haptics";
 import { useMessage } from "@/src/lib/messages/message-provider";
 import { trpc } from "@/src/utils/trpc";
@@ -72,6 +75,12 @@ function normalizeFriendRequest(request: {
   };
 }
 
+type FeedSection = {
+  title: FeedDateSectionLabel;
+  showOlderDividerBefore: boolean;
+  data: FeedTimelineItem[];
+};
+
 export default function HomeTab() {
   const router = useRouter();
   const utils = trpc.useUtils();
@@ -88,14 +97,9 @@ export default function HomeTab() {
   const { data: currentUser } = trpc.user.getCurrentUser.useQuery();
   const { openPostMenu, actionMenuProps } = useFeedDeleteMenu();
   const { data: groupsData } = trpc.group.list.useQuery();
-  const {
-    data: posts,
-    isLoading: isPostsLoading,
-  } = trpc.feed.list.useQuery();
-  const {
-    data: incomingFriendRequests,
-    isLoading: isIncomingRequestsLoading,
-  } = trpc.friend.listIncoming.useQuery();
+  const { data: posts, isLoading: isPostsLoading } = trpc.feed.list.useQuery();
+  const { data: incomingFriendRequests, isLoading: isIncomingRequestsLoading } =
+    trpc.friend.listIncoming.useQuery();
 
   useEffect(() => {
     if (posts !== undefined || incomingFriendRequests !== undefined) {
@@ -114,9 +118,11 @@ export default function HomeTab() {
 
   const removeIncomingRequest = useCallback(
     (requesterId: string) => {
-      utils.friend.listIncoming.setData(undefined, (current) =>
-        current?.filter((request) => request.requester.id !== requesterId) ??
-        [],
+      utils.friend.listIncoming.setData(
+        undefined,
+        (current) =>
+          current?.filter((request) => request.requester.id !== requesterId) ??
+          [],
       );
     },
     [utils.friend.listIncoming],
@@ -219,7 +225,7 @@ export default function HomeTab() {
     [feedItems],
   );
 
-  const groupedFeedItems = useMemo(
+  const feedSections = useMemo<FeedSection[]>(
     () =>
       groupFeedPostsByDate(
         feedItems.map((item) => ({
@@ -227,98 +233,108 @@ export default function HomeTab() {
           createdAt: getFeedTimelineItemDate(item),
         })),
       ).map((group) => ({
-        ...group,
-        items: group.posts
+        title: group.label,
+        showOlderDividerBefore: !!group.showOlderDividerBefore,
+        data: group.posts
           .map((entry) => feedItemsByKey.get(entry.id))
           .filter((item): item is FeedTimelineItem => item !== undefined),
       })),
     [feedItems, feedItemsByKey],
   );
 
+  const renderFeedItem = useCallback(
+    ({ item }: { item: FeedTimelineItem }) =>
+      item.kind === "post" ? (
+        <FeedPostCard
+          post={item.post}
+          isLikePending={pendingLikePostId === item.post.id}
+          onToggleLike={() =>
+            void toggleLikeMut.mutateAsync({
+              postId: item.post.id,
+            })
+          }
+          onMenuPress={
+            item.post.author.id === currentUser?.id && !item.post.isPending
+              ? (anchor) => openPostMenu(item.post.id, anchor)
+              : undefined
+          }
+        />
+      ) : (
+        <FeedFriendRequestCard
+          request={item.request}
+          disabled={pendingFriendRequestId === item.request.requester.id}
+          onAccept={() =>
+            void acceptFriendRequestMut.mutateAsync({
+              requesterId: item.request.requester.id,
+            })
+          }
+          onDecline={() =>
+            void declineFriendRequestMut.mutateAsync({
+              requesterId: item.request.requester.id,
+            })
+          }
+        />
+      ),
+    [
+      acceptFriendRequestMut,
+      currentUser?.id,
+      declineFriendRequestMut,
+      openPostMenu,
+      pendingFriendRequestId,
+      pendingLikePostId,
+      toggleLikeMut,
+    ],
+  );
+
   return (
     <View className="bg-background flex-1">
       <Screen>
-        <ScrollView
+        <SectionList
+          sections={feedSections}
+          keyExtractor={getFeedTimelineItemKey}
+          renderItem={renderFeedItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          removeClippedSubviews
+          stickySectionHeadersEnabled={false}
           refreshControl={
             <RefreshControl
               refreshing={isPullRefreshing}
               onRefresh={handlePullRefresh}
             />
           }
-        >
-          <ScreenTitle
-            title="Feed"
-            globalRs={groupsData?.currentUserGlobalRs ?? 0}
-            showRsBadge={!!groupsData}
-          />
-
-          <View className="gap-5 pb-6">
-            {isInitialLoading ? (
+          ListHeaderComponent={
+            <ScreenTitle
+              title="Feed"
+              globalRs={groupsData?.currentUserGlobalRs ?? 0}
+              showRsBadge={!!groupsData}
+            />
+          }
+          ListEmptyComponent={
+            isInitialLoading ? (
               <View className="items-center py-10">
                 <ActivityIndicator />
               </View>
-            ) : groupedFeedItems.length ? (
-              groupedFeedItems.map((group) => (
-                <View key={`${group.label.primary}-${group.label.secondary ?? ""}`} className="gap-2.5">
-                  {group.showOlderDividerBefore ? <FeedOlderPostsDivider /> : null}
-                  <FeedDateHeading label={group.label} />
-                  <View className="gap-2.5">
-                    {group.items.map((item) =>
-                      item.kind === "post" ? (
-                        <FeedPostCard
-                          key={getFeedTimelineItemKey(item)}
-                          post={item.post}
-                          isLikePending={pendingLikePostId === item.post.id}
-                          onToggleLike={() =>
-                            void toggleLikeMut.mutateAsync({
-                              postId: item.post.id,
-                            })
-                          }
-                          onMenuPress={
-                            item.post.author.id === currentUser?.id &&
-                            !item.post.isPending
-                              ? (anchor) => openPostMenu(item.post.id, anchor)
-                              : undefined
-                          }
-                        />
-                      ) : (
-                        <FeedFriendRequestCard
-                          key={getFeedTimelineItemKey(item)}
-                          request={item.request}
-                          disabled={
-                            pendingFriendRequestId === item.request.requester.id
-                          }
-                          onAccept={() =>
-                            void acceptFriendRequestMut.mutateAsync({
-                              requesterId: item.request.requester.id,
-                            })
-                          }
-                          onDecline={() =>
-                            void declineFriendRequestMut.mutateAsync({
-                              requesterId: item.request.requester.id,
-                            })
-                          }
-                        />
-                      ),
-                    )}
-                  </View>
-                </View>
-              ))
             ) : (
               <FeedEmptyState
                 title="Your feed is quiet"
                 description="Create a post or add friends to start seeing activity here."
               />
             )}
-          </View>
-        </ScrollView>
+          renderSectionHeader={({ section }) => (
+            <View className="gap-2.5 pt-5">
+              {section.showOlderDividerBefore ? <FeedOlderPostsDivider /> : null}
+              <FeedDateHeading label={section.title} />
+            </View>
+          )}
+          ItemSeparatorComponent={() => <View className="h-2.5" />}
+          SectionSeparatorComponent={() => <View className="h-2.5" />}
+        />
       </Screen>
 
-      <FeedFloatingActionButton
-        onPress={() => router.push("/feed-create")}
-      />
+      <FeedFloatingActionButton onPress={() => router.push("/feed-create")} />
 
       <FeedActionMenu {...actionMenuProps} />
     </View>

@@ -71,13 +71,22 @@ export async function getLolActiveRegionByPuuid(
     );
   }
 
-  const data = (await response.json()) as { region: string };
+  const data = (await response.json()) as {
+    activeShard?: string;
+    region?: string;
+  };
+  const activeRegion = (data.activeShard ?? data.region)?.toLowerCase();
 
-  if (!(RIOT_PLATFORM_ROUTE as readonly string[]).includes(data.region)) {
-    throw new Error(`Unknown platform route from Riot API: ${data.region}`);
+  if (
+    !activeRegion ||
+    !(RIOT_PLATFORM_ROUTE as readonly string[]).includes(activeRegion)
+  ) {
+    throw new Error(
+      `Unknown platform route from Riot API: ${data.activeShard ?? data.region}`,
+    );
   }
 
-  return data.region as RiotPlatformRoute;
+  return activeRegion as RiotPlatformRoute;
 }
 
 export async function getLolAccountDetails(
