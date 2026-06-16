@@ -1,5 +1,7 @@
 import { Platform, Share } from "react-native";
 
+import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
+
 const APP_SCHEME = "rnkd";
 
 function createAppLink(path: string) {
@@ -14,14 +16,30 @@ export const appDeepLinks = {
     createAppLink(`/game-profile/${gameAccountId}`),
 };
 
-async function shareAppLink(url: string) {
+type ShareAppLinkOptions = {
+  title: string;
+  message: string;
+  url: string;
+};
+
+async function shareAppLink({ title, message, url }: ShareAppLinkOptions) {
   await Share.share(
     Platform.select({
       ios: {
+        title,
         url,
       },
       default: {
-        message: url,
+        title,
+        message: `${message}\n${url}`,
+      },
+    }),
+    Platform.select({
+      ios: {
+        subject: title,
+      },
+      default: {
+        dialogTitle: title,
       },
     }),
   );
@@ -33,8 +51,13 @@ export async function sharePlayerProfile(user: {
   tag?: string | null;
 }) {
   const url = appDeepLinks.player(user.id);
+  const displayName = formatUserDisplayName(user);
 
-  await shareAppLink(url);
+  await shareAppLink({
+    title: "RNKD Player Profile",
+    message: `View ${displayName}'s RNKD profile`,
+    url,
+  });
 }
 
 export async function shareFeedPost(post: {
@@ -45,14 +68,23 @@ export async function shareFeedPost(post: {
   };
 }) {
   const url = appDeepLinks.feedPost(post.id);
+  const displayName = formatUserDisplayName(post.author);
 
-  await shareAppLink(url);
+  await shareAppLink({
+    title: "RNKD Feed Post",
+    message: `View ${displayName}'s post on RNKD`,
+    url,
+  });
 }
 
 export async function shareGroup(group: { id: string; name: string }) {
   const url = appDeepLinks.group(group.id);
 
-  await shareAppLink(url);
+  await shareAppLink({
+    title: "RNKD Group",
+    message: `Join or view ${group.name} on RNKD`,
+    url,
+  });
 }
 
 export async function shareGameProfile(gameProfile: {
@@ -61,5 +93,9 @@ export async function shareGameProfile(gameProfile: {
 }) {
   const url = appDeepLinks.gameProfile(gameProfile.id);
 
-  await shareAppLink(url);
+  await shareAppLink({
+    title: "RNKD Game Profile",
+    message: `View ${gameProfile.label} on RNKD`,
+    url,
+  });
 }
