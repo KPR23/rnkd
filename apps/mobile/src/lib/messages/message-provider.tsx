@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import MessageBanner from "@/src/components/MessageBanner";
+import { getUserFacingErrorMessage } from "@/src/lib/errors/user-facing-error";
 
 type MessageVariant = "default" | "error";
 
@@ -26,7 +27,10 @@ type ShowMessageOptions = {
 
 type MessageContextValue = {
   showMessage: (text: string, options?: ShowMessageOptions) => void;
-  showError: (text: string, options?: Omit<ShowMessageOptions, "variant">) => void;
+  showError: (
+    text: string,
+    options?: Omit<ShowMessageOptions, "variant">,
+  ) => void;
 };
 
 const MessageContext = createContext<MessageContextValue | null>(null);
@@ -74,7 +78,10 @@ export function MessageProvider({ children }: { children: ReactNode }) {
 
   const showError = useCallback(
     (text: string, options?: Omit<ShowMessageOptions, "variant">) => {
-      showMessage(text, { ...options, variant: "error" });
+      showMessage(getUserFacingErrorMessage(text), {
+        ...options,
+        variant: "error",
+      });
     },
     [showMessage],
   );
