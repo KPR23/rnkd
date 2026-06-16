@@ -7,8 +7,16 @@ import { db, user } from "@repo/db";
 import { protectedProcedure, router } from "../trpc";
 
 export const userRouter = router({
-  getCurrentUser: protectedProcedure.query(({ ctx }) => {
-    return ctx.session.user;
+  getCurrentUser: protectedProcedure.query(async ({ ctx }) => {
+    const row = await db.query.user.findFirst({
+      where: eq(user.id, ctx.session.user.id),
+    });
+
+    if (!row) {
+      throw new TRPCError({ code: "NOT_FOUND" });
+    }
+
+    return row;
   }),
   getPublicById: protectedProcedure
     .input(z.object({ id: z.string() }))

@@ -59,6 +59,7 @@ export function useOnboardingController() {
     onSuccess: async () => {
       await Promise.all([
         utils.profile.invalidate(),
+        utils.user.invalidate(),
         utils.group.invalidate(),
         refetchSession({ query: { disableCookieCache: true } }),
       ]);
