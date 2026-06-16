@@ -1,27 +1,20 @@
-import { Image, View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 
 import type { LolMatchHistoryRow } from "@repo/types";
 import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
+import { getLolChampionSplashUrl } from "@/src/lib/helper/lolChampion";
 import { formatLolQueueLabel } from "@/src/lib/helper/lolQueue";
 import { formatProfileMatchTime } from "@/src/lib/helper/profileTime";
 
 const CHAMPION_IMAGE_HEIGHT = 120;
 
-function getChampionSplashUrl(championIconUrl: string) {
-  const championKey = championIconUrl.match(/\/champion\/([^/.]+)\.png$/)?.[1];
-
-  if (!championKey) {
-    return null;
-  }
-
-  return `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${championKey}_0.jpg`;
-}
-
 export default function LolProfileRecentMatchCard({
   row,
+  onPress,
 }: {
   row: LolMatchHistoryRow;
+  onPress?: () => void;
 }) {
   const { matches, match_participants: player } = row;
   const playedAt =
@@ -30,9 +23,9 @@ export default function LolProfileRecentMatchCard({
       : new Date(matches.playedAt);
   const resultColor = player.win ? colors.success : colors.destructive;
   const resultLabel = player.win ? "Victory" : "Defeat";
-  const championSplashUrl = getChampionSplashUrl(player.championIconUrl);
+  const championSplashUrl = getLolChampionSplashUrl(player.championIconUrl);
 
-  return (
+  const content = (
     <View className="bg-card border-muted flex-1 overflow-hidden border">
       {championSplashUrl ? (
         <Image
@@ -65,5 +58,15 @@ export default function LolProfileRecentMatchCard({
         </View>
       </View>
     </View>
+  );
+
+  if (!onPress) {
+    return content;
+  }
+
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" className="flex-1">
+      {content}
+    </Pressable>
   );
 }

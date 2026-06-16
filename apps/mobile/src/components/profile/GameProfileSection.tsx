@@ -15,6 +15,7 @@ import { colors } from "@repo/ui/colors";
 import AppText from "@/src/components/AppText";
 import Button from "@/src/components/Button";
 import FaceitLevelProgressCard from "@/src/components/profile/FaceitLevelProgressCard";
+import LolMatchDetailsModal from "@/src/components/profile/game-profile/LolMatchDetailsModal";
 import MatchDetailsModal from "@/src/components/profile/game-profile/MatchDetailsModal";
 import LolProfileRecentMatchCard from "@/src/components/profile/LolProfileRecentMatchCard";
 import ProfileRecentMatchCard from "@/src/components/profile/ProfileRecentMatchCard";
@@ -76,6 +77,9 @@ export default function GameProfileSection({
     2,
   );
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const [selectedLolMatchId, setSelectedLolMatchId] = useState<string | null>(
+    null,
+  );
   const lolRanked = lolDisplay.data?.ranked;
   const lolRankedPlayed = lolRanked
     ? lolRanked.wins + lolRanked.losses
@@ -123,7 +127,11 @@ export default function GameProfileSection({
         {isLol && recentLolRows.length > 0 ? (
           <View className="flex flex-row gap-2.5">
             {recentLolRows.map((row) => (
-              <LolProfileRecentMatchCard key={row.matches.id} row={row} />
+              <LolProfileRecentMatchCard
+                key={row.matches.id}
+                row={row}
+                onPress={() => setSelectedLolMatchId(row.matches.id)}
+              />
             ))}
           </View>
         ) : null}
@@ -150,6 +158,14 @@ export default function GameProfileSection({
         matchId={selectedMatchId}
         gameAccountId={gameAccount.id}
         onClose={() => setSelectedMatchId(null)}
+      />
+    ) : null}
+    {isLol ? (
+      <LolMatchDetailsModal
+        visible={!!selectedLolMatchId}
+        matchId={selectedLolMatchId}
+        gameAccountId={gameAccount.id}
+        onClose={() => setSelectedLolMatchId(null)}
       />
     ) : null}
     </>
