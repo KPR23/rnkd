@@ -4,11 +4,18 @@ import z from "zod";
 
 import { db, gameAccounts, GAMES } from "@repo/db";
 import { env } from "@repo/env";
-import type { Cs2FaceitMatchHistoryRow } from "@repo/types";
+import {
+  RIOT_PLATFORM_TO_REGIONAL_ROUTE,
+  type Cs2FaceitMatchHistoryRow,
+} from "@repo/types";
 
 import { findGameAccountsByUserId } from "../repositories/game-accounts.repo";
 import { gameAccountIdSchema, userIdSchema } from "../schemas/common";
-import { riotRegionalRouteSchema } from "../schemas/riot";
+import {
+  riotPlatformRouteSchema,
+  riotRegionalRouteSchema,
+} from "../schemas/riot";
+import { getFaceitPlayer } from "../services/faceit/faceit-client";
 import { syncLatestFaceitMatchForAccount } from "../services/faceit/faceit-latest-match-sync";
 import {
   isGameAccountUniqueViolation,
@@ -21,8 +28,10 @@ import { getCs2FaceitProfileDisplay } from "../services/profile/faceit-display";
 import { getLolProfileDisplay } from "../services/profile/lol-display";
 import { syncLatestLolMatchForAccount } from "../services/riot/lol-latest-match-sync";
 import { syncLolForAccount } from "../services/riot/lol-sync-runner";
-import { getAccountByRiotId } from "../services/riot/riot-client";
-import { getFaceitPlayer } from "../services/faceit/faceit-client";
+import {
+  getAccountByRiotId,
+  getLolAccountDetails,
+} from "../services/riot/riot-client";
 import { syncTrackedAccountsForUser } from "../services/sync/sync-tracked-for-user";
 import { protectedProcedure, router } from "../trpc";
 import { requireGameAccountAccess } from "../trpc/middleware/require-game-account-access";
@@ -181,16 +190,18 @@ export const gameAccountRouter = router({
       z.object({
         gameName: z.string().min(3).max(16),
         tagLine: z.string().min(3).max(5),
-        region: riotRegionalRouteSchema,
+        platform: riotPlatformRouteSchema,
       }),
     )
     .query(async ({ input }) => {
       try {
+        const region = RIOT_PLATFORM_TO_REGIONAL_ROUTE[input.platform];
         const riotAccount = await getAccountByRiotId(
           input.gameName,
           input.tagLine,
-          input.region,
+          region,
         );
+        await getLolAccountDetails(riotAccount.puuid, input.platform);
 
         const existingAccount = await db.query.gameAccounts.findFirst({
           where: and(
@@ -236,7 +247,8 @@ export const gameAccountRouter = router({
       z.object({
         gameName: z.string().min(3, "Game name min. 3 characters").max(16),
         tagLine: z.string().min(3, "Tag line min. 3 characters").max(5),
-        region: riotRegionalRouteSchema,
+        platform: riotPlatformRouteSchema.optional(),
+        region: riotRegionalRouteSchema.optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -245,6 +257,7 @@ export const gameAccountRouter = router({
           userId: ctx.session.user.id,
           gameName: input.gameName,
           tagLine: input.tagLine,
+          platform: input.platform,
           region: input.region,
         });
 
@@ -264,6 +277,16 @@ export const gameAccountRouter = router({
         if (isGameAccountUniqueViolation(error)) {
           throw new TRPCError({ code: "CONFLICT" });
         }
+
+        console.error("Failed to add LoL account", {
+          input: {
+            gameName: input.gameName,
+            tagLine: input.tagLine,
+            platform: input.platform,
+            region: input.region,
+          },
+          error,
+        });
 
         throw error;
       }

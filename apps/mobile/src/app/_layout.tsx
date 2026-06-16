@@ -8,9 +8,11 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 
 import { colors } from "@repo/ui/colors";
+import AppErrorBoundary from "@/src/components/AppErrorBoundary";
 import { useAuth } from "@/src/lib/auth/use-auth";
 import { KeyboardOffsetProvider } from "@/src/lib/keyboard/keyboard-offset-provider";
 import { MessageProvider } from "@/src/lib/messages/message-provider";
+import { NetworkStatusProvider } from "@/src/lib/network/network-status-provider";
 import { useRegisterPushNotifications } from "@/src/lib/notifications/push-notifications";
 import { TRPCProvider } from "@/src/utils/provider";
 
@@ -79,7 +81,11 @@ export default function RootLayout() {
     <TRPCProvider>
       <KeyboardOffsetProvider>
         <MessageProvider>
-          <RootNavigator />
+          <NetworkStatusProvider>
+            <AppErrorBoundary>
+              <RootNavigator />
+            </AppErrorBoundary>
+          </NetworkStatusProvider>
         </MessageProvider>
       </KeyboardOffsetProvider>
     </TRPCProvider>

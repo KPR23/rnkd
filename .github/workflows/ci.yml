@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build, Lint, and Check Types
+    name: Build, Lint, Test & Check Types
     runs-on: ubuntu-latest
 
     steps:
@@ -46,3 +46,6 @@ jobs:
 
       - name: Run Linters
         run: pnpm turbo run lint
+
+      - name: Run Tests
+        run: pnpm test

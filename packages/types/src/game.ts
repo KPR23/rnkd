@@ -108,3 +108,40 @@ export type Cs2FaceitMatchDetails = {
   viewerTeam: 1 | 2;
   teams: [Cs2FaceitMatchDetailsTeam, Cs2FaceitMatchDetailsTeam];
 };
+
+export type LolMatchDetailsPlayer = {
+  id: string;
+  gameAccountId: string;
+  riotId: string;
+  championName: string;
+  championIconUrl: string;
+  teamPosition: string;
+  isViewer: boolean;
+  kills: number;
+  deaths: number;
+  assists: number;
+  totalMinionsKilled: number | null;
+  win: boolean;
+};
+
+export type LolMatchDetailsTeam = {
+  id: 100 | 200;
+  name: string;
+  score: number;
+  won: boolean;
+  players: LolMatchDetailsPlayer[];
+};
+
+export type LolMatchDetails = {
+  summary: {
+    matchId: string;
+    queueId: number | null;
+    queueLabel: string;
+    playedAt: Date;
+    durationSeconds: number | null;
+    viewerChampionName: string;
+    viewerChampionIconUrl: string;
+    viewerWon: boolean;
+  };
+  teams: [LolMatchDetailsTeam, LolMatchDetailsTeam];
+};

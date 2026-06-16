@@ -4,12 +4,15 @@ import {
   cs2FaceitGameAccountProfiles,
   db,
   gameAccounts,
+  games,
   GAMES,
   lolGameAccountProfiles,
 } from "@repo/db";
 import {
   isCs2FaceitGameAccount,
   isLolGameAccount,
+  RIOT_PLATFORM_TO_REGIONAL_ROUTE,
+  type RiotPlatformRoute,
   type RiotRegionalRoute,
 } from "@repo/types";
 
@@ -37,12 +40,21 @@ export async function linkLolAccount(input: {
   userId: string;
   gameName: string;
   tagLine: string;
-  region: RiotRegionalRoute;
+  platform?: RiotPlatformRoute;
+  region?: RiotRegionalRoute;
 }) {
+  const regionalRoute = input.platform
+    ? RIOT_PLATFORM_TO_REGIONAL_ROUTE[input.platform]
+    : input.region;
+
+  if (!regionalRoute) {
+    throw new Error("Either platform or region is required to link LoL account");
+  }
+
   const riotAccount = await getAccountByRiotId(
     input.gameName,
     input.tagLine,
-    input.region,
+    regionalRoute,
   );
 
   const existingAccount = await db.query.gameAccounts.findFirst({
@@ -56,23 +68,33 @@ export async function linkLolAccount(input: {
     return { error: "CONFLICT" as const };
   }
 
-  const activeRegion = await getLolActiveRegionByPuuid(
-    riotAccount.puuid,
-    input.region,
-  );
+  const activeRegion =
+    input.platform ??
+    (await getLolActiveRegionByPuuid(riotAccount.puuid, regionalRoute));
 
   if (!isValidPlatformRoute(activeRegion)) {
     return { error: "UNSUPPORTED_PLATFORM" as const, activeRegion };
   }
 
   const details = await getLolAccountDetails(riotAccount.puuid, activeRegion);
-  const entries = await getLolLeagueEntriesByPuuid(
-    riotAccount.puuid,
-    activeRegion,
-  );
+  let entries: Awaited<ReturnType<typeof getLolLeagueEntriesByPuuid>> = [];
+  try {
+    entries = await getLolLeagueEntriesByPuuid(riotAccount.puuid, activeRegion);
+  } catch (error) {
+    console.error("Failed to fetch initial LoL ranked entries", {
+      puuid: riotAccount.puuid,
+      platformRoute: activeRegion,
+      error,
+    });
+  }
   const syncedAt = new Date();
 
   const createdAccount = await db.transaction(async (tx) => {
+    await tx
+      .insert(games)
+      .values({ id: GAMES.LOL, name: "League of Legends" })
+      .onConflictDoNothing();
+
     const [gameAccount] = await tx
       .insert(gameAccounts)
       .values({
@@ -98,7 +120,7 @@ export async function linkLolAccount(input: {
         tagLine: riotAccount.tagLine,
         profileIconId: details.profileIconId,
         summonerLevel: details.summonerLevel,
-        regionalRoute: input.region,
+        regionalRoute,
         platformRoute: activeRegion,
       })
       .returning();
@@ -152,6 +174,11 @@ export async function linkFaceitAccount(input: {
   const syncedAt = new Date();
 
   const createdAccountRecord = await db.transaction(async (tx) => {
+    await tx
+      .insert(games)
+      .values({ id: GAMES.CS2_FACEIT, name: "CS2 (FACEIT)" })
+      .onConflictDoNothing();
+
     const [gameAccount] = await tx
       .insert(gameAccounts)
       .values({

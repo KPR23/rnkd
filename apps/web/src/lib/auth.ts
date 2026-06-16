@@ -5,15 +5,24 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@repo/db";
 import { env } from "@repo/env";
 
-const socialProviders =
-  env.OAUTH_GITHUB_CLIENT_ID && env.OAUTH_GITHUB_CLIENT_SECRET
+const socialProviders = {
+  ...(env.OAUTH_GITHUB_CLIENT_ID && env.OAUTH_GITHUB_CLIENT_SECRET
     ? {
         github: {
           clientId: env.OAUTH_GITHUB_CLIENT_ID,
           clientSecret: env.OAUTH_GITHUB_CLIENT_SECRET,
         },
       }
-    : {};
+    : {}),
+  ...(env.OAUTH_GOOGLE_CLIENT_ID && env.OAUTH_GOOGLE_CLIENT_SECRET
+    ? {
+        google: {
+          clientId: env.OAUTH_GOOGLE_CLIENT_ID,
+          clientSecret: env.OAUTH_GOOGLE_CLIENT_SECRET,
+        },
+      }
+    : {}),
+};
 
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,

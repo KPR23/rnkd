@@ -14,12 +14,12 @@ export default function FaceitAccountForm({
   setFaceitNickname,
 }: FaceitAccountFormProps) {
   return (
-    <View>
+    <View className="border-muted bg-card border p-4">
       <Text className="font-sans-medium text-text-secondary mb-1.5 text-xs">
         Faceit nickname
       </Text>
       <TextField
-        className="bg-card"
+        className="bg-background"
         placeholder="e.g. m0NESY"
         autoCapitalize="none"
         spellCheck={false}

@@ -25,8 +25,8 @@ import MatchActivityGraph from "@/src/components/profile/MatchActivityGraph";
 import ProfileInfoCard from "@/src/components/profile/ProfileInfoCard";
 import ScreenTitle from "@/src/components/ScreenTitle";
 import { useStickyHeaderScrollHandler } from "@/src/components/StickyHeaderShell";
-import { useMessage } from "@/src/lib/messages/message-provider";
 import { haptics } from "@/src/lib/haptics";
+import { useMessage } from "@/src/lib/messages/message-provider";
 import { mergeProfileIdentity } from "@/src/lib/profile/merge-profile-identity";
 import { sharePlayerProfile } from "@/src/lib/share/deep-links";
 import { formatUserDisplayName } from "@/src/lib/user/format-user-display-name";
@@ -360,8 +360,8 @@ export default function ProfileScreen({
           </View>
           {incomingRequestCondition ? (
             <AppText className="text-sm" color={colors.textSecondary}>
-              {formatUserDisplayName(displayUser)} sent you a friend request. You can accept
-              or decline it here.
+              {formatUserDisplayName(displayUser)} sent you a friend request.
+              You can accept or decline it here.
             </AppText>
           ) : null}
         </View>
